@@ -1,0 +1,502 @@
+"""Read-only, resumable integrity audit of canonical results, history and served form.
+
+The audit never writes to the database. Each run reads in REPEATABLE READ READ
+ONLY transactions, keeps a checkpoint and per-record findings under an output
+directory, and stops at a batch boundary when its time limit is reached. A
+later run with the same output directory resumes after the last finished batch
+and keeps the original watermark, so rows changed after the scan started are
+counted against the same frozen population rather than silently verified.
+
+Form is recomputed independently of public_context_source_v2: official results
+are read from product_fixtures here and qualified history from the existing
+public_context_source, then passed to the same form-policy-v1 engine. Integration
+tests prove the two paths select the same inputs.
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import time
+from collections import Counter, defaultdict
+from collections.abc import Sequence
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
+from uuid import UUID
+
+import psycopg
+from psycopg import Connection
+from psycopg.rows import dict_row
+
+from football.product.form import (
+    DEFAULT_WINDOW,
+    FORM_POLICY_VERSION,
+    STALE_AFTER,
+    competition_scope,
+    team_form,
+)
+
+AUDIT_VERSION = "p02-integrity-audit-v1"
+BATCH_SIZE = 500
+RUN_LIMIT_SECONDS = 30 * 60
+UNRESOLVED = ("SCHEDULED", "LIVE", "HALF_TIME", "SUSPENDED", "INTERRUPTED")
+NOT_AUDITED_DOMAINS = (
+    "standings",
+    "h2h_correctness",
+    "team_statistics_beyond_form",
+    "live_events",
+    "lineups",
+    "availability",
+)
+
+_OFFICIAL = """
+    SELECT DISTINCT ON (pf.fixture_id) pf.fixture_id::text, pf.competition_id::text,
+           pf.home_team_id::text, pf.away_team_id::text, pf.kickoff_at, pf.status,
+           pf.home_score AS home_goals, pf.away_score AS away_goals,
+           pf.result_score_basis AS score_basis, home.name AS home_team, away.name AS away_team
+    FROM unnest(%(teams)s::uuid[]) AS team(team_id)
+    CROSS JOIN LATERAL (
+        SELECT side.* FROM (
+            (SELECT f.* FROM football.product_fixtures f
+             WHERE f.home_team_id = team.team_id AND f.kickoff_at < %(kickoff)s
+               AND f.status IN ('FINISHED','AWARDED') AND f.home_score IS NOT NULL
+               AND f.identity_status = 'VERIFIED' AND f.updated_at <= %(cutoff)s
+             ORDER BY f.kickoff_at DESC, f.fixture_id LIMIT 30)
+            UNION ALL
+            (SELECT f.* FROM football.product_fixtures f
+             WHERE f.away_team_id = team.team_id AND f.kickoff_at < %(kickoff)s
+               AND f.status IN ('FINISHED','AWARDED') AND f.home_score IS NOT NULL
+               AND f.identity_status = 'VERIFIED' AND f.updated_at <= %(cutoff)s
+             ORDER BY f.kickoff_at DESC, f.fixture_id LIMIT 30)
+        ) side ORDER BY side.kickoff_at DESC, side.fixture_id LIMIT 30
+    ) pf
+    JOIN football.product_teams home ON home.team_id = pf.home_team_id
+    JOIN football.product_teams away ON away.team_id = pf.away_team_id
+    WHERE pf.fixture_id <> %(fixture)s AND NOT EXISTS (
+        SELECT 1 FROM football.fixture_identity_resolutions r
+        WHERE r.member_fixture_id = pf.fixture_id AND r.active
+          AND (r.resolution_status NOT IN ('UNIQUE','DUPLICATE_RESOLVED')
+               OR r.representative_fixture_id <> pf.fixture_id))
+    ORDER BY pf.fixture_id
+"""
+
+_PENDING = """
+    SELECT team.team_id::text, p.fixture_id::text, p.kickoff_at, p.status
+    FROM unnest(%(teams)s::uuid[]) AS team(team_id)
+    CROSS JOIN LATERAL (
+        SELECT f.fixture_id, f.kickoff_at, f.status FROM football.product_fixtures f
+        WHERE (f.home_team_id = team.team_id OR f.away_team_id = team.team_id)
+          AND f.fixture_id <> %(fixture)s AND f.kickoff_at < %(kickoff)s
+          AND f.kickoff_at >= %(kickoff)s - interval '400 days'
+          AND f.identity_status = 'VERIFIED' AND f.updated_at <= %(cutoff)s
+          AND (f.status IN ('SCHEDULED','LIVE','HALF_TIME','SUSPENDED','INTERRUPTED')
+               OR (f.status = 'AWARDED' AND f.home_score IS NULL))
+        ORDER BY f.kickoff_at DESC, f.fixture_id LIMIT 10
+    ) p
+"""
+
+
+def _iso(value: Any) -> Any:
+    return value.astimezone(UTC).isoformat() if isinstance(value, datetime) else value
+
+
+def _row(item: dict[str, Any]) -> dict[str, Any]:
+    return {key: _iso(value) for key, value in item.items()}
+
+
+def official_inputs(
+    connection: Connection[Any], source: dict[str, Any], cutoff: datetime
+) -> dict[str, Any]:
+    """Build the form-policy-v1 additions to a v1 context source from base tables."""
+    params = {
+        "teams": [source["home_team_id"], source["away_team_id"]],
+        "kickoff": datetime.fromisoformat(source["kickoff_at"]),
+        "cutoff": cutoff,
+        "fixture": source["fixture_id"],
+    }
+    with connection.cursor(row_factory=dict_row) as cursor:
+        results = [_row(item) for item in cursor.execute(_OFFICIAL, params).fetchall()]
+        pending = [_row(item) for item in cursor.execute(_PENDING, params).fetchall()]
+        ids = {source["competition_id"]}
+        ids |= {row["competition_id"] for row in results}
+        ids |= {row["competition_id"] for row in source["history"]}
+        scopes = {
+            str(item["competition_id"]): competition_scope(item["competition_type"], item["name"])
+            for item in cursor.execute(
+                "SELECT competition_id,competition_type,name FROM football.product_competitions "
+                "WHERE competition_id=ANY(%s::uuid[])",
+                (sorted(ids),),
+            ).fetchall()
+        }
+    return {
+        **source,
+        "results": sorted(results, key=lambda row: (row["kickoff_at"], row["fixture_id"])),
+        "pending_results": pending,
+        "competition_scopes": scopes,
+        "form_policy_version": FORM_POLICY_VERSION,
+    }
+
+
+def _traceable(served: list[dict[str, Any]], history: list[dict[str, Any]], team: str) -> bool:
+    """Every served symbol matches one qualified history row from the team's side."""
+    keys = set()
+    for row in history:
+        home = row["home_team_id"] == team
+        if team not in (row["home_team_id"], row["away_team_id"]):
+            continue
+        gf, ga = (
+            (row["home_goals"], row["away_goals"])
+            if home
+            else (row["away_goals"], row["home_goals"])
+        )
+        keys.add((datetime.fromisoformat(row["kickoff_at"]), "HOME" if home else "AWAY", gf, ga))
+    return all(
+        (
+            datetime.fromisoformat(match["kickoff_at"].replace("Z", "+00:00")),
+            match["venue"],
+            match["goals_for"],
+            match["goals_against"],
+        )
+        in keys
+        for match in served
+    )
+
+
+def classify_side(
+    served: list[dict[str, Any]] | None,
+    report_current: bool,
+    source: dict[str, Any],
+    team: str,
+) -> dict[str, Any]:
+    """Compare served form with the governed recomputation for one team."""
+    window = team_form(source, team)["windows"][DEFAULT_WINDOW]
+    kickoff = datetime.fromisoformat(source["kickoff_at"])
+    served_text = "".join(row["result"] for row in served) if served is not None else None
+    served_old = bool(
+        served
+        and kickoff - datetime.fromisoformat(served[-1]["kickoff_at"].replace("Z", "+00:00"))
+        > STALE_AFTER
+    )
+    if served is None:
+        state = "NO_REPORT"
+    elif served_text == window["results"]:
+        state = "MATCHING"
+    elif not report_current:
+        state = "DIVERGENT_STALE_REPORT"
+    elif {"UNQUALIFIED_RESULT", "AWARDED_INCLUDED"} & set(window["flags"]):
+        state = "DIVERGENT_POLICY_OR_UNQUALIFIED"
+    else:
+        state = "DIVERGENT_OTHER"
+    return {
+        "state": state,
+        "served": served_text,
+        "served_traceable": None if served is None else _traceable(served, source["history"], team),
+        "served_older_than_stale_limit": served_old,
+        "recomputed": window["results"],
+        "coverage": window["coverage"],
+        "flags": window["flags"],
+        "fixture_ids": window["fixture_ids"],
+    }
+
+
+def _audit_fixture(
+    connection: Connection[Any], fixture_id: UUID, watermark: datetime
+) -> dict[str, Any] | None:
+    with connection.cursor(row_factory=dict_row) as cursor:
+        row = cursor.execute(
+            """SELECT source,encode(sha256(convert_to(source::text,'UTF8')),'hex') AS fingerprint
+               FROM (SELECT football.public_context_source(%s) AS source) s""",
+            (fixture_id,),
+        ).fetchone()
+        if row is None or row["source"] is None:
+            return None
+        report = cursor.execute(
+            """SELECT record_bytes, source_fingerprint FROM football.product_read_reports
+               WHERE report_kind='CONTEXT' AND scope_id=%s AND horizon='LATEST'
+                 AND registered_at<=%s
+               ORDER BY source_observed_at DESC,registered_at DESC,input_sha256 LIMIT 1""",
+            (fixture_id, watermark),
+        ).fetchone()
+        cutoff = cursor.execute(
+            "SELECT LEAST(%s::timestamptz,statement_timestamp())",
+            (row["source"]["kickoff_at"],),
+        ).fetchone()
+    assert cutoff is not None
+    source = official_inputs(connection, row["source"], next(iter(cutoff.values())))
+    served = json.loads(bytes(report["record_bytes"])) if report else None
+    current = bool(report and report["source_fingerprint"] == row["fingerprint"])
+    return {
+        "fixture_id": str(fixture_id),
+        "report_current": current,
+        "home": classify_side(
+            served["home_form"] if served else None, current, source, source["home_team_id"]
+        ),
+        "away": classify_side(
+            served["away_form"] if served else None, current, source, source["away_team_id"]
+        ),
+    }
+
+
+def _scope_labels(connection: Connection[Any], fixtures: Sequence[UUID]) -> dict[str, tuple[Any, ...]]:
+    rows = connection.execute(
+        """SELECT f.fixture_id::text, COALESCE(p.code,'(none)'), c.country, c.name, c.season_label
+           FROM football.product_fixtures f
+           JOIN football.product_competitions c USING (competition_id)
+           LEFT JOIN LATERAL (
+               SELECT p.code FROM football.match_provider_mappings m
+               JOIN football.providers p ON p.id=m.provider_id
+               WHERE m.match_id=f.fixture_id AND m.valid_to IS NULL
+               ORDER BY m.created_at,m.id LIMIT 1) p ON true
+           WHERE f.fixture_id=ANY(%s)""",
+        (list(fixtures),),
+    ).fetchall()
+    return {row[0]: row[1:] for row in rows}
+
+
+def corpus_checks(connection: Connection[Any]) -> dict[str, Any]:
+    """Whole-table checks that are cheap enough to run on every audit."""
+    rows = connection.execute(
+        """SELECT COALESCE(p.code,'(none)'), f.status, f.result_score_basis,
+                  count(*) AS total,
+                  count(*) FILTER (WHERE f.status='FINISHED' AND f.home_score IS NOT NULL
+                                   AND h.fixture_id IS NULL) AS finished_without_history,
+                  count(*) FILTER (WHERE f.status = ANY(%s)
+                                   AND f.kickoff_at < statement_timestamp()-interval '4 hours')
+                      AS result_overdue,
+                  count(*) FILTER (WHERE h.fixture_id IS NOT NULL
+                      AND (f.home_score,f.away_score) IS DISTINCT FROM (h.home_goals,h.away_goals))
+                      AS history_score_mismatch,
+                  count(*) FILTER (WHERE h.fixture_id IS NOT NULL AND f.status<>'FINISHED')
+                      AS history_on_unfinished,
+                  count(*) FILTER (WHERE f.identity_status<>'VERIFIED') AS identity_unverified
+           FROM football.product_fixtures f
+           LEFT JOIN football.product_team_match_history h USING (fixture_id)
+           LEFT JOIN LATERAL (
+               SELECT p.code FROM football.match_provider_mappings m
+               JOIN football.providers p ON p.id=m.provider_id
+               WHERE m.match_id=f.fixture_id AND m.valid_to IS NULL
+               ORDER BY m.created_at,m.id LIMIT 1) p ON true
+           GROUP BY 1,2,3 ORDER BY 1,2,3""",
+        (list(UNRESOLVED),),
+    ).fetchall()
+    keys = (
+        "provider",
+        "status",
+        "score_basis",
+        "total",
+        "finished_without_history",
+        "result_overdue",
+        "history_score_mismatch",
+        "history_on_unfinished",
+        "identity_unverified",
+    )
+    conflicts = connection.execute(
+        """SELECT (SELECT count(*) FROM football.product_source_result_conflicts),
+                  (SELECT count(*) FROM football.fixture_identity_ingestion_conflicts),
+                  (SELECT count(*) FROM football.product_context_report_refresh_work
+                   WHERE generation>completed_generation)"""
+    ).fetchone()
+    assert conflicts is not None
+    return {
+        "fixtures_by_provider_status_basis": [dict(zip(keys, row, strict=True)) for row in rows],
+        "provider_result_conflicts": conflicts[0],
+        "fixture_identity_ingestion_conflicts": conflicts[1],
+        "context_refresh_pending": conflicts[2],
+        "not_audited": list(NOT_AUDITED_DOMAINS),
+    }
+
+
+class AuditRun:
+    """Checkpointed batches under one output directory."""
+
+    def __init__(self, out: Path) -> None:
+        self.out = out
+        self.state_path = out / "checkpoint.json"
+        self.findings_path = out / "findings.jsonl"
+
+    def load(self, connection: Connection[Any]) -> dict[str, Any]:
+        if self.state_path.exists():
+            state: dict[str, Any] = json.loads(self.state_path.read_text())
+            if state["audit_version"] != AUDIT_VERSION:
+                raise ValueError("checkpoint was written by another audit version")
+            return state
+        with connection.transaction():
+            connection.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+            watermark = connection.execute("SELECT statement_timestamp()").fetchone()
+            assert watermark is not None
+            population = connection.execute(
+                """SELECT count(DISTINCT scope_id), md5(string_agg(DISTINCT scope_id::text, ','
+                       ORDER BY scope_id::text))
+                   FROM football.product_read_reports
+                   WHERE report_kind='CONTEXT' AND registered_at<=%s""",
+                (watermark[0],),
+            ).fetchone()
+            assert population is not None
+            corpus = corpus_checks(connection)
+        self.out.mkdir(parents=True, exist_ok=True)
+        state = {
+            "audit_version": AUDIT_VERSION,
+            "form_policy_version": FORM_POLICY_VERSION,
+            "watermark": watermark[0].astimezone(UTC).isoformat(),
+            "population": {"context_fixtures": population[0], "scope_id_md5": population[1]},
+            "after_fixture_id": "00000000-0000-0000-0000-000000000000",
+            "batches": 0,
+            "audited": 0,
+            "complete": False,
+            "corpus": corpus,
+        }
+        self.save(state)
+        return state
+
+    def save(self, state: dict[str, Any]) -> None:
+        temporary = self.state_path.with_suffix(".tmp")
+        temporary.write_text(json.dumps(state, sort_keys=True, indent=1))
+        temporary.replace(self.state_path)
+
+    def batch(self, connection: Connection[Any], state: dict[str, Any], size: int) -> int:
+        watermark = datetime.fromisoformat(state["watermark"])
+        with connection.transaction():
+            connection.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+            scopes = [
+                row[0]
+                for row in connection.execute(
+                    """SELECT DISTINCT scope_id FROM football.product_read_reports
+                       WHERE report_kind='CONTEXT' AND registered_at<=%s AND scope_id>%s
+                       ORDER BY scope_id LIMIT %s""",
+                    (watermark, state["after_fixture_id"], size),
+                ).fetchall()
+            ]
+            labels = _scope_labels(connection, scopes)
+            records = []
+            for scope in scopes:
+                record = _audit_fixture(connection, scope, watermark)
+                if record is None:
+                    record = {"fixture_id": str(scope), "state": "FIXTURE_MISSING"}
+                record["scope"] = labels.get(str(scope))
+                records.append(record)
+        with self.findings_path.open("a", encoding="utf-8") as handle:
+            for record in records:
+                handle.write(json.dumps(record, sort_keys=True) + "\n")
+        if scopes:
+            state["after_fixture_id"] = str(scopes[-1])
+            state["batches"] += 1
+            state["audited"] += len(scopes)
+        state["complete"] = len(scopes) < size
+        self.save(state)
+        return len(scopes)
+
+
+def summarize(out: Path) -> dict[str, Any]:
+    """Aggregate per-record findings into the committed summary."""
+    state = json.loads((out / "checkpoint.json").read_text())
+    totals: Counter[str] = Counter()
+    flags: Counter[str] = Counter()
+    by: dict[str, dict[str, Counter[str]]] = {
+        "provider": defaultdict(Counter),
+        "country": defaultdict(Counter),
+        "competition_season": defaultdict(Counter),
+    }
+    digest = hashlib.sha256()
+    findings = out / "findings.jsonl"
+    lines = findings.read_text(encoding="utf-8").splitlines() if findings.exists() else []
+    for line in lines:
+        digest.update(line.encode() + b"\n")
+        record = json.loads(line)
+        scope = record.get("scope") or ["(unknown)", "(unknown)", "(unknown)", "(unknown)"]
+        keys = {
+            "provider": scope[0],
+            "country": scope[1],
+            "competition_season": f"{scope[1]} / {scope[2]} / {scope[3]}",
+        }
+        for side in ("home", "away"):
+            if side not in record:
+                totals["fixture_missing"] += 1
+                continue
+            item = record[side]
+            totals["sides"] += 1
+            totals[item["state"]] += 1
+            totals[f"coverage_{item['coverage']}"] += 1
+            totals["served_untraceable"] += item["served_traceable"] is False
+            totals["served_older_than_stale_limit"] += item["served_older_than_stale_limit"]
+            flags.update(item["flags"])
+            for name, key in keys.items():
+                by[name][key][item["state"]] += 1
+                by[name][key]["sides"] += 1
+        totals["fixtures"] += 1
+        totals["report_current"] += bool(record.get("report_current"))
+    return {
+        "audit_version": AUDIT_VERSION,
+        "form_policy_version": FORM_POLICY_VERSION,
+        "watermark": state["watermark"],
+        "population": state["population"],
+        "audited_fixtures": state["audited"],
+        "complete": state["complete"],
+        "coverage_fraction": round(
+            state["audited"] / max(1, state["population"]["context_fixtures"]), 6
+        ),
+        "findings_sha256": digest.hexdigest(),
+        "findings_records": len(lines),
+        "form_sides": dict(sorted(totals.items())),
+        "default_window_flags": dict(sorted(flags.items())),
+        "by_provider": {key: dict(value) for key, value in sorted(by["provider"].items())},
+        "by_country": {key: dict(value) for key, value in sorted(by["country"].items())},
+        "divergent_competition_seasons": {
+            key: dict(value)
+            for key, value in sorted(by["competition_season"].items())
+            if value["sides"] != value["MATCHING"]
+        },
+        "corpus": state["corpus"],
+    }
+
+
+def run(
+    database_url: str, out: Path, *, batch_size: int, time_limit: float, max_batches: int | None
+) -> dict[str, Any]:
+    started = time.monotonic()
+    with psycopg.connect(database_url) as connection:
+        connection.read_only = True
+        audit = AuditRun(out)
+        state = audit.load(connection)
+        batches = 0
+        while not state["complete"]:
+            if time.monotonic() - started > time_limit:
+                break
+            if max_batches is not None and batches >= max_batches:
+                break
+            audit.batch(connection, state, batch_size)
+            batches += 1
+    summary = summarize(out)
+    (out / "summary.json").write_text(json.dumps(summary, sort_keys=True, indent=1))
+    return summary
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="read-only P02 integrity audit")
+    parser.add_argument("--database-url", required=True)
+    parser.add_argument("--out", type=Path, required=True, help="checkpoint and findings directory")
+    parser.add_argument("--batch-size", type=int, default=BATCH_SIZE)
+    parser.add_argument("--time-limit", type=float, default=RUN_LIMIT_SECONDS)
+    parser.add_argument("--max-batches", type=int)
+    args = parser.parse_args(argv)
+    if not 1 <= args.batch_size <= 5000:
+        parser.error("--batch-size must be between 1 and 5000")
+    summary = run(
+        args.database_url,
+        args.out,
+        batch_size=args.batch_size,
+        time_limit=args.time_limit,
+        max_batches=args.max_batches,
+    )
+    print(
+        json.dumps(
+            {key: summary[key] for key in ("audited_fixtures", "complete", "form_sides")},
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -7,6 +7,7 @@ already qualified for the cutoff; nothing here reads a provider or a database.
 
 from __future__ import annotations
 
+import re
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -27,6 +28,16 @@ WINDOWS: dict[str, tuple[str, str, str, int]] = {
     "PLAYED_ALL_5": ("PLAYED", "ALL_COMPETITIONS", "ALL", 5),
     "FORECAST_ELIGIBLE_ALL_5": ("FORECAST_ELIGIBLE", "ALL_COMPETITIONS", "ALL", 5),
 }
+
+
+_FRIENDLY = re.compile(r"\bfriendl(y|ies)\b", re.IGNORECASE)
+
+
+def competition_scope(competition_type: str, name: str) -> str:
+    """Python twin of football.product_competition_scope; parity is tested."""
+    if _FRIENDLY.search(name):
+        return "FRIENDLY"
+    return competition_type if competition_type in ("LEAGUE", "CUP") else "UNCLASSIFIED"
 
 
 def _outcome(goals_for: int, goals_against: int) -> str:
