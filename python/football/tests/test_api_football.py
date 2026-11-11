@@ -14,7 +14,7 @@ from football.product.api_football import (
     fixture_status,
     inferred_division,
 )
-from football.product.sync import _league_seasons
+from football.product.sync_support import _league_seasons
 from football.providers.base import HttpResponseV1
 
 

@@ -12,8 +12,8 @@ from football.product.api_football import ApiFootballError, ApiResponse, Capabil
 from football.product.cli import _api_football_max_history_season, build_parser
 from football.product.domain import MINIMUM_HISTORY_MATCHES
 from football.product.football_data_org import FootballDataResponse
-from football.product.sync import (
-    ProductSync,
+from football.product.sync import ProductSync
+from football.product.sync_support import (
     _api_football_score_basis,
     _fixture_sync_dates,
     _football_data_score_basis,
@@ -270,7 +270,7 @@ def test_history_queue_migration_enforces_states_deduplication_and_recovery() ->
     migration = Path(
         "infrastructure/migrations/202610040400_product_history_sync_queue.sql"
     ).read_text()
-    implementation = Path("python/football/src/football/product/sync.py").read_text()
+    implementation = Path("python/football/src/football/product/sync_history.py").read_text()
 
     assert "job_status IN ('PENDING', 'RUNNING', 'SUCCEEDED', 'FAILED')" in migration
     assert "UNIQUE (provider_competition_id, season)" in migration
@@ -596,7 +596,7 @@ def test_history_job_calculates_standings_when_provider_request_fails(
 
 def test_history_storage_deduplicates_cross_provider_fixture_and_keeps_xg_separate() -> None:
     migration = Path("infrastructure/migrations/202609290100_mvp_product.sql").read_text()
-    implementation = Path("python/football/src/football/product/sync.py").read_text()
+    implementation = Path("python/football/src/football/product/sync_storage.py").read_text()
 
     assert "fixture_id uuid PRIMARY KEY" in migration
     assert "ON CONFLICT (fixture_id) DO NOTHING" in implementation

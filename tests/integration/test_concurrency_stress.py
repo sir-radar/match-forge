@@ -112,7 +112,7 @@ def _wait_for_lock(url: str, pid: int) -> None:
 def test_history_qualification_overlaps_real_forecast_preparation(
     stress_database: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    from football.product import sync as module
+    from football.product import sync_forecasts as module
 
     ready, release = Event(), Event()
     original = module.forecast_from_history
@@ -195,7 +195,7 @@ def test_identity_correction_waits_for_overlapping_history_then_requalifies(
 def test_provider_observation_changes_target_during_forecast_preparation(
     stress_database: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    from football.product import sync as module
+    from football.product import sync_forecasts as module
     from football.providers.pitchapi import PitchApiFixture, PitchApiResponse
 
     ready, release = Event(), Event()

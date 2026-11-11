@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
-from football.product.operational_provider_sync import (
+from football.product.operational_support import (
     _detail_priority,
     _newer_calendar_row,
     _valid_transition,

@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 
 import pytest
-from football.product.operational_provider_sync import _fotmob_season_rows
+from football.product.operational_support import _fotmob_season_rows
 from football.product.provider_history_scopes import normalize_seasons
 from football.providers.fotmob import FotmobResponse
 

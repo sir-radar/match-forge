@@ -18,7 +18,8 @@ from football.product.history_requests import (
     record_history_check,
 )
 from football.product.identity_crosswalks import OPERATIONAL_COMPETITION_CROSSWALKS
-from football.product.operational_provider_sync import OperationalProviderSync, _fotmob_season_rows
+from football.product.operational_provider_sync import OperationalProviderSync
+from football.product.operational_support import _fotmob_season_rows
 from football.providers.base import ProviderFetchError
 from football.providers.fotmob import FotmobClient, FotmobResponse
 from football.providers.pitchapi import PitchApiClient, PitchApiResponse

@@ -70,7 +70,7 @@ def test_live_date_sync_does_not_replay_bulk_history(
     diagnostics = MagicMock(return_value={})
     monkeypatch.setattr(sync, "_sync_diagnostics", diagnostics)
     monkeypatch.setattr(
-        "football.product.operational_provider_sync.settle_external_predictions",
+        "football.product.operational_details.settle_external_predictions",
         lambda _connection, _now: 0,
     )
     response = PitchApiResponse(

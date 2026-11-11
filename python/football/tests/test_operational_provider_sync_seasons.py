@@ -4,7 +4,8 @@ from unittest.mock import MagicMock
 from uuid import uuid4
 
 import pytest
-from football.product.operational_provider_sync import OperationalProviderSync, SyncCounts
+from football.product.operational_provider_sync import OperationalProviderSync
+from football.product.operational_support import SyncCounts
 from football.providers.pitchapi import PitchApiFixture
 
 

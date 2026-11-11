@@ -10,10 +10,10 @@ import psycopg
 import pytest
 from football.product.history_requests import HistoryDeferred, HistoryRequestBudget
 from football.product.operational_provider_sync import (
-    DetailCounts,
     FixtureObservation,
     OperationalProviderSync,
 )
+from football.product.operational_support import DetailCounts
 from football.providers.pitchapi import PitchApiFixture, PitchApiResponse
 
 

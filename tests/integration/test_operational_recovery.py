@@ -8,7 +8,7 @@ from uuid import UUID, uuid4
 
 import psycopg
 import pytest
-from football.product.operational_provider_sync import SyncCounts
+from football.product.operational_support import SyncCounts
 from football.providers.pitchapi import PitchApiResponse, normalize_pitchapi_matches
 from psycopg.conninfo import make_conninfo
 from psycopg.sql import SQL, Identifier
@@ -118,7 +118,7 @@ def test_old_fixture_recovers_only_from_retained_source_without_guessed_regulati
 def test_current_acquisition_remains_visible_when_historical_recovery_is_missing(
     recovery_connection: psycopg.Connection[object], tmp_path: Path
 ) -> None:
-    from football.product.operational_provider_sync import DetailCounts
+    from football.product.operational_support import DetailCounts
 
     connection = recovery_connection
     sync, _target, _provisional, _snapshot, _live, kickoff, _acquired = (
