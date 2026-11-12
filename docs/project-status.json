@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-12T15:25:00Z",
+  "updated_at": "2026-11-12T20:35:00Z",
   "unified_architecture_investigation": {
     "status": "PASS_WITH_WARNINGS",
     "scope": "CURRENT_TASK.md revision 3; architecture investigation/planning only",
@@ -92,7 +92,8 @@
     "AUTHORIZE_RECOVERABLE_CLI_BACKUP_V1",
     "APPLY_SOURCE_MANIFEST_BINDING_MIGRATION_V1",
     "APPLY_FDUK_RAW_FILE_BINDINGS_V1",
-    "APPLY_SOURCE_SNAPSHOT_PATH_DIGEST_GUARD_V1"
+    "APPLY_SOURCE_SNAPSHOT_PATH_DIGEST_GUARD_V1",
+    "AUTHORIZE_GOVERNED_SCOPE_ACTIVATION_V1"
   ],
   "closed_routes": [
     {
@@ -4193,6 +4194,26 @@
       "full_recovery_verified": false,
       "full_recovery_blocker": "FULL_RECOVERY capture enumerates the 159 governed exclusions and fails by design; VERIFIED_GOVERNED_SCOPE is proposed separately"
     },
-    "required_next_action": "Migrations 202611120300 and 202611120400 and the 47 Football-Data.co.uk raw-file bindings are applied; no migration is pending. A VERIFIED_RECOVERABLE point (bb97d6fd, before the bindings) exists outside Admin history. FULL_RECOVERY cannot pass while governed exclusions exist; VERIFIED_GOVERNED_SCOPE (merged in PR 211) needs a deployed release, an owner-authorized GOVERNED_SCOPE configuration and a fresh Admin backup. The rehearsal databases, football_v4_integration_20261110 and the StatsBomb and P02 databases stay until separately reviewed."
+    "required_next_action": "Governed recovery is active: VERIFIED_GOVERNED_SCOPE point 02376823 (Admin history, next due 12 December 2026) covers every present original with 159 approved exclusions. FULL_RECOVERY remains ineligible by design while those exclusions exist. The rehearsal databases (including football_fduk_binding_rehearsal_20261112), football_v4_integration_20261110 and the StatsBomb and P02 databases stay until separately reviewed.",
+    "governed_recovery_point": {
+      "decision_id": "AUTHORIZE_GOVERNED_SCOPE_ACTIVATION_V1",
+      "decision_ref": "docs/evidence/owner-decision-authorize-governed-scope-activation-2026-11-12.json",
+      "evidence_ref": "docs/evidence/governed-backup-verification-2026-11-12.json",
+      "release_git_sha": "1fa6c6c82e71729cdd71b76fcc9159c069ba79d8",
+      "backup_policy": "GOVERNED_SCOPE",
+      "status": "VERIFIED_GOVERNED_SCOPE",
+      "snapshot_id": "02376823fb7e10ece806430361a68274473c6933340ef307646735e51e0ed400",
+      "run_id": "d0bafc86-3643-45e4-975c-c0bb012a8ef2",
+      "verified_at": "2026-11-12T20:23:16Z",
+      "unavailable_dependencies": 0,
+      "excluded_dependencies": 159,
+      "governed_sha256": "11fac889b5e3eb830138f52b359c2a0dd3123986df5f065dfa01fb8d93884a42",
+      "restore_drill": "PASS_GOVERNED_SCOPE",
+      "global_role_restore": "PASS",
+      "recorded_in_admin_history": true,
+      "next_backup_due": "2026-12-12",
+      "preservation": "UNCHANGED",
+      "full_recovery_verified": false
+    }
   }
 }
