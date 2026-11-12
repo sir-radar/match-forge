@@ -211,6 +211,59 @@ actor `policy:<approval_record>:<approved_by>`.
 Deploying these controls authorizes nothing. Each existing-resource deletion
 still needs the owner's resource-specific approval through this workflow.
 
+### Five-hour lifecycle cleanup
+
+Migration `202611130100_storage_lifecycle_tracking` adds durable lifecycle state
+(`storage_lifecycle_resources`) and an append-only audit trail
+(`storage_lifecycle_events`). The policy's `lifecycle_cleanup` block enables it:
+
+```json
+"lifecycle_cleanup": { "inactivity_seconds": 18000, "check_interval_seconds": 900, "max_per_run": 10,
+  "test_databases": true,
+  "worktrees": { "target_ref": "refs/remotes/origin/main", "roots": ["/abs/repo/.claude/worktrees"] },
+  "approved_by": "owner", "approval_record": "docs/evidence/<owner decision>.json" }
+```
+
+Validation refuses less than five hours of inactivity, a check interval outside
+15–30 minutes, more than 20 deletions per run, a missing approval record and
+worktree roots that overlap a protected path. Only two classes are tracked:
+
+| Class | Registered by | Complete when | Activity (restarts the window) | Never deleted while |
+| --- | --- | --- | --- | --- |
+| `TEST_DATABASE` | The integration harness (`database_isolation prepare`) records the run database's cluster, OID, name, marker digests and owning shell (host, PID, start time). Databases carrying the run's ownership marker are linked to it. | The owning process is verifiably gone on this host (PID absent, or reused by a process with another start time) | Client sessions, session time, row writes, temporary files or a statistics reset in `pg_stat_database`; any open session | A session is open; the comment differs from the recorded marker; the database was renamed; it is protected, reserved, owner-preserved or authoritative; the owner is on another host |
+| `WORKTREE` | Discovery of direct children of a declared root, by Git directory | HEAD is contained in `target_ref` **and** GitHub reports a merged pull request for the branch whose head is exactly HEAD into the target branch | HEAD, branch, status (including staged and untracked files) or the reflog changes; a process has its working directory inside; a Git lock or in-progress merge, rebase, cherry-pick or bisect | It is the primary checkout or locked; it has uncommitted, untracked or unpushed work; it holds ignored files that are not regenerable output; the merge cannot be confirmed |
+
+A resource is `ELIGIBLE` only when, at the same check, its lifecycle is
+complete, nothing uses it, no blocker holds, five hours have passed since the
+later of its last activity and its completion, and Storage Management offers
+Delete for it. Any activity restarts the window; withdrawn completion (for
+example new commits after a merge) returns it to `ACTIVE`. The decision depends
+only on the stored record and a fresh observation, so a restart reproduces the
+same deadline. Transaction and read counters are deliberately excluded: idle
+databases gain about two transactions per minute from autovacuum workers.
+
+Each check runs from the existing storage schedule. A cluster advisory lock
+admits one worker; an expiring claim on the row admits one deletion. The
+deletion is a normal storage operation by `policy:<approval_record>:<approved_by>`:
+the plan is rebuilt from a fresh inventory, the SQL guard rejects protected
+identities, databases are fenced and dropped without `FORCE` (a new session makes
+the drop fail; nothing is terminated), and worktrees are removed with
+`git worktree remove` without `--force`, keeping the branch. A test database is
+offered for deletion only while its activity counters still equal those of the
+eligibility decision, so use between decision and execution rejects it. Measured
+bytes are recorded on the operation and the lifecycle row. A restart settles an
+interrupted deletion from the operation: verified absence becomes `DELETED`,
+anything else `BLOCKED` with the reason, and the next check re-derives the state.
+
+Databases with a test marker but no registration (runs before this change, or a
+registration that failed) are listed as unregistered and never deleted
+automatically; dispose of them through the resource workflow above. Fixture
+launcher rehearsals keep their reservation protection and stay outside this policy.
+`GET /v1/admin/storage/lifecycle` reports the policy, tracked resources with
+deadlines and blockers, the last 100 events and the unregistered databases.
+Failed or blocked deletions are logged as errors and recorded as
+`DELETE_FAILED` or `REJECTED` events.
+
 ## Recovery and approval
 
 For each existing resource, record its exact identity, dependencies, active use,

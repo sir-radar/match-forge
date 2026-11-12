@@ -243,6 +243,16 @@ paths:
       responses:
         '200': { description: Operation history }
         '403': { $ref: '#/components/responses/AdminDenied' }
+  /v1/admin/storage/lifecycle:
+    get:
+      operationId: storageLifecycle
+      summary: Five-hour cleanup policy, tracked test databases and worktrees, audit events and unregistered test databases
+      description: Read-only. Each tracked resource carries its state (ACTIVE, WAITING, ELIGIBLE, BLOCKED, DELETING, DELETED, ABSENT), last verified activity, completion, eligible_at deadline, blockers and measured reclaimed bytes. deployed is false until migration 202611130100 is applied; policy is null when the storage policy does not enable lifecycle cleanup.
+      security: [ { AdminCLI: [] }, { AdminBrowserOrigin: [] } ]
+      responses:
+        '200': { description: Lifecycle status }
+        '403': { $ref: '#/components/responses/AdminDenied' }
+        '409': { description: Storage management migration has not been deployed }
   /v1/admin/storage/operations/{batch_id}/cancel:
     post:
       operationId: cancelStorageBatch
