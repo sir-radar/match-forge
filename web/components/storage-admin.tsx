@@ -52,7 +52,7 @@ export function StorageAdmin({ initial, initialError = null, children }: {
     <header className="space-y-3">
       <p className="text-xs font-semibold uppercase tracking-widest">Operations</p>
       <h1 className="text-3xl font-semibold">Storage Management</h1>
-      <p>Dry-run mode. Destructive cleanup, quarantine and backup pruning are disabled.</p>
+      <p>Reviews are dry runs. Resource actions run only for eligible resources after exact owner approval; protected resources cannot be deleted here.</p>
     </header>
     <div className="flex flex-wrap gap-3">
       <button type="button" className={button} disabled={busy} onClick={() => void load()}>Refresh storage status</button>
