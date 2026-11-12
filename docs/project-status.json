@@ -87,7 +87,8 @@
     "AUTHORIZE_P02_OPERATING_ROLLOUT_V1",
     "AUTHORIZE_STORAGE_OPERATING_ROLLOUT_V1",
     "APPROVE_STORAGE_CANDIDATE_DATABASE_DELETION_V1",
-    "RATIFY_RECOVERY_SCOPE_MIGRATION_AS_APPLIED_V1"
+    "RATIFY_RECOVERY_SCOPE_MIGRATION_AS_APPLIED_V1",
+    "APPLY_RECOVERY_SCOPE_DISPOSITIONS_V1"
   ],
   "closed_routes": [
     {
@@ -4122,10 +4123,24 @@
       "applied_by": "make dev (dev target depends on migrate); not an authorized rollout",
       "rehearsed_before_apply": false,
       "pending_migrations_after": 0,
-      "recovery_scope_retirements_rows": 0,
-      "source_manifest_corrections_rows": 0,
-      "dispositions_authorized": false
+      "dispositions_authorized": true
     },
-    "required_next_action": "Diagnose the failing admin backup. Migration 202611120200 is on the operating database and ratified as applied; applying the 161 recovery-scope dispositions needs its own owner decision. The 26 rehearsal databases, football_v4_integration_20261110 and the StatsBomb and P02 databases stay until separately reviewed."
+    "recovery_scope_dispositions": {
+      "decision_id": "APPLY_RECOVERY_SCOPE_DISPOSITIONS_V1",
+      "decision_ref": "docs/evidence/owner-decision-apply-recovery-scope-dispositions-2026-11-12.json",
+      "evidence_ref": "docs/evidence/recovery-disposition-application-2026-11-12.json",
+      "rehearsal_ref": "docs/evidence/recovery-disposition-rehearsal-2026-11-12.json",
+      "status": "APPLIED",
+      "recovery_scope_retirements": 160,
+      "source_manifest_corrections": 1,
+      "unavailable_before": 159,
+      "unavailable_after": 0,
+      "excluded_after": 159,
+      "excluded_sha256": "5043306f0e0c58ce609018f8de300b9d1002615228c82cd3ba987db7dea6b92d",
+      "preservation": "UNCHANGED",
+      "backup": "VERIFIED_LOGICAL_DUMP_RESTORE_CHECK",
+      "full_recovery_verified": false
+    },
+    "required_next_action": "Diagnose the failing admin backup. The 161 recovery-scope dispositions are applied (0 unavailable, 159 excluded); FULL_RECOVERY still needs a fresh Admin backup and isolated restore verification. The 26 rehearsal databases, football_v4_integration_20261110 and the StatsBomb and P02 databases stay until separately reviewed."
   }
 }

@@ -61,7 +61,7 @@ Every file marked *proposed* under `docs/` is a proposal, not an approval. A sta
 - [P0 storage protection and recovery evidence](operations/storage-protection-2026-11-11.md)
 - [Storage lifecycle operations, capacity policy and approval-only resource manifest](operations/storage-lifecycle.md)
 - [Storage consolidation and Admin-controlled cleanup, 12 November 2026](operations/storage-consolidation-2026-11-12.md)
-- Storage operating rollout, 12 November 2026: [owner decision](evidence/owner-decision-authorize-storage-operating-rollout-2026-11-12.json), [evidence](evidence/storage-operating-rollout-2026-11-12.json); candidate database deletion: [owner decision](evidence/owner-decision-approve-storage-candidate-deletion-2026-11-12.json), [evidence](evidence/storage-candidate-deletion-2026-11-12.json); recovery-scope migration `202611120200` ratified as applied: [owner decision](evidence/owner-decision-ratify-recovery-scope-migration-2026-11-12.json)
+- Storage operating rollout, 12 November 2026: [owner decision](evidence/owner-decision-authorize-storage-operating-rollout-2026-11-12.json), [evidence](evidence/storage-operating-rollout-2026-11-12.json); candidate database deletion: [owner decision](evidence/owner-decision-approve-storage-candidate-deletion-2026-11-12.json), [evidence](evidence/storage-candidate-deletion-2026-11-12.json); recovery-scope migration `202611120200` ratified as applied: [owner decision](evidence/owner-decision-ratify-recovery-scope-migration-2026-11-12.json); 161 recovery-scope dispositions applied: [owner decision](evidence/owner-decision-apply-recovery-scope-dispositions-2026-11-12.json), [evidence](evidence/recovery-disposition-application-2026-11-12.json)
 
 ## Engineering standards
 
