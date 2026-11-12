@@ -88,7 +88,8 @@
     "AUTHORIZE_STORAGE_OPERATING_ROLLOUT_V1",
     "APPROVE_STORAGE_CANDIDATE_DATABASE_DELETION_V1",
     "RATIFY_RECOVERY_SCOPE_MIGRATION_AS_APPLIED_V1",
-    "APPLY_RECOVERY_SCOPE_DISPOSITIONS_V1"
+    "APPLY_RECOVERY_SCOPE_DISPOSITIONS_V1",
+    "AUTHORIZE_RECOVERABLE_CLI_BACKUP_V1"
   ],
   "closed_routes": [
     {
@@ -4141,6 +4142,20 @@
       "backup": "VERIFIED_LOGICAL_DUMP_RESTORE_CHECK",
       "full_recovery_verified": false
     },
-    "required_next_action": "Diagnose the failing admin backup. The 161 recovery-scope dispositions are applied (0 unavailable, 159 excluded); FULL_RECOVERY still needs a fresh Admin backup and isolated restore verification. The 26 rehearsal databases, football_v4_integration_20261110 and the StatsBomb and P02 databases stay until separately reviewed."
+    "recovery_point_after_dispositions": {
+      "decision_id": "AUTHORIZE_RECOVERABLE_CLI_BACKUP_V1",
+      "decision_ref": "docs/evidence/owner-decision-authorize-recoverable-cli-backup-2026-11-12.json",
+      "evidence_ref": "docs/evidence/recoverable-backup-verification-2026-11-12.json",
+      "status": "VERIFIED_RECOVERABLE",
+      "snapshot_id": "bb97d6fddd7898d3c3adf6e779e29014a04a66cc886d22ee4adb3ff6d7c693f0",
+      "verified_at": "2026-11-12T14:53:00Z",
+      "unavailable_dependencies": 0,
+      "excluded_dependencies": 159,
+      "restore_drill": "PASS_RECOVERABLE",
+      "recorded_in_admin_history": false,
+      "full_recovery_verified": false,
+      "full_recovery_blocker": "FULL_RECOVERY capture enumerates the 159 governed exclusions and fails by design; VERIFIED_GOVERNED_SCOPE is proposed separately"
+    },
+    "required_next_action": "Diagnose the failing admin backup. The 161 recovery-scope dispositions are applied (0 unavailable, 159 excluded); A fresh VERIFIED_RECOVERABLE recovery point (bb97d6fd) covers them; FULL_RECOVERY cannot pass while governed exclusions exist, and a VERIFIED_GOVERNED_SCOPE classification awaits review. The 26 rehearsal databases, football_v4_integration_20261110 and the StatsBomb and P02 databases stay until separately reviewed."
   }
 }

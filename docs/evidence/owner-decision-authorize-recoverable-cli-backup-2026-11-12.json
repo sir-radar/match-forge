@@ -1,0 +1,25 @@
+{
+ "contract": "OwnerDecisionRecordV1",
+ "decision_id": "AUTHORIZE_RECOVERABLE_CLI_BACKUP_V1",
+ "recorded_at": "2026-11-12T13:29:00Z",
+ "title": "Run one RECOVERABLE_ONLY command-line backup to the enrolled NTC drive against the revalidated governed inventory",
+ "status": "APPROVED",
+ "owner": "repository owner / sir-radar",
+ "map": "storage-lifecycle",
+ "ticket": "Recovery verification after APPLY_RECOVERY_SCOPE_DISPOSITIONS_V1",
+ "source": {
+  "execution_instruction": "Owner answer 'Authorize CLI backup' in this session to the question whether to run the RECOVERABLE_ONLY backup to the NTC drive through the command-line path, after FULL_RECOVERY was shown to be structurally blocked by the governed exclusions.",
+  "command": "python -m scripts.manual_backup run --recoverable-inventory .local/foundation/admin-backup-status/activation/governed-inventory-2026-11-12.json --restore-destination .local/recovery-drills/cli-recoverable-20261112T132949Z",
+  "code_commit_sha": "2e0263e",
+  "reviewed_inventory_sha256": "ec7e8deb40bd284f3f8614db101bef9752130f2dc094feb260907e77560d445f"
+ },
+ "authorizes": [
+  "writing one new encrypted Restic snapshot to the enrolled NTC repository with read-back, repository check and isolated restore",
+  "staging the capture and isolated restore under .local"
+ ],
+ "explicitly_not_authorized": [
+  "changing .env or the Admin backup policy, or restarting services",
+  "pruning, forgetting or deleting any snapshot, staging or drill directory",
+  "claiming FULL_RECOVERY"
+ ]
+}
