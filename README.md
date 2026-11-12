@@ -200,7 +200,9 @@ make migrate
 make dev
 ```
 
-`make migrate` starts PostgreSQL and Redis and applies migrations. `make dev` runs the Go API with automatic restart and the Next.js dev server.
+`make migrate` starts PostgreSQL and Redis and applies migrations to `DATABASE_URL`. Run it only against a fresh local database or when the current owner decision authorizes a migration of the operating database. `make dev` runs the Go API with automatic restart and the Next.js dev server.
+
+`make dev`, the sync and backfill targets, `make forecast-refresh`, `make identity-check` and the crosswalk and history-audit targets never apply migrations. They run `make migrations-current`, which reads `goose status` and refuses to start while any migration is pending.
 
 - Web app: <http://127.0.0.1:3000>
 - API: <http://127.0.0.1:8080>
@@ -240,7 +242,8 @@ Every workflow goes through `make`. Run `make -n <target>` to see what a target 
 | Check the local environment | `make doctor` |
 | Start / stop PostgreSQL and Redis | `make up` / `make down` |
 | Remove containers and volumes | `make clean` |
-| Apply / inspect migrations | `make migrate` / `make migration-status` |
+| Apply / inspect migrations (apply needs authorization for the operating database) | `make migrate` / `make migration-status` |
+| Fail if migrations are pending (run by dev and sync targets) | `make migrations-current` |
 | Run API and web app with reload | `make dev` |
 | Run only the Go API with reload | `make dev-go` |
 | Format all languages | `make format` |
