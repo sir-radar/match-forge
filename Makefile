@@ -91,7 +91,7 @@ integration: build
 integration integration-check:
 	docker compose up -d --wait
 	./scripts/storage-integration.sh
-	./scripts/integration.sh
+	@if [ "$${INTEGRATION_SHARD:-all}" != browser ]; then ./scripts/integration.sh; fi
 
 postgres-restore-test: up
 	./scripts/storage-integration.sh

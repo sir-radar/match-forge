@@ -1,47 +1,47 @@
 # Continuous integration
 
 The [CI workflow](../.github/workflows/ci.yml) runs on pull requests and pushes to
-`main`. Classify changes runs `git diff --check`. Only pull requests whose
-entire diff is prose (`.md`, `.mdx`, `.rst`) skip the test jobs. Missing
-comparison commits and pushes to `main` run the full suite. Only newer revisions
-of the same pull request supersede a run.
+`main`. Classify changes runs `git diff --check`. Prose and documentation-only
+JSON can skip the test jobs. A missing comparison commit runs the full suite.
+Only newer revisions of the same pull request supersede a run.
 
 ```text
-Classify changes ─┬─ Python unit and coverage ────────────┬─ Deterministic checks
-                  └─ Build, integration and browser checks ┘
+Classify changes ─┬─ Python unit and coverage ──────────┬─ Deterministic checks
+                  └─ Build and static checks ─┬─────────┤
+                                             ├─ Integration (storage)
+                                             ├─ Integration (browser)
+                                             └─ Standalone browser and accessibility checks
 ```
 
-`Deterministic checks` keeps the same check name and verifies both job results.
-The Python job runs `make test-coverage` once with the same branch coverage
-floor. The other job runs the format, lint, architecture, project status,
-dependency audit, Rust/Go/frontend unit, and build checks. It builds the
-frontend once and uses it for both the live integration test and the standalone
-Playwright suite. The Ubuntu runners use the same pinned Python, Go and Rust
-toolchains as before; the Linux Rust channel override leaves the local macOS
-target in `rust-toolchain.toml` unchanged.
+`Deterministic checks` verifies that all required jobs succeed on code changes
+and skip on documentation-only changes. The Python job runs `make test-coverage`
+once with the existing branch coverage floor. The build job runs format, lint,
+architecture, project status, dependency audits, and the Rust, Go and frontend
+unit suites. It builds once and shares the API binaries, migration and backup
+tools, and frontend output as workflow artifacts for the same revision.
+
+The two integration jobs provision separate Compose stacks and disposable
+databases. [The integration test list](../scripts/storage-integration-tests.txt)
+assigns each Python test file to one job. Both replay migrations to verify that
+nothing remains pending. The storage job also runs Go database integration and
+the API smoke checks. The browser job runs the Python tests that launch
+Playwright against live data and installs only Chromium. The standalone job
+uses both Chromium and WebKit for the desktop, mobile and accessibility suite.
+Each integration job removes its Compose volumes after testing.
 
 For local verification, run `make check integration web-e2e` in one Make process
-so each build runs once. CI times the builds separately and then runs
-`make integration-check` against those binaries. The storage and Go API
-suites use separate disposable databases, and storage explicitly reruns
-migrations to verify that nothing remains pending. Keep those checks separate
-from the operating database. CI uses the pinned Compose images and removes
-its test volumes after the integration step.
+so each build runs once. The local integration target runs the full test list in
+its original order by default.
 
-The locked Playwright version supplies Chromium Headless Shell and WebKit for
-the existing desktop, mobile, and accessibility tests. System package and
-browser installation have separate timings and deadlines. The package deadline
-allows slow downloads like the two successful Nov 10 runs. DNS and stalled
-connections are bounded separately; incomplete package indexes fail the step.
-The small dependency advisory artifact still retains both audits for seven days.
+The locked Playwright version supplies Chromium Headless Shell and WebKit.
+System package and browser installation have separate timings and deadlines.
+APT fails on incomplete package indexes and bounds stalled connections. Both
+dependency audits remain in the seven-day advisory artifact.
 
-The uv package and Python caches, Go module/build/lint caches, pinned Go tool
-binaries, Rust build cache and pnpm store remain in use. Both jobs can restore
-uv caches; only the build/integration job publishes them. There is no database,
-credential, or frontend build cache. Browser binaries are downloaded on the
-runner: in the #194 baseline they took about 13 seconds, including a headed
-Chromium download the suite did not use. A browser cache would not remove the
-slower Ubuntu package work.
+The uv package and Python caches, Go module/build/lint caches, pinned Go tools,
+Rust build cache, and pnpm store remain in use. The build job publishes the uv
+and Go caches. Integration jobs restore those caches. Build artifacts are
+specific to each workflow run and contain no database state or credentials.
 
 The authoritative `make sprint2-evaluate` remains separate. CI does not change
 the retained Sprint 2 `FAIL` or authorize Phase 3.
@@ -158,7 +158,7 @@ Rust/Go/frontend unit 40s/90s; build 60s/100s; isolated integration 10m/12m;
 standalone browser 95s/130s; longest job queue 10s/60s. They leave room for
 recent comparable stage durations and flag large changes without bypassing
 a test. A median warning needs five samples; a p95 needs ten. Wall and queue
-budgets use first-attempt successes with the new job layout; the report
+budgets use first-attempt successes with either split-job layout; the report
 counts reruns and failures separately.
 
 To investigate a warning, compare the same event, job, test scope and cache
