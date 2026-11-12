@@ -1,0 +1,70 @@
+{
+ "contract": "RecoverableBackupVerificationV1",
+ "recorded_at": "2026-11-12T15:10:00Z",
+ "decision_id": "AUTHORIZE_RECOVERABLE_CLI_BACKUP_V1",
+ "decision_ref": "docs/evidence/owner-decision-authorize-recoverable-cli-backup-2026-11-12.json",
+ "database": {
+  "name": "football",
+  "oid": 16384,
+  "goose_version": 202611120200
+ },
+ "inventory": {
+  "unavailable": 0,
+  "unavailable_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "excluded": 159,
+  "excluded_sha256": "5043306f0e0c58ce609018f8de300b9d1002615228c82cd3ba987db7dea6b92d",
+  "reviewed_inventory_sha256": "ec7e8deb40bd284f3f8614db101bef9752130f2dc094feb260907e77560d445f"
+ },
+ "run": {
+  "started_at": "2026-11-12T13:30:17Z",
+  "finished_at": "2026-11-12T14:53:31Z",
+  "code_commit_sha": "2e0263e",
+  "path": "command line (not recorded in Admin backup history; does not reset the Admin reminder)"
+ },
+ "result": {
+  "status": "VERIFIED_RECOVERABLE",
+  "scope": "RECOVERABLE_ONLY",
+  "verified": true,
+  "full_recovery": false,
+  "snapshot_id": "bb97d6fddd7898d3c3adf6e779e29014a04a66cc886d22ee4adb3ff6d7c693f0",
+  "unavailable_dependencies": 0,
+  "captured_at": "2026-11-12T13:31:46.054303+00:00",
+  "verified_at": "2026-11-12T14:53:00.854778+00:00",
+  "logical_bytes": 31531204788,
+  "data_added_packed_bytes": 479318609,
+  "repository_file_bytes": 8521202806,
+  "volume_free_space_change_bytes": 17375166464,
+  "capture_seconds": 2107.9723158340203,
+  "volume_uuid": "988F99A7-D7C1-329C-9AFF-941D5D8B934C",
+  "repository_id": "44aa85e3bbbf737d5852d9b7666ca84d8260b8027e318b32067d278878d4c0b8"
+ },
+ "restore_drill": {
+  "status": "PASS_RECOVERABLE",
+  "full_recovery": false,
+  "unavailable_dependencies": 0,
+  "database_isolated": true,
+  "duration_seconds": 1690.6671528340084,
+  "global_role_restore": "NOT_RUN: apply globals only to a new isolated cluster"
+ },
+ "independent_checks": {
+  "restic_tag": "matchforge-recoverable-verified",
+  "snapshot_listed": "bb97d6fd",
+  "retained_points": [
+   "42ada89c",
+   "64e8a642",
+   "b0cc2b85",
+   "0a1122d8",
+   "d05c5e8a",
+   "525f90fe",
+   "2f0a6cf3"
+  ],
+  "repository_locks": 0,
+  "drill_verification_json": "PASS_RECOVERABLE"
+ },
+ "classification": "VERIFIED_RECOVERABLE",
+ "full_recovery_verified": false,
+ "full_recovery_blocker": "A FULL_RECOVERY capture enumerates every registration, including the 159 governed exclusions (145 missing files, 33 unresolved), so it fails by design. VERIFIED_GOVERNED_SCOPE is proposed separately.",
+ "retained": [
+  ".local/recovery-drills/cli-recoverable-20261112T132949Z (9.3 GB isolated restore)"
+ ]
+}
