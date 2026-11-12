@@ -1,0 +1,175 @@
+{
+ "contract": "P02ContextReportBackfillEvidenceV1",
+ "recorded_at": "2026-11-11T21:19:08Z",
+ "decision_id": "AUTHORIZE_UNIFIED_P02_DATA_INTEGRITY_IMPLEMENTATION_V1",
+ "branch": "ft/p02-remediation",
+ "environment": "Restored copy football_p02_rehearsal_2 after the replay v2 rehearsal recorded in p02-remediation-rehearsal-2-2026-11-11.json. The operating database was not written.",
+ "command": "python -m football.product.cli refresh-context-reports --enqueue-pre-policy 20000 --drain-seconds 3300 (repeated)",
+ "batches": [
+  {
+   "pre_policy_after": 223631,
+   "pre_policy_before": 243631,
+   "queued": 20000,
+   "published": 20000,
+   "failed": 0
+  },
+  {
+   "pre_policy_after": 203631,
+   "pre_policy_before": 223631,
+   "queued": 20000,
+   "published": 20000,
+   "failed": 0
+  },
+  {
+   "pre_policy_after": 183631,
+   "pre_policy_before": 203631,
+   "queued": 20000,
+   "published": 20000,
+   "failed": 0
+  },
+  {
+   "pre_policy_after": 163631,
+   "pre_policy_before": 183631,
+   "queued": 20000,
+   "published": 20000,
+   "failed": 0
+  },
+  {
+   "pre_policy_after": 143631,
+   "pre_policy_before": 163631,
+   "queued": 20000,
+   "published": 20000,
+   "failed": 0
+  },
+  {
+   "pre_policy_after": 123631,
+   "pre_policy_before": 143631,
+   "queued": 20000,
+   "published": 20000,
+   "failed": 0
+  },
+  {
+   "pre_policy_after": 103631,
+   "pre_policy_before": 123631,
+   "queued": 20000,
+   "published": 20000,
+   "failed": 0
+  },
+  {
+   "pre_policy_after": 83631,
+   "pre_policy_before": 103631,
+   "queued": 20000,
+   "published": 20000,
+   "failed": 0
+  },
+  {
+   "pre_policy_after": 63631,
+   "pre_policy_before": 83631,
+   "queued": 20000,
+   "published": 20000,
+   "failed": 0
+  },
+  {
+   "pre_policy_after": 43631,
+   "pre_policy_before": 63631,
+   "queued": 20000,
+   "published": 20000,
+   "failed": 0
+  },
+  {
+   "pre_policy_after": 23631,
+   "pre_policy_before": 43631,
+   "queued": 20000,
+   "published": 20000,
+   "failed": 0
+  },
+  {
+   "pre_policy_after": 3631,
+   "pre_policy_before": 23631,
+   "queued": 20000,
+   "published": 20000,
+   "failed": 0
+  },
+  {
+   "pre_policy_after": 0,
+   "pre_policy_before": 3631,
+   "queued": 3631,
+   "published": 3631,
+   "failed": 0
+  }
+ ],
+ "reports_rebuilt": 243631,
+ "failures": 0,
+ "seconds": 8023,
+ "after": {
+  "latest_context_reports": 257823,
+  "latest_without_form_object": 1,
+  "queue_pending": 0,
+  "queue_failing": 0,
+  "note": "The one remaining report without form belongs to a fixture that is no longer in product_fixtures, so it cannot be rebuilt; the audit counts it as fixture_missing."
+ },
+ "preservation": {
+  "script": "scripts/p02/preservation.sql",
+  "after_apply": {
+   "forecast_artifacts": {
+    "rows": 9990,
+    "md5": "317463b5f4d1c244cfb838f6ef278008"
+   },
+   "forecasts": {
+    "rows": 18750,
+    "md5": "c563fc0667251e53ea43c31bdf63e55a"
+   },
+   "history_decisions": {
+    "rows": 875104,
+    "md5": "36f78b47260f08bf0a95a066ecf24400"
+   },
+   "identity_conflicts_other_stages": {
+    "rows": 2038,
+    "md5": "ee36da3d5039cb802c667e5af1fc00ca"
+   },
+   "model_forecasts": {
+    "rows": 0,
+    "md5": null
+   },
+   "read_reports": {
+    "rows": 310487,
+    "md5": "64d12148a377117dfde68d7bc691144d"
+   },
+   "source_snapshots": {
+    "rows": 83360,
+    "md5": "cc159cb97e6e16a060ffc767f2d8a958"
+   }
+  },
+  "after_backfill": {
+   "forecast_artifacts": {
+    "rows": 9990,
+    "md5": "317463b5f4d1c244cfb838f6ef278008"
+   },
+   "forecasts": {
+    "rows": 18750,
+    "md5": "c563fc0667251e53ea43c31bdf63e55a"
+   },
+   "history_decisions": {
+    "rows": 875104,
+    "md5": "36f78b47260f08bf0a95a066ecf24400"
+   },
+   "identity_conflicts_other_stages": {
+    "rows": 2038,
+    "md5": "ee36da3d5039cb802c667e5af1fc00ca"
+   },
+   "model_forecasts": {
+    "rows": 0,
+    "md5": null
+   },
+   "read_reports": {
+    "rows": 310487,
+    "md5": "64d12148a377117dfde68d7bc691144d"
+   },
+   "source_snapshots": {
+    "rows": 83360,
+    "md5": "cc159cb97e6e16a060ffc767f2d8a958"
+   }
+  },
+  "status": "UNCHANGED"
+ }
+}

@@ -199,7 +199,8 @@ Recorded for later tickets, not built in P02:
   get a typed scope instead of the name rule in `product_competition_scope`.
 - **P09-01:** acquire the missing fixtures the audit and seed traces found
   (for example 1 Lyga 17 Oct 2026 Minija v Babrungas) under existing
-  acquisition authority; standings, H2H, statistics, live events and lineups
+  acquisition authority, as a dataset-wide, predicate-driven programme
+  ([proposed executable plan](p09-01-historical-completeness-plan.md)); standings, H2H, statistics, live events and lineups
   remain `NOT_AUDITED` until a domain check exists.
 
 ## Phase 3 — Backend live synchronization and fairness

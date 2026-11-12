@@ -22,7 +22,7 @@ Every file marked *proposed* under `docs/` is a proposal, not an approval. A sta
 
 - [PLAN.md](../PLAN.md): the control-plane roadmap and gate sequence.
 - [Post-redesign product roadmap (F0–F11)](../MatchForge_Post_Redesign_Extensible_Football_Product_Implementation_Plan_v2_2026-11-09.md): follow-on product work. It sits under PLAN.md's gates and needs its own task authorization.
-- [Unified architecture investigation](architecture/unified-redesign-2026-11-10/README.md): planning recommendations from 10 November, with its [roadmap](architecture/unified-redesign-2026-11-10/roadmap.md) and [ADR 0005](adr/0005-unified-architecture-evolution.md).
+- [Unified architecture investigation](architecture/unified-redesign-2026-11-10/README.md): planning recommendations from 10 November, with its [roadmap](architecture/unified-redesign-2026-11-10/roadmap.md), the proposed [P09-01 historical-completeness plan](architecture/unified-redesign-2026-11-10/p09-01-historical-completeness-plan.md) and [ADR 0005](adr/0005-unified-architecture-evolution.md).
 - [Full phase deliverables](roadmap/implementation-phases.md) and [immediate backlog](roadmap/immediate-backlog.md): sections extracted from the original plan.
 
 ## Architecture / data
@@ -50,12 +50,12 @@ Every file marked *proposed* under `docs/` is a proposal, not an approval. A sta
 - [Research programme and model ladder](models/feature-research.md), [calibration](models/calibration-policy.md)
 - [Phase 3A minimal xG draft pre-registration](governance/phase3a-minimal-xg-preregistration.md)
 - [Portfolio dependency table](governance/feature-portfolio.md), [feasibility notes](governance/feasibility-matrix.md), [experiment ledger template](governance/experiment-register.md)
-- [Decision record template](governance/decision-record-template.md), [decision events directory](governance/decision-events/README.md), [minimal Rust authorization proposal](governance/simulation-authorization-proposal.md)
+- [Decision record template](governance/decision-record-template.md), [decision events directory](governance/decision-events/README.md), [minimal Rust authorization proposal](governance/simulation-authorization-proposal.md), [P02 forecast re-evaluation proposal](governance/p02-forecast-reevaluation-proposal.md)
 - PitchAPI protocol policies: [retrospective V1](evaluation/pitchapi-retrospective-evaluation-v1-policy.md), [domain-stratified V2 metrics](evaluation/pitchapi-domain-stratified-evaluation-v2-metrics.md), Rust policies for [V2](simulation/pitchapi-domain-stratified-v2-rust-policy-proposal.md), [V3](simulation/pitchapi-domain-stratified-v3-rust-policy.md) and [V4](simulation/pitchapi-domain-stratified-v4-rust-policy.md)
 
 ## Simulation, delivery and operations
 
-- [Mandatory validation policy](simulation/mandatory-validation.md), [publication state machine](simulation/publication-state-machine.md), [failure runbook](operations/runbooks/simulation-failure.md)
+- [Mandatory validation policy](simulation/mandatory-validation.md), [publication state machine](simulation/publication-state-machine.md), [failure runbook](operations/runbooks/simulation-failure.md), [P02 history re-qualification runbook](operations/runbooks/p02-history-requalification.md)
 - [OpenAPI for the MVP API](api/openapi.yaml), [compatibility/privacy](api/compatibility-policy.md), [superseded original API illustration](api/future-api-illustration.md), [frontend API requirements](frontend/api-requirements.md)
 - [Capabilities and enablement](operations/capability-registry.md), [rollback](operations/rollback-policy.md), [monitoring](operations/forecast-monitoring.md)
 - [P0 storage protection and recovery evidence](operations/storage-protection-2026-11-11.md)

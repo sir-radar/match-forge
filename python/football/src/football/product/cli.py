@@ -40,6 +40,8 @@ from football.product.openfootball import run_backfill as run_openfootball_backf
 from football.product.operational_provider_sync import OperationalProviderSync
 from football.product.provider_history_scopes import discover_fotmob, discover_pitchapi, run_scopes
 from football.product.public_reports import (
+    drain_context_reports,
+    enqueue_pre_policy_context_reports,
     report_provenance,
     run_pending_context_reports,
     run_pending_public_reports,
@@ -105,11 +107,29 @@ def build_parser() -> argparse.ArgumentParser:
     )
     context_reports.add_argument("--limit", type=int, default=32)
     context_reports.add_argument("--lease-seconds", type=int, default=120)
+    context_reports.add_argument(
+        "--enqueue-pre-policy",
+        type=int,
+        default=0,
+        help="first queue up to N fixtures whose latest context report predates the form policy",
+    )
+    context_reports.add_argument(
+        "--drain-seconds",
+        type=float,
+        default=0,
+        help="repeat the worker until the queue is empty or this many seconds pass",
+    )
     public_reports = commands.add_parser(
         "refresh-public-reports", help="publish queued public reports"
     )
     public_reports.add_argument("--limit", type=int, default=32)
     public_reports.add_argument("--lease-seconds", type=int, default=120)
+    public_reports.add_argument(
+        "--data-root",
+        type=Path,
+        default=Path(os.environ.get("FOOTBALL_DATA_ROOT", ".local/football-data")),
+        help="retained responses used to repair missed history qualification",
+    )
     binding = commands.add_parser("external-binding-review")
     binding.add_argument("--prediction-id", type=UUID, required=True)
     binding.add_argument("--mapping-id", type=UUID, required=True)
@@ -375,6 +395,41 @@ def _run_work_metrics(args: argparse.Namespace) -> int:
     return 0
 
 
+def _run_reports(connection: psycopg.Connection[Any], args: argparse.Namespace) -> dict[str, Any]:
+    code_commit_sha, dependency_lock_sha256 = report_provenance(os.environ)
+    worker = (
+        run_pending_public_reports
+        if args.command == "refresh-public-reports"
+        else run_pending_context_reports
+    )
+    options: dict[str, Any] = {}
+    if args.command == "refresh-public-reports":
+        options["data_root"] = args.data_root
+    backfill: dict[str, Any] = {}
+    if args.command == "refresh-context-reports" and args.enqueue_pre_policy:
+        backfill = enqueue_pre_policy_context_reports(connection, args.enqueue_pre_policy)
+    if args.command == "refresh-context-reports" and args.drain_seconds > 0:
+        result = drain_context_reports(
+            connection,
+            seconds=args.drain_seconds,
+            lease_duration=timedelta(seconds=args.lease_seconds),
+            code_commit_sha=code_commit_sha,
+            dependency_lock_sha256=dependency_lock_sha256,
+        )
+    else:
+        result = worker(
+            connection,
+            limit=args.limit,
+            lease_duration=timedelta(seconds=args.lease_seconds),
+            code_commit_sha=code_commit_sha,
+            dependency_lock_sha256=dependency_lock_sha256,
+            **options,
+        )
+    if backfill:
+        result["backfill"] = backfill
+    return result
+
+
 def _run_data_operation(args: argparse.Namespace) -> int:
     try:
         with psycopg.connect(args.database_url) as connection:
@@ -397,19 +452,7 @@ def _run_data_operation(args: argparse.Namespace) -> int:
             elif args.command == "history-coverage":
                 result = history_coverage(connection)
             elif args.command in ("refresh-context-reports", "refresh-public-reports"):
-                code_commit_sha, dependency_lock_sha256 = report_provenance(os.environ)
-                worker = (
-                    run_pending_public_reports
-                    if args.command == "refresh-public-reports"
-                    else run_pending_context_reports
-                )
-                result = worker(
-                    connection,
-                    limit=args.limit,
-                    lease_duration=timedelta(seconds=args.lease_seconds),
-                    code_commit_sha=code_commit_sha,
-                    dependency_lock_sha256=dependency_lock_sha256,
-                )
+                result = _run_reports(connection, args)
             elif args.command == "backfill-history":
                 result = _history_backfill(connection, args)
             else:

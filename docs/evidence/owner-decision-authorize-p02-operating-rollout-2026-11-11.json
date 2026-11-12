@@ -1,0 +1,38 @@
+{
+ "contract": "OwnerDecisionRecordV1",
+ "decision_id": "AUTHORIZE_P02_OPERATING_ROLLOUT_V1",
+ "recorded_at": "2026-11-11T21:50:00Z",
+ "title": "Apply the P02 re-qualification runbook to the operating database",
+ "status": "APPROVED",
+ "owner": "repository owner / sir-radar",
+ "map": "unified-architecture-redesign",
+ "ticket": "P02-01, P02-02",
+ "source": {
+  "execution_instruction": "Owner answer 'Approve rollout' in this session to the question 'Approve applying the runbook to the operating database?', after the second rehearsal on a restored copy was reported",
+  "runbook": "docs/operations/runbooks/p02-history-requalification.md",
+  "rehearsal_evidence": [
+   "docs/evidence/p02-remediation-rehearsal-2-2026-11-11.json",
+   "docs/evidence/p02-context-report-backfill-2026-11-11.json"
+  ],
+  "code_git_sha": "ab39f71de1deff346ea3f6f472887b6895ffe98a"
+ },
+ "authorizes": [
+  "a manual admin backup and a logical dump with a verified restore check before any operating write",
+  "pausing scheduled writers by stopping the API process for the rollout window",
+  "migration 202611110100_form_policy_source on the operating database",
+  "history_requalification p02-history-requalification-v2 (dry run, then apply) on the operating database",
+  "restarting the API on the ft/p02-remediation build and rebuilding context reports through the existing worklist and the paced pre-policy backfill",
+  "the integrity audit and affected-forecast inventory on the operating database after the apply"
+ ],
+ "requires": [
+  "the stop conditions of the runbook: unchanged preservation hashes, no missing or mismatched retained files, no apply errors, and a reconciled set and qualified count equal to the dry run",
+  "no change to any published forecast, artifact, read report or prior history decision"
+ ],
+ "explicitly_not_authorized": [
+  "editing, superseding, hiding or re-scoring forecasts, or populating the Option B annotation (separate decision)",
+  "provider acquisition, identity admissions or resolutions, and the P09-01 phases",
+  "model training, promotion or retirement",
+  "merging pull requests 190 or 191"
+ ],
+ "supersession": "Lifts, for this runbook only, the operating-write exclusion of AUTHORIZE_UNIFIED_P02_DATA_INTEGRITY_IMPLEMENTATION_V1. All its other exclusions stay in force."
+}

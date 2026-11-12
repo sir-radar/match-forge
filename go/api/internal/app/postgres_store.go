@@ -316,10 +316,16 @@ func (store *PostgresProductStore) FixtureContext(ctx context.Context, fixtureID
         FROM football.product_fixtures f
         CROSS JOIN LATERAL (SELECT football.public_context_source_v2(f.fixture_id) AS value) source
         LEFT JOIN LATERAL (
+            -- A form-policy-v1 report for the current source wins. Until one is
+            -- rebuilt, the report for the current pre-policy source is served;
+            -- it has no form object and reports RECENT_FORM_POLICY_UNKNOWN.
             SELECT r.record_bytes,r.record_sha256 FROM football.product_read_reports r
             WHERE r.report_kind='CONTEXT' AND r.scope_id=f.fixture_id AND r.horizon='LATEST'
-              AND r.source_fingerprint=encode(sha256(convert_to(source.value::text,'UTF8')),'hex')
-            ORDER BY r.source_observed_at DESC,r.registered_at DESC,r.input_sha256 LIMIT 1
+              AND r.source_fingerprint IN (
+                  encode(sha256(convert_to(source.value::text,'UTF8')),'hex'),
+                  encode(sha256(convert_to(football.public_context_source(f.fixture_id)::text,'UTF8')),'hex'))
+            ORDER BY r.source_fingerprint=encode(sha256(convert_to(source.value::text,'UTF8')),'hex') DESC,
+                     r.source_observed_at DESC,r.registered_at DESC,r.input_sha256 LIMIT 1
         ) report ON true WHERE f.fixture_id=$1::uuid`, fixtureID).Scan(
 		&competitionID, &kickoffAt, &knowledgeCutoff, &payload, &digest)
 	if err != nil {

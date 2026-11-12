@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from typing import Any, cast
 from uuid import UUID
+
+from psycopg.errors import RaiseException
 
 from football.product.api_football import (
     context_capability,
@@ -33,6 +36,8 @@ from football.product.sync_support import (
     _season_date_bounds,
 )
 from football.storage.locks import IDENTITY_ADMISSION_LOCK, acquire_locks
+
+_IDENTITY_CONFLICT = "unresolved canonical fixture identity conflict at team/timestamp"
 
 
 class ProductStorageMixin(ProductIdentityMixin):
@@ -267,8 +272,10 @@ class ProductStorageMixin(ProductIdentityMixin):
             status = fixture_status(provider_status)
             score_basis = _api_football_score_basis(provider_status)
             goals = _mapping(row, "goals")
-            home_score = goals.get("home") if status == "FINISHED" else None
-            away_score = goals.get("away") if status == "FINISHED" else None
+            # An awarded result keeps the awarded score; form marks it as awarded.
+            scored = status in {"FINISHED", "AWARDED"}
+            home_score = goals.get("home") if scored else None
+            away_score = goals.get("away") if scored else None
             with self.connection.cursor() as cursor:
                 cursor.execute(
                     """
@@ -443,7 +450,7 @@ class ProductStorageMixin(ProductIdentityMixin):
         later score from the same provider replaces the row; the append-only
         decisions keep the earlier value for earlier cutoffs.
         """
-        count = 0
+        count = conflicts = 0
         leagues: set[object] = set()
         with self.connection.cursor() as cursor:
             for row in fixtures:
@@ -456,42 +463,127 @@ class ProductStorageMixin(ProductIdentityMixin):
                 cursor.execute(
                     """
                     SELECT pf.fixture_id, pf.competition_id, pf.home_team_id, pf.away_team_id,
-                           pf.kickoff_at, pf.home_score, pf.away_score
+                           pf.kickoff_at, pf.home_score, pf.away_score,
+                           h.source_provider_code = %s
+                               AND (h.home_goals, h.away_goals)
+                                   IS DISTINCT FROM (pf.home_score, pf.away_score)
+                               OR h.fixture_id IS NULL AS needs_write
                     FROM football.product_fixtures pf
                     JOIN football.match_provider_mappings mpm ON mpm.match_id = pf.fixture_id
                     JOIN football.providers p ON p.id = mpm.provider_id
+                    LEFT JOIN football.product_team_match_history h
+                      ON h.fixture_id = pf.fixture_id
                     WHERE p.code = %s AND mpm.provider_match_id = %s
                       AND mpm.valid_to IS NULL
                       AND (mpm.valid_from IS NULL OR mpm.valid_from <= clock_timestamp())
                     """,
-                    (PROVIDER_CODE, provider_fixture_id),
+                    (PROVIDER_CODE, PROVIDER_CODE, provider_fixture_id),
                 )
                 stored = cursor.fetchone()
-                if stored is None or stored[5] is None or stored[6] is None:
+                goals = _mapping(row, "goals")
+                # The cited snapshot must itself show the stored score; a replayed
+                # older response never re-qualifies a score corrected since.
+                if (
+                    stored is None
+                    or stored[5] is None
+                    or (goals.get("home"), goals.get("away")) != (stored[5], stored[6])
+                ):
                     continue
-                cursor.execute(
-                    """
-                    INSERT INTO football.product_team_match_history (
-                        fixture_id, competition_id, home_team_id, away_team_id, kickoff_at,
-                        home_goals, away_goals, source_provider_code, source_snapshot_id
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    ON CONFLICT (fixture_id) DO UPDATE SET
-                        home_goals = EXCLUDED.home_goals, away_goals = EXCLUDED.away_goals,
-                        source_snapshot_id = EXCLUDED.source_snapshot_id
-                    WHERE football.product_team_match_history.source_provider_code
-                            = EXCLUDED.source_provider_code
-                      AND (football.product_team_match_history.home_goals,
-                           football.product_team_match_history.away_goals)
-                          IS DISTINCT FROM (EXCLUDED.home_goals, EXCLUDED.away_goals)
-                    """,
-                    (*stored[:7], PROVIDER_CODE, snapshot_id),
-                )
+                # The insert below would be a no-op: history already holds this
+                # score, or holds another provider's row that this one never
+                # replaces. Skipping it avoids a savepoint per row on replays.
+                if not stored[7]:
+                    continue
+                try:
+                    with self.connection.transaction():
+                        cursor.execute(
+                            """
+                            INSERT INTO football.product_team_match_history (
+                                fixture_id, competition_id, home_team_id, away_team_id, kickoff_at,
+                                home_goals, away_goals, source_provider_code, source_snapshot_id
+                            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                            ON CONFLICT (fixture_id) DO UPDATE SET
+                                home_goals = EXCLUDED.home_goals, away_goals = EXCLUDED.away_goals,
+                                source_snapshot_id = EXCLUDED.source_snapshot_id
+                            WHERE football.product_team_match_history.source_provider_code
+                                    = EXCLUDED.source_provider_code
+                              AND (football.product_team_match_history.home_goals,
+                                   football.product_team_match_history.away_goals)
+                                  IS DISTINCT FROM (EXCLUDED.home_goals, EXCLUDED.away_goals)
+                            """,
+                            (*stored[:7], PROVIDER_CODE, snapshot_id),
+                        )
+                except RaiseException as error:
+                    if str(error).partition("\n")[0] != _IDENTITY_CONFLICT:
+                        raise
+                    self._record_history_identity_conflict(row, stored, snapshot_id, observed_at)
+                    conflicts += 1
+                    continue
                 if cursor.rowcount:
                     count += 1
                     leagues.add(_mapping(row, "league").get("id"))
         if leagues:
             self._mark_context_available(leagues, observed_at)
+        self.history_identity_conflicts += conflicts
         return count
+
+    def _record_history_identity_conflict(
+        self,
+        row: Mapping[str, Any],
+        stored: Sequence[Any],
+        snapshot_id: UUID,
+        observed_at: datetime,
+    ) -> None:
+        """Hand a same-team, same-kickoff collision to the existing identity review."""
+        fixture_id, _competition, home_id, away_id, kickoff, home_goals, away_goals = stored[:7]
+        existing = [
+            item[0]
+            for item in self.connection.execute(
+                """SELECT fixture_id FROM football.product_team_match_history
+                   WHERE fixture_id<>%s AND kickoff_at=%s
+                     AND (home_team_id IN (%s,%s) OR away_team_id IN (%s,%s))
+                   ORDER BY fixture_id""",
+                (fixture_id, kickoff, home_id, away_id, home_id, away_id),
+            ).fetchall()
+        ]
+        if not existing:
+            return
+        provider_match_id = str(_integer(_mapping(row, "fixture"), "id"))
+        facts = {
+            "fixture_id": str(fixture_id),
+            "kickoff_at": kickoff.astimezone(UTC).isoformat(),
+            "home_goals": home_goals,
+            "away_goals": away_goals,
+            "stage": "HISTORY_QUALIFICATION",
+        }
+        digest = hashlib.sha256(
+            json.dumps(
+                [
+                    PROVIDER_CODE,
+                    provider_match_id,
+                    str(snapshot_id),
+                    sorted(map(str, existing)),
+                    facts,
+                ],
+                sort_keys=True,
+            ).encode()
+        ).hexdigest()
+        self.connection.execute(
+            """INSERT INTO football.fixture_identity_ingestion_conflicts
+               (conflict_sha256,provider_code,provider_match_id,source_snapshot_id,
+                existing_fixture_ids,conflict_reason,incoming_facts,created_at)
+               VALUES (%s,%s,%s,%s,%s,'TEAM_TIMESTAMP_CONFLICT',%s::jsonb,%s)
+               ON CONFLICT (conflict_sha256) DO NOTHING""",
+            (
+                digest,
+                PROVIDER_CODE,
+                provider_match_id,
+                snapshot_id,
+                existing,
+                json.dumps(facts, sort_keys=True),
+                observed_at,
+            ),
+        )
 
     def _store_fallback_history(
         self,

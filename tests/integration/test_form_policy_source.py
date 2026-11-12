@@ -18,7 +18,10 @@ from tests.integration.test_live_context import (
     FIXTURE,
     HOME,
     KICKOFF,
+    OBSERVED,
     SEASON,
+    SNAPSHOT,
+    _insert_forecast,
     _seed_fixture,
 )
 from tests.integration.test_public_reports import build
@@ -205,6 +208,19 @@ def test_audit_is_read_only_resumable_and_matches_served_form(
     summary = run(database, tmp_path, batch_size=1, time_limit=600, max_batches=None)
     assert summary["complete"] and summary["audited_fixtures"] == 1
     assert summary["form_sides"]["MATCHING"] == 2
+    # The report is built from the v2 source and serves an awarded, not yet
+    # eligible result; it must count as current and traceable.
+    assert summary["form_sides"]["report_current"] == 1
+    assert summary["form_sides"]["report_source_v2"] == 1
+    assert summary["form_sides"]["served_untraceable"] == 0
+    freshness = summary["domains"]["report_freshness"]
+    assert freshness["context_reports_current"] == 1
+    assert freshness["served_from_pre_policy_source_v1"] == 0
+    assert summary["domains"]["forecast_correctness"]["published"] >= 0
+    assert (
+        "api_football_regulation_90_without_history_by_cause"
+        in (summary["domains"]["reconciliation_correctness"])
+    )
     assert summary["population"]["context_fixtures"] == 1
     assert "standings" in summary["corpus"]["not_audited"]
     with psycopg.connect(database) as connection:
@@ -212,3 +228,81 @@ def test_audit_is_read_only_resumable_and_matches_served_form(
             "SELECT count(*), max(registered_at) FROM football.product_read_reports"
         ).fetchone()
     assert before == after
+
+
+def test_league_coverage_lists_absent_pairings_only_for_near_complete_seasons(
+    database: str,
+) -> None:
+    from football.product.integrity_audit import league_coverage
+
+    extra = UUID(int=8210)
+    with psycopg.connect(database) as connection:
+        connection.execute("INSERT INTO football.teams (id) VALUES (%s)", (extra,))
+        connection.execute(
+            "INSERT INTO football.product_teams (team_id,name,updated_at) "
+            "VALUES (%s,'Extra',now())",
+            (extra,),
+        )
+        connection.execute(
+            """UPDATE football.product_fixtures SET status='CANCELLED',home_score=NULL,
+               away_score=NULL WHERE competition_id=%s AND fixture_id<>%s""",
+            (COMPETITION, FIXTURE),
+        )
+        teams = (HOME, AWAY, OTHER, extra)
+        number = 20
+        for home in teams:
+            for away in teams:
+                if home == away or (home, away) in ((HOME, AWAY), (OTHER, extra)):
+                    continue
+                number += 1
+                _fixture(connection, number, number, "FINISHED", (1, 0), home=home, away=away)
+        summary, records = league_coverage(connection)
+    season = next(row for row in records if row["competition_id"] == str(COMPETITION))
+    # HOME v AWAY exists as the scheduled target; OTHER v Extra is absent.
+    assert season["state"] == "CANDIDATE_MISSING_MATCHES"
+    assert season["missing_pairings"] == [[str(OTHER), str(extra)]]
+    assert summary["candidate_missing_matches"] == 1
+
+
+def test_affected_forecasts_count_only_results_known_before_the_cutoff(database: str) -> None:
+    from uuid import uuid4
+
+    from football.product.integrity_audit import affected_forecasts
+
+    forecast = uuid4()
+    with psycopg.connect(database) as connection:
+        _insert_forecast(connection, forecast, "a" * 64, "b" * 64)
+        start = connection.execute("SELECT clock_timestamp()").fetchone()[0]
+        for number, known in (
+            (1, OBSERVED - timedelta(days=1)),
+            (3, OBSERVED + timedelta(hours=1)),
+        ):
+            connection.execute(
+                """INSERT INTO football.product_match_history_decisions
+                   (fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,home_goals,
+                    away_goals,source_provider_code,source_snapshot_id,source_kickoff_precision,
+                    eligible,reason,source_known_at)
+                   SELECT fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,
+                          home_score,away_score,'live_context_test',%s,'EXACT',true,
+                          'synthetic requalification',%s
+                   FROM football.product_fixtures WHERE fixture_id=%s""",
+                (SNAPSHOT, known, UUID(int=8300 + number)),
+            )
+        rows = affected_forecasts(connection, start)
+    assert [(row["forecast_id"], row["missing_results"]) for row in rows] == [(str(forecast), 1)]
+    assert rows[0]["missing_fixture_ids"] == [str(UUID(int=8301))]
+
+
+def test_pre_policy_backfill_queues_only_reports_without_form(database: str) -> None:
+    from football.product.public_reports import enqueue_pre_policy_context_reports
+
+    assert build(database, "CONTEXT", FIXTURE)["published"] == 1
+    with psycopg.connect(database) as connection:
+        # The only report was built from the v2 source, so nothing is queued.
+        assert enqueue_pre_policy_context_reports(connection, 10) == {
+            "queued": 0,
+            "pre_policy_before": 0,
+            "pre_policy_after": 0,
+        }
+        with pytest.raises(ValueError):
+            enqueue_pre_policy_context_reports(connection, 0)
