@@ -99,27 +99,36 @@ func PolicyFromEnvironment(getenv func(string) string) (Policy, error) {
 // Like the Python guard, it allows this run's marked database and databases created
 // during the run (tagged as owned, or absent from the pre-run OID list).
 func (policy Policy) Rejection(identity Identity) string {
-	label := fmt.Sprintf("database %q (%s:%d)", identity.Name, identity.SystemIdentifier, identity.OID)
-	marked := identity.Comment != nil && *identity.Comment == Marker(policy.Token)
+	key := fmt.Sprintf("%s:%d", identity.SystemIdentifier, identity.OID)
+	label := fmt.Sprintf("database %q (%s)", identity.Name, key)
+	marked := identity.comment() == Marker(policy.Token)
 	// Storage tests run VerifyAuthority against the run's own database, which records it
 	// as authoritative in its own registry. Only that prepared identity, still carrying
 	// this run's marker, is exempt; a copied marker elsewhere is refused.
-	prepared := marked && policy.Prepared != "" &&
-		policy.Prepared == fmt.Sprintf("%s:%d", identity.SystemIdentifier, identity.OID)
+	prepared := marked && policy.Prepared != "" && policy.Prepared == key
 	switch {
 	case identity.SelfAuthoritative && !prepared:
 		return label + " is registered as the authoritative operating database"
-	case policy.Protected[fmt.Sprintf("%s:%d", identity.SystemIdentifier, identity.OID)]:
+	case policy.Protected[key]:
 		return label + " is a protected database identity"
 	case identity.SystemIdentifier != policy.Cluster:
 		return label + " is on a cluster this test run did not verify"
-	case marked:
-	case identity.Comment != nil && *identity.Comment == OwnedMarker(policy.Token):
-	case !policy.Preexisting[identity.OID]:
-	default:
+	case !marked && !policy.createdDuringRun(identity):
 		return label + " is not marked disposable for this test run"
 	}
 	return ""
+}
+
+// createdDuringRun reports a database the Python guard tagged, or one absent before.
+func (policy Policy) createdDuringRun(identity Identity) bool {
+	return identity.comment() == OwnedMarker(policy.Token) || !policy.Preexisting[identity.OID]
+}
+
+func (identity Identity) comment() string {
+	if identity.Comment == nil {
+		return ""
+	}
+	return *identity.Comment
 }
 
 const identitySQL = `
