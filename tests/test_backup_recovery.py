@@ -1,3 +1,4 @@
+import hashlib
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -56,8 +57,11 @@ def test_application_restore_keeps_retained_evidence_and_rejects_links(tmp_path:
     restore_application(tmp_path, repository)
     assert (repository / "scripts/tool").read_bytes() == b"code"
     (repository / "existing").write_bytes(b"retained different evidence")
-    with pytest.raises(ValueError, match="conflicts"):
-        restore_application(tmp_path, repository)
+    relocated = restore_application(tmp_path, repository)
+    digest = hashlib.sha256(b"retained different evidence").hexdigest()
+    assert relocated == {digest: f".recovered-evidence/{digest}"}
+    assert (repository / relocated[digest]).read_bytes() == b"retained different evidence"
+    assert (repository / "existing").read_bytes() == b"original"
     with tarfile.open(tmp_path / "application.tar", "w") as archive:
         link = tarfile.TarInfo("escape")
         link.type = tarfile.SYMTYPE
@@ -66,3 +70,45 @@ def test_application_restore_keeps_retained_evidence_and_rejects_links(tmp_path:
     with pytest.raises(ValueError, match="link"):
         restore_application(tmp_path, repository)
     assert not (repository / "escape").exists()
+
+
+def test_restored_inventory_finds_relocated_registered_source(tmp_path: Path) -> None:
+    """A tracked file changed after a record registered it must not block restore."""
+    import io
+    import tarfile
+
+    from scripts.backup_recovery import restore_application
+    from scripts.recovery_files import FileReference
+    from scripts.recovery_scope import inspect_references
+
+    path = "python/module.py"
+    repository = tmp_path / "repository"
+    (repository / "python").mkdir(parents=True)
+    (repository / path).write_bytes(b"registered")
+    with tarfile.open(tmp_path / "application.tar", "w") as archive:
+        member = tarfile.TarInfo(path)
+        member.size = len(b"current")
+        archive.addfile(member, io.BytesIO(b"current"))
+    relocated = restore_application(tmp_path, repository)
+    assert (repository / path).read_bytes() == b"current"
+    registered = hashlib.sha256(b"registered").hexdigest()
+    ref = FileReference("repository", path, registered)
+    roots = {"data": tmp_path / "data", "repository": repository}
+    assert inspect_references([ref], roots, {})["unavailable"]
+    result = inspect_references([ref], roots, relocated)
+    assert result["unavailable"] == []
+    assert result["references"][0].size == len(b"registered")
+
+
+def test_application_cannot_claim_the_relocated_evidence_path(tmp_path: Path) -> None:
+    import io
+    import tarfile
+
+    from scripts.backup_recovery import restore_application
+
+    with tarfile.open(tmp_path / "application.tar", "w") as archive:
+        member = tarfile.TarInfo(".recovered-evidence/x")
+        member.size = 1
+        archive.addfile(member, io.BytesIO(b"x"))
+    with pytest.raises(ValueError, match="relocated evidence"):
+        restore_application(tmp_path, tmp_path / "repository")
