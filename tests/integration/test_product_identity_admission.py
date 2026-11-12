@@ -30,6 +30,7 @@ from football.providers.pitchapi import (
 )
 from psycopg import Connection
 
+from tests.integration.legacy_rows import legacy_path_digest
 from tests.integration.test_product_historical_backfill import DATABASE_URL
 
 
@@ -987,20 +988,19 @@ def test_legacy_registration_remains_unverified_and_unchanged(tmp_path: Path) ->
         _history(connection, tmp_path)
         legacy_path = "raw/season.csv"
         # Model a pre-guard legacy registration; new path digests are rejected by a trigger.
-        connection.execute("SET LOCAL session_replication_role = replica")
-        connection.execute(
-            """UPDATE football.source_snapshots SET source_identity = %s,
-               source_revision = 'legacy',
-               manifest_path = %s, manifest_sha256 = %s
-               WHERE source_identity = 'test/season.csv'
-                 AND source_revision LIKE 'manifest-v1:test:%%'""",
-            (
-                f"legacy/{uuid4()}",
-                legacy_path,
-                hashlib.sha256(legacy_path.encode()).hexdigest(),
-            ),
-        )
-        connection.execute("SET LOCAL session_replication_role = origin")
+        with legacy_path_digest(connection):
+            connection.execute(
+                """UPDATE football.source_snapshots SET source_identity = %s,
+                   source_revision = 'legacy',
+                   manifest_path = %s, manifest_sha256 = %s
+                   WHERE source_identity = 'test/season.csv'
+                     AND source_revision LIKE 'manifest-v1:test:%%'""",
+                (
+                    f"legacy/{uuid4()}",
+                    legacy_path,
+                    hashlib.sha256(legacy_path.encode()).hexdigest(),
+                ),
+            )
         registration = connection.execute(
             "SELECT to_jsonb(s) FROM football.source_snapshots s"
         ).fetchall()
