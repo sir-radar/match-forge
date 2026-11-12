@@ -50,38 +50,7 @@ jobs:
         shell: bash
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
-        run: |
-          set -euo pipefail
-
-          zero_sha="0000000000000000000000000000000000000000"
-          code_changed=true
-
-          if [[ -n "${BASE_SHA:-}" &&
-                "$BASE_SHA" != "$zero_sha" ]] &&
-             git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
-            git diff --check "$BASE_SHA" HEAD
-
-            code_changed=false
-            changed_paths="$(mktemp)"
-            git diff --name-only --no-renames -z "$BASE_SHA" HEAD > "$changed_paths"
-            while IFS= read -r -d '' path; do
-              case "$path" in
-                *.md|*.mdx|*.rst)
-                  ;;
-                *)
-                  code_changed=true
-                  break
-                  ;;
-              esac
-            done < "$changed_paths"
-            rm "$changed_paths"
-          fi
-
-          if [[ "$GITHUB_EVENT_NAME" != pull_request ]]; then
-            code_changed=true
-          fi
-
-          printf 'code_changed=%s\n' "$code_changed" >> "$GITHUB_OUTPUT"
+        run: bash .github/scripts/classify-changes.sh "$BASE_SHA" >> "$GITHUB_OUTPUT"
 
   python-unit:
     needs: changes

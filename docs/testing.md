@@ -372,6 +372,15 @@ Prefer:
 
 Do not run an authoritative evaluation merely because implementation tests pass.
 
+The CI workflow skips the full suites on pull requests and pushes to `main`
+when the diff changes only prose or documentation JSON. It still runs
+`git diff --check`. JSON under `docs/` requires the full suites when a tracked
+file other than prose references its filename in either revision. Project
+status, schemas, contracts, evaluation inputs, and evidence files discovered
+by the project-status and V4 qualification tools also require the full suites.
+When a tool builds input filenames at runtime, register the path pattern in
+`.github/scripts/classify-changes.sh` so CI can recognize it.
+
 ## Evidence
 
 Record exact commands and actual results.
