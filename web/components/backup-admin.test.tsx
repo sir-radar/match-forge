@@ -96,7 +96,7 @@ describe("manual backup Admin", () => {
     render(<BackupAdmin initial={initial()} />);
     fireEvent.click(screen.getByRole("button", { name: "Back Up Now" }));
     const confirm = await screen.findByRole("button", { name: "Confirm recoverable-only backup" });
-    expect(screen.getByRole("heading", { name: "Confirm manual backup" })).toHaveFocus();
+    await waitFor(() => expect(screen.getByRole("heading", { name: "Confirm manual backup" })).toHaveFocus());
     fireEvent.click(confirm); fireEvent.click(confirm);
     expect(await screen.findByRole("heading", { name: "Backup in progress" })).toBeVisible();
     expect(fetch.mock.calls.filter(([url]) => !url.endsWith("/preview"))).toHaveLength(1);
