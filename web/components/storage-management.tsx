@@ -31,7 +31,10 @@ export function StorageManagement() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [plan, setPlan] = useState<StoragePlan | null>(null);
   const mounted = useRef(true);
-  useEffect(() => () => { mounted.current = false; }, []);
+  useEffect(() => {
+    mounted.current = true; // Re-arm after a StrictMode or Suspense remount.
+    return () => { mounted.current = false; };
+  }, []);
 
   const load = useCallback(async (refresh = false) => {
     try {
@@ -45,9 +48,10 @@ export function StorageManagement() {
     }
   }, []);
   useEffect(() => {
-    // Initial load is scheduled like the polling below, outside the effect body.
-    const timer = setTimeout(() => void load(), 0);
-    return () => clearTimeout(timer);
+    // A microtask, not a timer: background tabs throttle timers for minutes.
+    let cancelled = false;
+    void Promise.resolve().then(() => { if (!cancelled) void load(); });
+    return () => { cancelled = true; };
   }, [load]);
   const active = operations.some((o) => o.state === "PENDING" || o.state === "RUNNING") || comparisons.some((c) => c.state === "QUEUED" || c.state === "RUNNING");
   useEffect(() => {

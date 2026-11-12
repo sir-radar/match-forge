@@ -91,12 +91,14 @@ func (application *App) storageResources(response http.ResponseWriter, request *
 	if request.URL.Query().Get("refresh") == "1" {
 		storage.InvalidateMeasurements()
 	}
+	// Read the queue first: a comparison reported finished is then already in the inventory.
+	comparisons := storage.CompareQueue()
 	inventory, err := application.storage.Inventory(request.Context())
 	if err != nil {
 		application.respondOperation(response, nil, err)
 		return
 	}
-	application.writeJSON(response, http.StatusOK, map[string]any{"inventory": inventory, "comparisons": storage.CompareQueue()})
+	application.writeJSON(response, http.StatusOK, map[string]any{"inventory": inventory, "comparisons": comparisons})
 }
 
 type storageActionBody struct {

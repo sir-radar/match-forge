@@ -136,3 +136,64 @@ evidence. Four disposable databases are cited by dated evidence
 `football_v4_qualification_r02_20261101`, and the v4 integration database).
 Those documents record what was true on their dates and stay valid after
 deletion; the deletion record itself becomes the follow-up evidence.
+
+## Stage D — Admin-controlled resource management
+
+Delivered in this branch: migration `202611120100_storage_resource_management`,
+the Go resource manager (PostgreSQL, filesystem and Git worktree adapters,
+database comparison, plans, fenced execution, interruption recovery), eight
+Admin endpoints, and the Storage Management resource explorer. The procedure is
+in [storage lifecycle operations](storage-lifecycle.md#resource-management).
+
+Safety properties covered by tests on disposable databases, temporary
+directories and temporary Git repositories:
+
+- The authoritative database is protected without actions, cannot enter a
+  plan, is refused for a forged plan, is refused by the database trigger on a
+  direct SQL insert, and its protection row cannot be deleted.
+- An unverifiable authoritative identity protects every database.
+- Renaming a protected database or directory keeps its protection (OID and
+  inode binding).
+- A protection recorded after preview makes the plan stale; one recorded after
+  admission blocks the pending operation and the database survives.
+- Connected databases, dirty, unpushed or evidence-holding worktrees,
+  symlinks, protected paths and directories in use are never eligible.
+- Mixed batches keep independent eligible items and list blocked ones.
+- Deletion, quarantine and restore of synthetic databases and directories
+  succeed with verified absence and measured bytes. Path traversal, nested
+  paths and a swapped inode are refused.
+- Owner dispositions bind to an exact evidence digest and lapse when the
+  evidence changes.
+- Destructive endpoints require the owner credential.
+
+Defect fixed on the way: PR #194's worktree discovery called
+`git worktree list -z`, which Git 2.34 on this host rejects, so every review's
+worktree inventory failed.
+
+## Stage E — restored-database migration and browser verification
+
+Not activated in operation. The operating database is unchanged at
+`202611110100`; the running API was not rebuilt or restarted, because operating
+migrations and deployment need the owner's authorization and the P02 rollout was
+writing at the time.
+
+| Check | Result |
+| --- | --- |
+| Migrations on a restored operating copy | A throwaway clone of `football_fr_teamname_restore_20261110` (operating as of 10 November, migration `202611100100`) migrated to `202611120100` in 1.9 s with all five pending migrations. The clone was dropped afterwards. |
+| API against that copy (port 8090, no `.env`) | Registered the copy as authoritative, classified 45 databases and 12 worktrees, refused the authoritative database (403 without owner credential, 409 when forced into a plan), compared and deleted a synthetic database: verified absent, 7,911,103 bytes measured, matched by the cluster size drop. |
+| Browser | Storage Playwright specs pass on desktop Chrome and iPhone 13 emulation, including axe WCAG 2.2 AA and 320 px reflow. The full e2e suite was not representative here because server rendering reached the throwaway API instead of the suite's mocks; CI runs it. |
+| Repository checks | Go unit and disposable-database suites, `golangci-lint`, `go vet`, web lint, typecheck and 236 unit tests pass. |
+
+Browser findings fixed: a StrictMode remount left the panel's mounted flag
+false, the initial load used a timer that background tabs throttle, the
+inventory endpoint could report a finished comparison before its evidence was
+included, and absolutely positioned screen-reader text escaped horizontally
+scrolling tables (`.table-scroll` is now positioned).
+
+Activation steps once authorized, in order: merge this branch after P02 lands,
+take the existing pre-change backup, apply migrations
+(`202611110400`, `202611110500`, `202611120100`) with goose, rebuild and restart
+the API, then open Storage Management and confirm the authoritative database
+shows OID `16384`. Rollback for the schema is forward-only; the new tables are
+additive and unused by other code, so the previous API binary keeps working
+against the migrated database.
