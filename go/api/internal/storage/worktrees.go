@@ -8,12 +8,13 @@ import (
 )
 
 func ScanWorktrees(ctx context.Context, repository string) ([]Resource, error) {
-	output, err := gitRead(ctx, repository, "worktree", "list", "--porcelain", "-z")
+	// Newline porcelain: "-z" needs Git 2.36, older supported Git rejects it.
+	output, err := gitRead(ctx, repository, "worktree", "list", "--porcelain")
 	if err != nil {
 		return nil, err
 	}
 	result := []Resource{}
-	for _, field := range strings.Split(output, "\x00") {
+	for _, field := range strings.Split(output, "\n") {
 		if !strings.HasPrefix(field, "worktree ") {
 			continue
 		}
