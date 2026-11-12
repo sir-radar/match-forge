@@ -17,7 +17,9 @@
     "scope": "RECOVERABLE_ONLY",
     "known_unavailable_dependencies": 159,
     "unavailable_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-    "prior_verified": null
+    "prior_verified": null,
+    "governed_sha256": null,
+    "excluded_dependencies": 0
   },
   "runs": [],
   "last_verified": null,

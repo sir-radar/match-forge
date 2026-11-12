@@ -18,6 +18,11 @@ import (
 const (
 	backupFullRecovery    = "FULL_RECOVERY"
 	backupRecoverableOnly = "RECOVERABLE_ONLY"
+	// Every original restored and verified; only owner-approved exclusions of missing
+	// synthetic registrations are absent. Never reported as full recovery.
+	backupGovernedScope = "GOVERNED_SCOPE"
+	// Digest of an empty dependency list: a governed scope has no unexplained gap.
+	backupNoUnavailableSHA256 = "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
 )
 
 var backupRequestID = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`)
@@ -36,6 +41,8 @@ type BackupAvailability struct {
 	KnownUnavailable      *int         `json:"known_unavailable_dependencies"`
 	PriorVerified         *backupPoint `json:"prior_verified"`
 	UnavailableSHA256     *string      `json:"unavailable_sha256"`
+	GovernedSHA256        *string      `json:"governed_sha256"`
+	ExcludedDependencies  *int         `json:"excluded_dependencies"`
 	State                 string       `json:"state"`
 	Message               string       `json:"message"`
 	Drive                 *BackupDrive `json:"drive,omitempty"`
@@ -184,8 +191,8 @@ func (runner *CommandSyncRunner) backupReminder(ctx context.Context, view *Backu
 	switch view.Availability.Scope {
 	case backupFullRecovery:
 		return applySelectedBackupReminder(view, full, now)
-	case backupRecoverableOnly:
-		last, err := runner.latestVerifiedBackup(ctx, backupRecoverableOnly)
+	case backupRecoverableOnly, backupGovernedScope:
+		last, err := runner.latestVerifiedBackup(ctx, view.Availability.Scope)
 		if err != nil {
 			return err
 		}
@@ -268,11 +275,13 @@ type backupRequest struct {
 	Confirmed         bool   `json:"confirmed"`
 	Scope             string `json:"scope"`
 	UnavailableSHA256 string `json:"unavailable_sha256"`
+	GovernedSHA256    string `json:"governed_sha256,omitempty"`
 }
 
 func (input backupRequest) matches(run SyncRun) bool {
 	return stringParameter(run.Parameters, "scope") == input.Scope &&
-		stringParameter(run.Parameters, "unavailable_sha256") == input.UnavailableSHA256
+		stringParameter(run.Parameters, "unavailable_sha256") == input.UnavailableSHA256 &&
+		stringParameter(run.Parameters, "governed_sha256") == input.GovernedSHA256
 }
 
 func (input backupRequest) matchesPreflight(availability BackupAvailability) bool {
@@ -282,7 +291,13 @@ func (input backupRequest) matchesPreflight(availability BackupAvailability) boo
 	if input.Scope == backupFullRecovery {
 		return true
 	}
-	return availability.UnavailableSHA256 != nil && *availability.UnavailableSHA256 == input.UnavailableSHA256
+	if availability.UnavailableSHA256 == nil || *availability.UnavailableSHA256 != input.UnavailableSHA256 {
+		return false
+	}
+	if input.Scope == backupGovernedScope {
+		return availability.GovernedSHA256 != nil && *availability.GovernedSHA256 == input.GovernedSHA256
+	}
+	return true
 }
 
 func (application *App) startBackup(response http.ResponseWriter, request *http.Request) {
@@ -315,6 +330,7 @@ func (application *App) startBackup(response http.ResponseWriter, request *http.
 	run, err := application.syncRunner.Start(request.Context(), SyncRequest{
 		Type: SyncManualBackup, ManualRequestID: input.RequestID,
 		BackupScope: input.Scope, BackupUnavailableSHA256: input.UnavailableSHA256,
+		BackupGovernedSHA256: input.GovernedSHA256,
 	})
 	if errors.Is(err, errWorkControlConflict) {
 		application.publicError(response, http.StatusConflict, "request ID already belongs to another operation or recovery scope")
@@ -353,18 +369,20 @@ func decodeBackupRequest(response http.ResponseWriter, request *http.Request) (b
 	var trailing any
 	if decoder.Decode(&input) != nil || decoder.Decode(&trailing) != io.EOF ||
 		!input.Confirmed || !backupRequestID.MatchString(input.RequestID) ||
-		!validBackupScope(input.Scope, input.UnavailableSHA256) {
+		!validBackupScope(input.Scope, input.UnavailableSHA256, input.GovernedSHA256) {
 		return backupRequest{}, errWorkControlConflict
 	}
 	return input, nil
 }
 
-func validBackupScope(scope, digest string) bool {
+func validBackupScope(scope, digest, governed string) bool {
 	switch scope {
 	case backupFullRecovery:
-		return digest == ""
+		return digest == "" && governed == ""
 	case backupRecoverableOnly:
-		return backupSnapshotID.MatchString(digest)
+		return backupSnapshotID.MatchString(digest) && governed == ""
+	case backupGovernedScope:
+		return digest == backupNoUnavailableSHA256 && backupSnapshotID.MatchString(governed)
 	default:
 		return false
 	}
@@ -374,7 +392,7 @@ func (point backupPoint) valid() bool {
 	proof := point.backupVerification
 	payload, err := json.Marshal(proof)
 	return err == nil && point.LogicalBytes >= 0 && point.PackedBytes >= 0 && point.RepositoryBytes >= 0 &&
-		validBackupSummary(payload, proof.Scope, proof.UnavailableSHA256)
+		validBackupSummary(payload, proof.Scope, proof.UnavailableSHA256, proof.GovernedSHA256)
 }
 
 type backupVerification struct {
@@ -385,23 +403,28 @@ type backupVerification struct {
 	VerifiedAt              string `json:"verified_at"`
 	CapturedAt              string `json:"captured_at"`
 	UnavailableSHA256       string `json:"unavailable_sha256"`
+	GovernedSHA256          string `json:"governed_sha256,omitempty"`
 	UnavailableDependencies *int   `json:"unavailable_dependencies"`
+	ExcludedDependencies    *int   `json:"excluded_dependencies,omitempty"`
 	FullRecovery            *bool  `json:"full_recovery"`
 	Restore                 struct {
 		Status                  string          `json:"status"`
 		Isolated                bool            `json:"database_isolated"`
 		FullRecovery            *bool           `json:"full_recovery"`
 		UnavailableDependencies *int            `json:"unavailable_dependencies"`
+		ExcludedDependencies    *int            `json:"excluded_dependencies,omitempty"`
+		GovernedSHA256          string          `json:"governed_sha256,omitempty"`
 		Globals                 json.RawMessage `json:"global_role_restore"`
 	} `json:"full_operating_restore_drill"`
 }
 
 // Inspect JSON only; backup success requires completed verification, not an exit code.
-func validBackupSummary(payload []byte, scope, digest string) bool {
+func validBackupSummary(payload []byte, scope, digest, governed string) bool {
 	var summary backupVerification
 	decoder := json.NewDecoder(bytes.NewReader(payload))
 	if decoder.Decode(&summary) != nil || summary.Scope != scope || summary.UnavailableSHA256 != digest ||
-		!validBackupScope(scope, digest) || !summary.Verified || !backupSnapshotID.MatchString(summary.SnapshotID) {
+		summary.GovernedSHA256 != governed || !validBackupScope(scope, digest, governed) ||
+		!summary.Verified || !backupSnapshotID.MatchString(summary.SnapshotID) {
 		return false
 	}
 	_, _, err := verificationTimes(summary.VerifiedAt, summary.CapturedAt)
@@ -413,13 +436,27 @@ func (summary backupVerification) validRestore() bool {
 	if !summary.hasMatchingDrill() {
 		return false
 	}
-	if summary.Scope == backupRecoverableOnly {
+	switch summary.Scope {
+	case backupRecoverableOnly:
 		return summary.Status == "VERIFIED_RECOVERABLE" && restore.Status == "PASS_RECOVERABLE" &&
 			!*summary.FullRecovery && *summary.UnavailableDependencies >= 0
+	case backupGovernedScope:
+		return summary.validGovernedRestore()
 	}
 	return summary.Status == "VERIFIED" && restore.Status == "PASS" &&
 		*summary.FullRecovery && *summary.UnavailableDependencies == 0 &&
 		validGlobalRestore(restore.Globals)
+}
+
+// A governed scope is restored as strictly as full recovery (globals, ownership, every
+// original), with the same approved exclusions on both sides, and never claims full recovery.
+func (summary backupVerification) validGovernedRestore() bool {
+	restore := summary.Restore
+	return summary.Status == "VERIFIED_GOVERNED_SCOPE" && restore.Status == "PASS_GOVERNED_SCOPE" &&
+		!*summary.FullRecovery && *summary.UnavailableDependencies == 0 &&
+		summary.ExcludedDependencies != nil && restore.ExcludedDependencies != nil &&
+		*summary.ExcludedDependencies > 0 && *summary.ExcludedDependencies == *restore.ExcludedDependencies &&
+		restore.GovernedSHA256 == summary.GovernedSHA256 && validGlobalRestore(restore.Globals)
 }
 
 func (summary backupVerification) hasMatchingDrill() bool {

@@ -71,6 +71,7 @@
         "scope": {
           "enum": [
             "FULL_RECOVERY",
+            "GOVERNED_SCOPE",
             "RECOVERABLE_ONLY"
           ]
         },
@@ -103,6 +104,22 @@
           "pattern": "^[0-9a-f]{64}$",
           "type": [
             "string",
+            "null"
+          ]
+        },
+        "governed_sha256": {
+          "description": "GOVERNED_SCOPE only: binds each excluded dependency to the recorded owner approval of every registration that owns it.",
+          "pattern": "^[0-9a-f]{64}$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "excluded_dependencies": {
+          "description": "Missing dependencies excluded under recorded dispositions. They are never recovered.",
+          "minimum": 0,
+          "type": [
+            "integer",
             "null"
           ]
         }

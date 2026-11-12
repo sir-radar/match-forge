@@ -15,7 +15,7 @@ import psycopg
 from psycopg import Connection
 
 from scripts.capture_architecture_v2_baseline import ROOT, file_sha256
-from scripts.recovery_dispositions import recorded_dispositions
+from scripts.recovery_dispositions import disposition_records, recorded_dispositions
 from scripts.recovery_files import FileReference, registered_files, regular_file
 
 
@@ -89,6 +89,7 @@ def inventory(
     result["registered_references"] = len(refs) + len(unresolved)
     result["unavailable_sha256"] = unavailable_hash(result["unavailable"])
     result["excluded_sha256"] = unavailable_hash(result["excluded"])
+    result["governed_sha256"] = governed_hash(result["excluded"], disposition_records(connection))
     return result
 
 
@@ -120,21 +121,48 @@ def exclude_disposed(
     return unavailable, excluded
 
 
-def unavailable_hash(issues: list[dict[str, Any]]) -> str:
-    bindings = []
-    for item in issues:
-        registrations = item.get("registrations", [item.get("registration")])
-        bindings.append(
-            {
-                "root": item.get("root", "data"),
-                "path": item.get("path"),
-                "sha256": item.get("sha256"),
-                "size": item.get("size"),
-                "registrations": registrations,
-            }
-        )
+def _dependency_binding(item: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "root": item.get("root", "data"),
+        "path": item.get("path"),
+        "sha256": item.get("sha256"),
+        "size": item.get("size"),
+        "registrations": item.get("registrations", [item.get("registration")]),
+    }
+
+
+def _digest(bindings: list[Any]) -> str:
     encoded = sorted(json.dumps(item, sort_keys=True, separators=(",", ":")) for item in bindings)
     return hashlib.sha256(json.dumps(encoded, separators=(",", ":")).encode()).hexdigest()
+
+
+def unavailable_hash(issues: list[dict[str, Any]]) -> str:
+    return _digest([_dependency_binding(item) for item in issues])
+
+
+def governed_hash(
+    excluded: list[dict[str, Any]], records: Mapping[tuple[str, str], Mapping[str, str]]
+) -> str:
+    """Bind each excluded dependency to the exact approved disposition of every owner.
+
+    Fails when any owner lacks a recorded disposition bound to its registered checksum,
+    so a shared path is only governed when all of its registrations are.
+    """
+    bindings = []
+    for item in excluded:
+        approvals = []
+        for owner in item.get("registrations") or [item.get("registration")]:
+            keys = owner.get("keys") if isinstance(owner, Mapping) else None
+            if not isinstance(keys, Mapping) or "id" not in keys:
+                raise ValueError("an excluded dependency lacks an approved disposition per owner")
+            key = (str(owner["table"]), str(keys["id"]))
+            record = records.get(key)
+            if record is None or record["registered_sha256"] != owner.get("registered_sha256"):
+                raise ValueError("an excluded dependency lacks an approved disposition per owner")
+            approvals.append({"table": key[0], "id": key[1], **record})
+        approvals.sort(key=lambda value: (value["table"], value["id"]))
+        bindings.append({"dependency": _dependency_binding(item), "approvals": approvals})
+    return _digest(bindings)
 
 
 def require_inventory_database(connection: Connection[Any], plan: dict[str, Any]) -> None:
@@ -160,13 +188,45 @@ def selected_inventory(
 EMPTY_SHA256 = unavailable_hash([])
 
 
-def validate_gaps(value: dict[str, Any]) -> None:
+GOVERNED_SCOPE = "GOVERNED_SCOPE"
+SHA256_HEX = frozenset("0123456789abcdef")
+
+
+def validate_gaps(value: dict[str, Any], scope: str = "RECOVERABLE_ONLY") -> None:
     if (
-        value["scope"] != "RECOVERABLE_ONLY"
+        value["scope"] != scope
         or unavailable_hash(value["unavailable"]) != value["unavailable_sha256"]
         or unavailable_hash(value.get("excluded", [])) != value.get("excluded_sha256", EMPTY_SHA256)
     ):
         raise ValueError("recovery plan scope or unavailable bindings are invalid")
+
+
+def validate_governed(value: dict[str, Any]) -> None:
+    """A governed scope has no unexplained gap and binds every exclusion to its approvals."""
+    digest = value.get("governed_sha256")
+    validate_gaps(value, value["scope"])
+    if value["scope"] not in ("RECOVERABLE_ONLY", GOVERNED_SCOPE):
+        raise ValueError("governed scope requires a reviewed recovery inventory")
+    if value["unavailable"] or not value.get("excluded"):
+        raise ValueError("governed scope requires zero unavailable and at least one exclusion")
+    if not isinstance(digest, str) or len(digest) != 64 or not set(digest) <= SHA256_HEX:
+        raise ValueError("governed scope requires the reviewed disposition binding")
+    for item in value["excluded"]:
+        owners = item.get("registrations") or [item.get("registration")]
+        dispositions = item.get("dispositions") or []
+        if len(dispositions) != len(owners) or not all(dispositions):
+            raise ValueError("every owner of an excluded dependency needs a disposition")
+
+
+def selected_governed_inventory(
+    connection: Connection[Any], data_root: Path, plan: dict[str, Any]
+) -> dict[str, Any]:
+    """The reviewed inventory, rechecked: no new gap and identical approved exclusions."""
+    validate_governed(plan)
+    result = selected_inventory(connection, data_root, plan)
+    if result["unavailable"] or result["governed_sha256"] != plan["governed_sha256"]:
+        raise ValueError("governed exclusions or approvals changed; review a fresh inventory")
+    return result
 
 
 def load_plan(path: Path) -> dict[str, Any]:
@@ -211,6 +271,7 @@ def main() -> None:
         "unavailable_sha256": result["unavailable_sha256"],
         "excluded": result["excluded"],
         "excluded_sha256": result["excluded_sha256"],
+        "governed_sha256": result["governed_sha256"],
         "logical_bytes": result["logical_bytes"],
         "available_files": len(result["references"]),
         "registered_references": result["registered_references"],

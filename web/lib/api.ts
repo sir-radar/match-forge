@@ -95,12 +95,12 @@ async function requestBackupStatus(path: string, options: RequestOptions): Promi
 export const api = {
   backup: (signal?: AbortSignal, origin?: string) => requestBackupStatus("/v1/admin/backup", { signal, origin }),
   previewBackup: (signal?: AbortSignal) => requestBackupStatus("/v1/admin/backup/preview", { method: "POST", body: {}, signal }),
-  startBackup: (requestId: string, scope: BackupScope, digest: string | null, signal?: AbortSignal) => request("/v1/admin/backup", (value) => {
+  startBackup: (requestId: string, scope: BackupScope, digest: string | null, signal?: AbortSignal, governed: string | null = null) => request("/v1/admin/backup", (value) => {
     const run = parseSyncRun(value);
     if (run.sync_type !== "MANUAL_BACKUP" || run.run_id !== requestId || run.parameters.scope !== scope ||
-        (run.parameters.unavailable_sha256 ?? null) !== digest) throw new Error("Backup request identity or scope mismatch");
+        (run.parameters.unavailable_sha256 ?? null) !== digest || (run.parameters.governed_sha256 ?? null) !== governed) throw new Error("Backup request identity or scope mismatch");
     return run;
-  }, { method: "POST", body: { request_id: requestId, confirmed: true, scope, ...(digest ? { unavailable_sha256: digest } : {}) }, signal }),
+  }, { method: "POST", body: { request_id: requestId, confirmed: true, scope, ...(digest ? { unavailable_sha256: digest } : {}), ...(governed ? { governed_sha256: governed } : {}) }, signal }),
   marketCapabilities: (scope: MarketScope, signal?: AbortSignal) => request(`/v1/admin/market-capabilities?${new URLSearchParams(scope)}`, (value) => {
     const report = parseMarketCapabilitySummary(value);
     if (report.competition_id !== scope.competition_id || report.season_id !== scope.season_id || Date.parse(report.knowledge_cutoff) !== Date.parse(scope.knowledge_cutoff)) throw new Error("market report scope mismatch");

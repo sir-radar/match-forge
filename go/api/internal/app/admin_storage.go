@@ -266,6 +266,9 @@ func (runner *CommandSyncRunner) storageScheduledRequest(ctx context.Context, ki
 	if view.Availability.UnavailableSHA256 != nil {
 		request.BackupUnavailableSHA256 = *view.Availability.UnavailableSHA256
 	}
+	if view.Availability.GovernedSHA256 != nil {
+		request.BackupGovernedSHA256 = *view.Availability.GovernedSHA256
+	}
 	return request, true, err
 }
 
