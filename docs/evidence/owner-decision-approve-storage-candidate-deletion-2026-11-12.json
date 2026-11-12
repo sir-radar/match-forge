@@ -1,0 +1,36 @@
+{
+ "contract": "OwnerDecisionRecordV1",
+ "decision_id": "APPROVE_STORAGE_CANDIDATE_DATABASE_DELETION_V1",
+ "recorded_at": "2026-11-12T06:48:00Z",
+ "title": "Delete the 10 revalidated non-operating databases through Storage Management",
+ "status": "APPROVED",
+ "owner": "repository owner / sir-radar",
+ "map": "storage-lifecycle",
+ "source": {
+  "execution_instruction": "Owner answer 'Approve all 10' in this session to 'Approve deleting the 10 revalidated databases (plan eb5f276f..., DELETE 10)?', after the candidates were compared again on the deployed release",
+  "revalidation": "docs/evidence/storage-operating-rollout-2026-11-12.json#candidate_revalidation",
+  "preview_plan_sha256": "eb5f276f9915a81225f77c76a7926a696e992f6c1af9f52948c09dc586934abf"
+ },
+ "authorizes": [
+  "DELETE of football_fr_teamname_restore_20261110 (OID 93318648) in cluster 7679328148388241450",
+  "DELETE of football_fr_context_restore_20261109 (OID 91748077) in cluster 7679328148388241450",
+  "DELETE of football_fr_scope_restore_20261109 (OID 88809348) in cluster 7679328148388241450",
+  "DELETE of football_fr_native_reference_20261109 (OID 87002662) in cluster 7679328148388241450",
+  "DELETE of football_architecture_v2_phase0_20261016 (OID 5267901) in cluster 7679328148388241450",
+  "DELETE of football_r3_final_baseline_20261015 (OID 5000368) in cluster 7679328148388241450",
+  "DELETE of football_v4_qualification_r02_20261101 (OID 50918750) in cluster 7679328148388241450",
+  "DELETE of football_r3_geography_guard_20261014 (OID 3853672) in cluster 7679328148388241450",
+  "DELETE of football_r3_status_test_20261015 (OID 4741551) in cluster 7679328148388241450",
+  "DELETE of football_pretraining_test (OID 1619206) in cluster 7679328148388241450"
+ ],
+ "requires": [
+  "the same OID, ELIGIBLE classification and no active consumers immediately before each batch",
+  "small batches with an operating health check between them",
+  "verified absence and measured bytes for each deletion"
+ ],
+ "explicitly_not_authorized": [
+  "any other database, including the 26 rehearsal databases, football_v4_integration_20261110, the StatsBomb databases, the P02 databases and football_storage_rollout_rehearsal",
+  "worktree, dump or file deletion",
+  "owner protections or dispositions"
+ ]
+}

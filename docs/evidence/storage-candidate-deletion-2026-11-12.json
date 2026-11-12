@@ -1,0 +1,134 @@
+{
+ "contract": "StorageDeletionEvidenceV1",
+ "recorded_at": "2026-11-12T07:10:00Z",
+ "decision_id": "APPROVE_STORAGE_CANDIDATE_DATABASE_DELETION_V1",
+ "decision_ref": "docs/evidence/owner-decision-approve-storage-candidate-deletion-2026-11-12.json",
+ "mechanism": "Storage Management API at release cefc8059abc20ab69c4780da8b159082aed13917: preview per batch, owner credential, typed confirmation, fenced DROP without FORCE, verified absence",
+ "precheck_per_batch": "OID unchanged, ELIGIBLE, 0 active consumers, plan with no blocked items",
+ "batches": {
+  "1": [
+   "football_v4_qualification_r02_20261101",
+   "football_r3_status_test_20261015",
+   "football_r3_geography_guard_20261014",
+   "football_pretraining_test"
+  ],
+  "2": [
+   "football_architecture_v2_phase0_20261016",
+   "football_r3_final_baseline_20261015"
+  ],
+  "3": [
+   "football_fr_native_reference_20261109",
+   "football_fr_scope_restore_20261109"
+  ],
+  "4": [
+   "football_fr_teamname_restore_20261110",
+   "football_fr_context_restore_20261109"
+  ]
+ },
+ "operations": [
+  {
+   "database": "football_v4_qualification_r02_20261101",
+   "oid": 50918750,
+   "state": "SUCCEEDED",
+   "reclaimed_bytes": 17457679,
+   "verified_absent": true,
+   "finished_at": "2026-11-12 06:51:25.597739+00"
+  },
+  {
+   "database": "football_r3_status_test_20261015",
+   "oid": 4741551,
+   "state": "SUCCEEDED",
+   "reclaimed_bytes": 15344143,
+   "verified_absent": true,
+   "finished_at": "2026-11-12 06:51:49.288873+00"
+  },
+  {
+   "database": "football_r3_geography_guard_20261014",
+   "oid": 3853672,
+   "state": "SUCCEEDED",
+   "reclaimed_bytes": 15598095,
+   "verified_absent": true,
+   "finished_at": "2026-11-12 06:52:07.546687+00"
+  },
+  {
+   "database": "football_pretraining_test",
+   "oid": 1619206,
+   "state": "SUCCEEDED",
+   "reclaimed_bytes": 13459983,
+   "verified_absent": true,
+   "finished_at": "2026-11-12 06:52:29.51463+00"
+  },
+  {
+   "database": "football_architecture_v2_phase0_20261016",
+   "oid": 5267901,
+   "state": "SUCCEEDED",
+   "reclaimed_bytes": 4455629327,
+   "verified_absent": true,
+   "finished_at": "2026-11-12 07:02:09.788117+00"
+  },
+  {
+   "database": "football_r3_final_baseline_20261015",
+   "oid": 5000368,
+   "state": "SUCCEEDED",
+   "reclaimed_bytes": 4338139663,
+   "verified_absent": true,
+   "finished_at": "2026-11-12 07:02:28.796894+00"
+  },
+  {
+   "database": "football_fr_native_reference_20261109",
+   "oid": 87002662,
+   "state": "SUCCEEDED",
+   "reclaimed_bytes": 8637170191,
+   "verified_absent": true,
+   "finished_at": "2026-11-12 07:03:23.39175+00"
+  },
+  {
+   "database": "football_fr_scope_restore_20261109",
+   "oid": 88809348,
+   "state": "SUCCEEDED",
+   "reclaimed_bytes": 8720204303,
+   "verified_absent": true,
+   "finished_at": "2026-11-12 07:03:44.483058+00"
+  },
+  {
+   "database": "football_fr_teamname_restore_20261110",
+   "oid": 93318648,
+   "state": "SUCCEEDED",
+   "reclaimed_bytes": 8917262863,
+   "verified_absent": true,
+   "finished_at": "2026-11-12 07:05:18.034342+00"
+  },
+  {
+   "database": "football_fr_context_restore_20261109",
+   "oid": 91748077,
+   "state": "SUCCEEDED",
+   "reclaimed_bytes": 8793072143,
+   "verified_absent": true,
+   "finished_at": "2026-11-12 07:05:42.514902+00"
+  }
+ ],
+ "databases_deleted": 10,
+ "reclaimed_bytes_measured_per_database": 43923338390,
+ "expected_bytes": 43923338390,
+ "postgres_volume_used_bytes": {
+  "before": 192060387328,
+  "after": 147655168000,
+  "freed": 44405219328,
+  "note": "df inside the PostgreSQL container; includes concurrent operating growth and WAL churn"
+ },
+ "host_free_bytes": {
+  "before": 116938469376,
+  "after": 180460032000,
+  "note": "APFS free space on the Mac also moved with unrelated activity during the window (it read 114-138 GB earlier the same morning); not attributable to this deletion alone"
+ },
+ "operating_checks_after": {
+  "api_readyz": 200,
+  "web": 200,
+  "football_oid_16384_present": true,
+  "football_classification": "PROTECTED",
+  "preservation": "identical to the rollout values",
+  "syncs": "56 runs in the last 20 minutes; the 2 failures (FOTMOB_SYNC, PITCHAPI_SYNC) were in flight during the 06:49:30 PostgreSQL restart, before the first deletion, and ended with 'worker lease expired; safe to retry'"
+ },
+ "incident": "At 06:49:30 UTC, before any deletion, PostgreSQL restarted after an untracked child process exited with code 2. PostgreSQL runs as PID 1 in the container, so a docker exec process that exits non-zero is reaped by the postmaster and treated as a crash. Crash recovery replayed 261 kB of WAL and accepted connections at 06:49:41. A MANUAL_BACKUP run was cancelled in the same window.",
+ "inventory_read_note": "After batches 3 and 4 the API's full inventory read returned HTTP 504; the operations had already succeeded, confirmed from football.storage_operations and pg_database."
+}

@@ -1,0 +1,134 @@
+{
+ "contract": "StorageOperatingRolloutEvidenceV1",
+ "recorded_at": "2026-11-12T06:45:00Z",
+ "decision_id": "AUTHORIZE_STORAGE_OPERATING_ROLLOUT_V1",
+ "decision_ref": "docs/evidence/owner-decision-authorize-storage-operating-rollout-2026-11-12.json",
+ "environment": {
+  "database": "football",
+  "system_identifier": "7679328148388241450",
+  "database_oid": 16384,
+  "postgres_server": "18.6"
+ },
+ "integration": {
+  "pull_requests_merged": [190, 191, 194, 196, 197],
+  "release_git_sha": "cefc8059abc20ab69c4780da8b159082aed13917",
+  "ci_run": 43160231979,
+  "ci_result": "success on rerun",
+  "ci_first_attempt": "failure: TestDatabaseUniqueRowsNeedOwnerDispositionBoundToEvidence (identical evidence lost its disposition). The comparison digest includes pg_database_size, which can change without content changes. The same test passed on the PR head and on the rerun. Fails closed: an owner disposition lapses, nothing becomes deletable."
+ },
+ "migration_inventory": {
+  "files": 119,
+  "applied_before": 117,
+  "applied_without_file": ["202610220100 (pre-existing, documented in docs/recovery.md; preserved)"],
+  "pending_before": ["202611110400", "202611110500", "202611120100"],
+  "failed_or_partial_before": 0
+ },
+ "backup": {
+  "admin_backup": {
+   "run_id": "914858db-6246-4ba1-bbad-709315341765",
+   "status": "FAILED",
+   "state": "VERIFICATION_FAILED",
+   "note": "Started before PR 197, so no private cause was recorded. Owner chose the logical dump below."
+  },
+  "logical_dump": {
+   "file": ".local/storage-rollout/operating-before.dump",
+   "sha256": "41f9dd6f1fd02bb1bc4a520fa70064101af8a9ff12e00911e05c915ad146fb65",
+   "bytes": 2505618067,
+   "started_at": "2026-11-12T05:24:29Z",
+   "finished_at": "2026-11-12T05:34:21Z",
+   "taken_with_writers_stopped": false,
+   "consistency": "pg_dump single snapshot"
+  },
+  "restore_check": {
+   "database": "football_storage_rollout_rehearsal",
+   "seconds": 832,
+   "errors": 0,
+   "preservation_identical_to_operating": true
+  }
+ },
+ "preservation": {
+  "script": "scripts/p02/preservation.sql",
+  "run_start": "2026-11-12T05:24:29Z",
+  "values": {
+   "forecast_artifacts": {"rows": 9990, "md5": "317463b5f4d1c244cfb838f6ef278008"},
+   "forecasts": {"rows": 20768, "md5": "5c786269b4339c8c259fb6fdf62ca16f"},
+   "history_decisions": {"rows": 889652, "md5": "e17c4e1bce5cbef828e36686e8e3ce08"},
+   "identity_conflicts_other_stages": {"rows": 2038, "md5": "ee36da3d5039cb802c667e5af1fc00ca"},
+   "model_forecasts": {"rows": 0, "md5": null},
+   "read_reports": {"rows": 569884, "md5": "2a38931f9ddafb8e71a6be13ca86c9da"},
+   "source_snapshots": {"rows": 85298, "md5": "44d1dacc13e0321f4f54d0890ebf423c"}
+  },
+  "operating_before_migration": "values above",
+  "restored_copy_before_migration": "identical",
+  "restored_copy_after_migration": "identical",
+  "operating_after_migration": "identical"
+ },
+ "rehearsal": {
+  "database": "football_storage_rollout_rehearsal",
+  "seconds": 1.4,
+  "result": "202611110100 to 202611120100, no pending migrations"
+ },
+ "apply": {
+  "mechanism": "goose up with PGOPTIONS lock_timeout=5000",
+  "writers_paused": false,
+  "attempts": [
+   {"at": "2026-11-12T06:35:19Z", "result": "refused: 202611110400 LOCK TABLE football.work_items NOWAIT (SQLSTATE 55P03); rolled back, version stayed 202611110100"},
+   {"at": "2026-11-12T06:35:38Z", "result": "applied"}
+  ],
+  "migrations": [
+   {"version": "202611110400_storage_lifecycle", "sha256": "088c8879ff94a92603b814336b8593d74a7d6e5bc9977c12892e645a764e2e71", "seconds": 2.44},
+   {"version": "202611110500_competition_noop_updates", "sha256": "d119442d84930a4fb53c6a8cf9c287f7571b6e4c80699cad61c604e7f0bacfb7", "seconds": 0.006},
+   {"version": "202611120100_storage_resource_management", "sha256": "e6ad5d844eaac0dff6943bdc488e2cac5d2acb98d8ff20e0d58b053340677ce8", "seconds": 0.025}
+  ],
+  "pending_after": 0,
+  "not_applied_rows_after": 0,
+  "syncs_after": "FOTMOB_SYNC, PITCHAPI_SYNC and PUBLIC_REPORTS runs kept succeeding"
+ },
+ "deployment": {
+  "api": {
+   "binary_sha256": "5b6aa07a9684a762d65bef7044fa63e670f063b8556b3590f39877890f0a2e5f",
+   "previous_binary_sha256": "1c1d5455e266449fe5e8721a4ea08cbc1147018e198b35e6061deb91a6329383",
+   "previous_code_commit_sha": "fe0ebc8a9f5959ff5aea802c0c8fc028a256fc48",
+   "version_endpoint": {"code_commit_sha": "cefc8059abc20ab69c4780da8b159082aed13917", "dependency_lock_sha256": "98b25207581a4beb9155aa49f0f14ac57e9e98d7dddc59ffaccb690805aed8cb", "worktree_state": "clean"},
+   "readyz": 200
+  },
+  "web": {
+   "release_copy": ".local/releases/web-cefc805",
+   "build_id": "VaHjebPI3H-mD0hciYxjd",
+   "previous_release_copy": ".local/foundation/admin-backup-status/activation/web-279e57d",
+   "http": 200
+  },
+  "rollback": "Previous API binary and web build saved under .local/rollback/20261112-pre-storage. The migrations are additive, so the previous binary also runs against the migrated schema."
+ },
+ "storage_management": {
+  "authority": {"system_identifier": "7679328148388241450", "oid": 16384, "database": "football", "verified": true},
+  "inventory": {"resources": 58, "databases": 45, "worktrees": 13, "protected": 4, "review_required": 53, "eligible": 1},
+  "policy_configured": false,
+  "protection_checks": [
+   "Preview DELETE of football: no items, blocked as PROTECTED",
+   "Mixed preview of football and a synthetic probe database: probe kept, football blocked",
+   "Execute without the owner credential: HTTP 403",
+   "Execute with a forged plan digest: HTTP 409"
+  ],
+  "not_run": "Real deletion of the synthetic probe mf_rollout_probe_20261112 was denied by the session's tool permission policy. CI covers deletion, quarantine and restore on disposable databases. The probe (7.9 MB) remains."
+ },
+ "candidate_revalidation": {
+  "databases": 10,
+  "all_same_oid_as_2026_11_12_evidence": true,
+  "all_eligible": true,
+  "active_consumers": 0,
+  "preview_plan_sha256": "eb5f276f9915a81225f77c76a7926a696e992f6c1af9f52948c09dc586934abf",
+  "expected_unique_bytes": 43924947830,
+  "typed_confirmation": "DELETE 10",
+  "executed": false,
+  "note": "Database bytes are released inside the Docker PostgreSQL volume; host free space changes only when the Docker VM returns blocks."
+ },
+ "recovery_gap_check": {
+  "already_retired": 17,
+  "detail": "The 13 baseline forecasts and 4 Sprint 2 evaluation runs among the 159 gaps already have artifact_retirement_events (TEST_ONLY_HARD_GATE_EXCLUSION) from September, yet scripts/recovery_scope.py still counts them.",
+  "mechanism_limit": "artifact_retirement_events accepts only FORECAST and EVALUATION objects. No governed mechanism exists to retire the 141 other synthetic registrations (source snapshots and resources, dataset versions and files, model artifacts and files) or to correct the OpenFootball manifest registration.",
+  "registrations_modified": 0,
+  "full_recovery": false
+ },
+ "existing_resources_removed": 0
+}

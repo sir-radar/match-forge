@@ -1,0 +1,33 @@
+{
+ "contract": "OwnerDecisionRecordV1",
+ "decision_id": "AUTHORIZE_STORAGE_OPERATING_ROLLOUT_V1",
+ "recorded_at": "2026-11-12T05:20:00Z",
+ "title": "Apply the storage lifecycle and resource management migrations to the operating database and deploy the matching release",
+ "status": "APPROVED",
+ "owner": "repository owner / sir-radar",
+ "map": "storage-lifecycle",
+ "ticket": "Storage lifecycle P1-P6 (PR 194), resource management (PR 196)",
+ "source": {
+  "execution_instruction": "Owner answer 'Authorize, wait for backup (Recommended)' in this session to the question whether to verify a backup and isolated restore, rehearse on a clone, apply migrations 202611110400, 202611110500 and 202611120100 with goose and a lock timeout, then rebuild and restart the Go API and frontend. A follow-up answer, 'Logical dump + restore check (Recommended)', selected the verified logical dump as the pre-migration backup after admin backup 914858db-6246-4ba1-bbad-709315341765 failed with VERIFICATION_FAILED.",
+  "release_git_sha": "cefc8059abc20ab69c4780da8b159082aed13917",
+  "procedure": "docs/operations/storage-consolidation-2026-11-12.md#stage-e--restored-database-migration-and-browser-verification"
+ },
+ "authorizes": [
+  "a logical dump of the operating database with an isolated restore and preservation-hash comparison",
+  "rehearsing the pending migrations on that restored copy",
+  "migrations 202611110400_storage_lifecycle, 202611110500_competition_noop_updates and 202611120100_storage_resource_management on the operating database, with sync writers left running and a lock timeout",
+  "rebuilding the Go API and the Next.js frontend at the release revision and restarting both"
+ ],
+ "requires": [
+  "green CI for the release revision",
+  "unchanged preservation hashes on the restored copy and on the operating database before and after the migrations",
+  "no pending, failed or partially applied migration afterwards"
+ ],
+ "explicitly_not_authorized": [
+  "deleting, quarantining or purging any existing database, worktree, dump or file",
+  "recording owner protections or dispositions",
+  "retiring or correcting any recovery-gap registration",
+  "reconciling StatsBomb history into the operating database",
+  "enabling a storage policy or automatic cleanup"
+ ]
+}
