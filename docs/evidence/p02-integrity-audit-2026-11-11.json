@@ -1,0 +1,5030 @@
+{
+ "contract": "P02IntegrityAuditEvidenceV1",
+ "recorded_at": "2026-11-11T09:40:00Z",
+ "decision_id": "AUTHORIZE_UNIFIED_P02_DATA_INTEGRITY_IMPLEMENTATION_V1",
+ "branch": "ft/p02-data-integrity",
+ "operating_access": "read-only transactions; no operating writes",
+ "seed_baselines_captured_at": "2026-11-11T05:05:25Z",
+ "seed_traces": [
+  {
+   "fixture_id": "9d553d17-1b78-540c-8991-7b96f1166c16",
+   "fixture": "America de Pedrinhas v Flamengo SE (Sergipano A2, 2026-11-10)",
+   "before": {
+    "home": "LDWWW",
+    "away": "LLLLD"
+   },
+   "recomputed_official_last5": {
+    "home": "LLLLL",
+    "away": "LLWDL"
+   },
+   "external_hint": {
+    "home": "LLLLL newest-first",
+    "away": "LDWLL oldest-first = LLWDL newest-first"
+   },
+   "classification": "Software defect D-01 (2026 results never qualified) plus stale 2024 window; whether the 3 and 7 Nov 3-0 results are walkovers is MISSING_EVIDENCE (provider reports FT)"
+  },
+  {
+   "fixture_id": "211b1638-49db-5700-8b86-26e2e35505d2",
+   "fixture": "Chernihiv v Inhulets (Persha Liga, 2026-11-11)",
+   "before": {
+    "home": "WWWWW",
+    "away": "DLWLW"
+   },
+   "recomputed_official_last5": {
+    "home": "LLWLW",
+    "away": "DLWLL"
+   },
+   "external_hint": {
+    "home": "LLLWW newest-first league-only",
+    "away": "DLWLL newest-first"
+   },
+   "classification": "Software defect D-01; remaining Chernihiv difference is scope (a cup win on 6 Oct is included in all-competitions form)"
+  },
+  {
+   "fixture_id": "4450b8c7-2027-5150-951a-5076621764a1",
+   "fixture": "Babrungas v Minija (1 Lyga, 2026-11-11)",
+   "before": {
+    "home": "DDDWL",
+    "away": "DLLWL"
+   },
+   "recomputed_official_last5": {
+    "home": "WDWWD",
+    "away": "WDWLW"
+   },
+   "external_hint": {
+    "home": "WDWWW",
+    "away": "WDWLL"
+   },
+   "classification": "Software defect D-01; the remaining difference on both sides is the 2026-10-17 Minija v Babrungas league match that MatchForge has no fixture for (MISSING_SOURCE)"
+  }
+ ],
+ "external_sources_role": "Aggregator and federation search results used as unverified hints only; no value in this file is taken from them as fact.",
+ "baseline_cohorts_2026_11_11T05_06Z": {
+  "finished_with_score_without_history": {
+   "api_football": 15636,
+   "pitchapi": 755,
+   "fotmob": 310,
+   "no_active_mapping": 343,
+   "football_data_org": 10
+  },
+  "api_football_regulation_90_without_history_since_2026_10": 11244,
+  "scheduled_more_than_6h_after_kickoff": 2090,
+  "live_more_than_6h_after_kickoff": 74
+ },
+ "forecast_impact_estimate": {
+  "kind": "UPPER_BOUND_ESTIMATE",
+  "forecasts_created_since_2026_10_01": 18219,
+  "forecasts_with_a_prior_team_result_missing_from_history": 10086,
+  "fixtures": 3644,
+  "action": "None. Published forecasts and artifacts unchanged; re-evaluation needs a governance decision."
+ },
+ "form_audit": {
+  "audit_version": "p02-integrity-audit-v1",
+  "audited_fixtures": 257629,
+  "by_country": {
+   "Albania": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 101,
+    "MATCHING": 825,
+    "sides": 926
+   },
+   "Algeria": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 401,
+    "MATCHING": 4585,
+    "sides": 4986
+   },
+   "Andorra": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 22,
+    "MATCHING": 290,
+    "sides": 312
+   },
+   "Angola": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 47,
+    "MATCHING": 505,
+    "sides": 552
+   },
+   "Antigua-And-Barbuda": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 17,
+    "sides": 18
+   },
+   "Argentina": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 540,
+    "MATCHING": 6254,
+    "sides": 6794
+   },
+   "Armenia": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 320,
+    "MATCHING": 2648,
+    "sides": 2968
+   },
+   "Aruba": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 20,
+    "MATCHING": 172,
+    "sides": 192
+   },
+   "Australia": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 78,
+    "MATCHING": 1112,
+    "sides": 1190
+   },
+   "Austria": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 364,
+    "MATCHING": 5874,
+    "sides": 6238
+   },
+   "Azerbaijan": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 72,
+    "MATCHING": 728,
+    "sides": 800
+   },
+   "Bahrain": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 20,
+    "MATCHING": 300,
+    "sides": 320
+   },
+   "Bangladesh": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 117,
+    "MATCHING": 655,
+    "sides": 772
+   },
+   "Belarus": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 130,
+    "MATCHING": 1152,
+    "sides": 1282
+   },
+   "Belgium": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 395,
+    "MATCHING": 9595,
+    "sides": 9990
+   },
+   "Benin": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 70,
+    "MATCHING": 1210,
+    "sides": 1280
+   },
+   "Bhutan": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 5,
+    "sides": 6
+   },
+   "Bolivia": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 116,
+    "MATCHING": 716,
+    "sides": 832
+   },
+   "Bosnia": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 187,
+    "MATCHING": 1305,
+    "sides": 1492
+   },
+   "Botswana": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 15,
+    "MATCHING": 537,
+    "sides": 552
+   },
+   "Brazil": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 772,
+    "MATCHING": 8748,
+    "sides": 9520
+   },
+   "Bulgaria": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 440,
+    "MATCHING": 7004,
+    "sides": 7444
+   },
+   "Burkina-Faso": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 58,
+    "MATCHING": 494,
+    "sides": 552
+   },
+   "Burundi": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 90,
+    "MATCHING": 16,
+    "sides": 106
+   },
+   "Cambodia": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 22,
+    "MATCHING": 10,
+    "sides": 32
+   },
+   "Cameroon": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 49,
+    "MATCHING": 355,
+    "sides": 404
+   },
+   "Canada": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 27,
+    "MATCHING": 279,
+    "sides": 306
+   },
+   "Chile": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 150,
+    "MATCHING": 1168,
+    "sides": 1318
+   },
+   "China": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 181,
+    "MATCHING": 1489,
+    "sides": 1670
+   },
+   "Chinese-Taipei": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 8,
+    "MATCHING": 184,
+    "sides": 192
+   },
+   "Colombia": {
+    "DIVERGENT_OTHER": 1,
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 232,
+    "MATCHING": 1715,
+    "sides": 1948
+   },
+   "Congo-DR": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 81,
+    "MATCHING": 31,
+    "sides": 112
+   },
+   "Costa-Rica": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 97,
+    "MATCHING": 675,
+    "sides": 772
+   },
+   "Croatia": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 132,
+    "MATCHING": 3302,
+    "sides": 3434
+   },
+   "Cyprus": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 123,
+    "MATCHING": 599,
+    "sides": 722
+   },
+   "Czech Republic": {
+    "MATCHING": 612,
+    "sides": 612
+   },
+   "Czech-Republic": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 771,
+    "MATCHING": 5117,
+    "sides": 5888
+   },
+   "Denmark": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 248,
+    "MATCHING": 1686,
+    "sides": 1934
+   },
+   "Dominican-Republic": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 26,
+    "MATCHING": 16,
+    "sides": 42
+   },
+   "Ecuador": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 86,
+    "MATCHING": 918,
+    "sides": 1004
+   },
+   "Egypt": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 147,
+    "MATCHING": 1311,
+    "sides": 1458
+   },
+   "El-Salvador": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 72,
+    "MATCHING": 522,
+    "sides": 594
+   },
+   "England": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2537,
+    "MATCHING": 52207,
+    "sides": 54744
+   },
+   "Estonia": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 129,
+    "MATCHING": 1277,
+    "sides": 1406
+   },
+   "Eswatini": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 30,
+    "MATCHING": 382,
+    "sides": 412
+   },
+   "Ethiopia": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 41,
+    "MATCHING": 647,
+    "sides": 688
+   },
+   "Faroe-Islands": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 20,
+    "MATCHING": 2180,
+    "sides": 2200
+   },
+   "Finland": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 70,
+    "MATCHING": 2228,
+    "sides": 2298
+   },
+   "France": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 850,
+    "MATCHING": 27852,
+    "sides": 28702
+   },
+   "Gabon": {
+    "MATCHING": 14,
+    "sides": 14
+   },
+   "Georgia": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 124,
+    "MATCHING": 3094,
+    "sides": 3218
+   },
+   "Germany": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2222,
+    "MATCHING": 41192,
+    "sides": 43414
+   },
+   "Ghana": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 508,
+    "MATCHING": 4162,
+    "sides": 4670
+   },
+   "Gibraltar": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 27,
+    "MATCHING": 15,
+    "sides": 42
+   },
+   "Greece": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 526,
+    "MATCHING": 6446,
+    "sides": 6972
+   },
+   "Guatemala": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 75,
+    "MATCHING": 477,
+    "sides": 552
+   },
+   "Honduras": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 52,
+    "MATCHING": 426,
+    "sides": 478
+   },
+   "Hong-Kong": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 27,
+    "MATCHING": 245,
+    "sides": 272
+   },
+   "Hungary": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 473,
+    "MATCHING": 4949,
+    "sides": 5422
+   },
+   "Iceland": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 10,
+    "MATCHING": 44,
+    "sides": 54
+   },
+   "India": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 54,
+    "MATCHING": 48,
+    "sides": 102
+   },
+   "Indonesia": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 336,
+    "MATCHING": 4730,
+    "sides": 5066
+   },
+   "International": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 95,
+    "MATCHING": 429,
+    "sides": 524
+   },
+   "Iran": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 137,
+    "MATCHING": 4607,
+    "sides": 4744
+   },
+   "Iraq": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 60,
+    "MATCHING": 800,
+    "sides": 860
+   },
+   "Ireland": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 33,
+    "MATCHING": 3049,
+    "sides": 3082
+   },
+   "Israel": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 226,
+    "MATCHING": 1636,
+    "sides": 1862
+   },
+   "Italy": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1945,
+    "MATCHING": 31883,
+    "sides": 33828
+   },
+   "Ivory-Coast": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 51,
+    "MATCHING": 501,
+    "sides": 552
+   },
+   "Jamaica": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 59,
+    "MATCHING": 577,
+    "sides": 636
+   },
+   "Japan": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 650,
+    "MATCHING": 6690,
+    "sides": 7340
+   },
+   "Jordan": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 30,
+    "MATCHING": 308,
+    "sides": 338
+   },
+   "Kazakhstan": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 46,
+    "MATCHING": 802,
+    "sides": 848
+   },
+   "Kenya": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 82,
+    "MATCHING": 1334,
+    "sides": 1416
+   },
+   "Kosovo": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 146,
+    "MATCHING": 394,
+    "sides": 540
+   },
+   "Kuwait": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 63,
+    "MATCHING": 245,
+    "sides": 308
+   },
+   "Kyrgyzstan": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 70,
+    "MATCHING": 286,
+    "sides": 356
+   },
+   "Laos": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 25,
+    "MATCHING": 15,
+    "sides": 40
+   },
+   "Latvia": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 61,
+    "MATCHING": 425,
+    "sides": 486
+   },
+   "Lebanon": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 40,
+    "MATCHING": 326,
+    "sides": 366
+   },
+   "Lesotho": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 51,
+    "MATCHING": 497,
+    "sides": 548
+   },
+   "Liberia": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 90,
+    "MATCHING": 18,
+    "sides": 108
+   },
+   "Libya": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 2,
+    "sides": 4
+   },
+   "Liechtenstein": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 34,
+    "sides": 36
+   },
+   "Lithuania": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 63,
+    "MATCHING": 895,
+    "sides": 958
+   },
+   "Luxembourg": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 232,
+    "MATCHING": 3180,
+    "sides": 3412
+   },
+   "Macedonia": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 81,
+    "MATCHING": 419,
+    "sides": 500
+   },
+   "Malawi": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 24,
+    "MATCHING": 24,
+    "sides": 48
+   },
+   "Malaysia": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 10,
+    "MATCHING": 50,
+    "sides": 60
+   },
+   "Mali": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 14,
+    "MATCHING": 14,
+    "sides": 28
+   },
+   "Malta": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 84,
+    "MATCHING": 434,
+    "sides": 518
+   },
+   "Mauritania": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 40,
+    "MATCHING": 18,
+    "sides": 58
+   },
+   "Mexico": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 462,
+    "MATCHING": 2904,
+    "sides": 3366
+   },
+   "Moldova": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 66,
+    "MATCHING": 344,
+    "sides": 410
+   },
+   "Mongolia": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 52,
+    "MATCHING": 16,
+    "sides": 68
+   },
+   "Montenegro": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 114,
+    "MATCHING": 2656,
+    "sides": 2770
+   },
+   "Morocco": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 135,
+    "MATCHING": 3433,
+    "sides": 3568
+   },
+   "Myanmar": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 18,
+    "MATCHING": 280,
+    "sides": 298
+   },
+   "Netherlands": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 847,
+    "MATCHING": 17233,
+    "sides": 18080
+   },
+   "New-Zealand": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 38,
+    "MATCHING": 112,
+    "sides": 150
+   },
+   "Nicaragua": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 40,
+    "MATCHING": 406,
+    "sides": 446
+   },
+   "Nigeria": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 83,
+    "MATCHING": 809,
+    "sides": 892
+   },
+   "Northern-Ireland": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 157,
+    "MATCHING": 979,
+    "sides": 1136
+   },
+   "Norway": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 524,
+    "MATCHING": 8932,
+    "sides": 9456
+   },
+   "Oman": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 32,
+    "MATCHING": 332,
+    "sides": 364
+   },
+   "Panama": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 56,
+    "MATCHING": 452,
+    "sides": 508
+   },
+   "Paraguay": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 98,
+    "MATCHING": 1260,
+    "sides": 1358
+   },
+   "Peru": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 107,
+    "MATCHING": 1085,
+    "sides": 1192
+   },
+   "Philippines": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 17,
+    "MATCHING": 223,
+    "sides": 240
+   },
+   "Poland": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 908,
+    "MATCHING": 8782,
+    "sides": 9690
+   },
+   "Portugal": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 711,
+    "MATCHING": 15395,
+    "sides": 16106
+   },
+   "Qatar": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 54,
+    "MATCHING": 428,
+    "sides": 482
+   },
+   "Romania": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 549,
+    "MATCHING": 3655,
+    "sides": 4204
+   },
+   "Russia": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 450,
+    "MATCHING": 3704,
+    "sides": 4154
+   },
+   "Rwanda": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 62,
+    "MATCHING": 506,
+    "sides": 568
+   },
+   "San-Marino": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 56,
+    "MATCHING": 584,
+    "sides": 640
+   },
+   "Saudi-Arabia": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 277,
+    "MATCHING": 815,
+    "sides": 1092
+   },
+   "Scotland": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 480,
+    "MATCHING": 12008,
+    "sides": 12488
+   },
+   "Senegal": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 33,
+    "MATCHING": 493,
+    "sides": 526
+   },
+   "Serbia": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 187,
+    "MATCHING": 733,
+    "sides": 920
+   },
+   "Singapore": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 20,
+    "MATCHING": 302,
+    "sides": 322
+   },
+   "Slovakia": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 305,
+    "MATCHING": 2679,
+    "sides": 2984
+   },
+   "Slovenia": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 310,
+    "MATCHING": 3302,
+    "sides": 3612
+   },
+   "South-Africa": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 202,
+    "MATCHING": 546,
+    "sides": 748
+   },
+   "South-Korea": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 203,
+    "MATCHING": 1281,
+    "sides": 1484
+   },
+   "Spain": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2512,
+    "MATCHING": 37734,
+    "sides": 40246
+   },
+   "Suriname": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 31,
+    "MATCHING": 15,
+    "sides": 46
+   },
+   "Sweden": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 410,
+    "MATCHING": 5332,
+    "sides": 5742
+   },
+   "Switzerland": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 359,
+    "MATCHING": 2857,
+    "sides": 3216
+   },
+   "Syria": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 43,
+    "MATCHING": 157,
+    "sides": 200
+   },
+   "Tajikistan": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 41,
+    "MATCHING": 279,
+    "sides": 320
+   },
+   "Tanzania": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 198,
+    "MATCHING": 3316,
+    "sides": 3514
+   },
+   "Thailand": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 174,
+    "MATCHING": 1218,
+    "sides": 1392
+   },
+   "Tunisia": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 141,
+    "MATCHING": 793,
+    "sides": 934
+   },
+   "Turkey": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 949,
+    "MATCHING": 14973,
+    "sides": 15922
+   },
+   "Turkmenistan": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 19,
+    "MATCHING": 269,
+    "sides": 288
+   },
+   "USA": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 365,
+    "MATCHING": 9685,
+    "sides": 10050
+   },
+   "Uganda": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 86,
+    "MATCHING": 498,
+    "sides": 584
+   },
+   "Ukraine": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 244,
+    "MATCHING": 1352,
+    "sides": 1596
+   },
+   "United-Arab-Emirates": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 107,
+    "MATCHING": 489,
+    "sides": 596
+   },
+   "Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 73,
+    "sides": 74
+   },
+   "Uruguay": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 122,
+    "MATCHING": 1000,
+    "sides": 1122
+   },
+   "Uzbekistan": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 101,
+    "MATCHING": 425,
+    "sides": 526
+   },
+   "Venezuela": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 131,
+    "MATCHING": 543,
+    "sides": 674
+   },
+   "Vietnam": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 154,
+    "MATCHING": 1850,
+    "sides": 2004
+   },
+   "Wales": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 193,
+    "MATCHING": 1399,
+    "sides": 1592
+   },
+   "World": {
+    "DIVERGENT_OTHER": 2,
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1189,
+    "MATCHING": 11015,
+    "sides": 12206
+   },
+   "Zambia": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 94,
+    "MATCHING": 632,
+    "sides": 726
+   },
+   "Zimbabwe": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 36,
+    "MATCHING": 632,
+    "sides": 668
+   }
+  },
+  "by_provider": {
+   "(none)": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 111,
+    "MATCHING": 491,
+    "sides": 602
+   },
+   "api_football": {
+    "DIVERGENT_OTHER": 3,
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 26904,
+    "MATCHING": 175789,
+    "sides": 202696
+   },
+   "football_data_org": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 25,
+    "MATCHING": 1433,
+    "sides": 1458
+   },
+   "football_data_uk": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 43,
+    "MATCHING": 86029,
+    "sides": 86072
+   },
+   "fotmob": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 7520,
+    "MATCHING": 145544,
+    "sides": 153064
+   },
+   "openfootball": {
+    "MATCHING": 68856,
+    "sides": 68856
+   },
+   "pitchapi": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 202,
+    "MATCHING": 2306,
+    "sides": 2508
+   }
+  },
+  "complete": true,
+  "corpus": {
+   "context_refresh_pending": 105,
+   "fixture_identity_ingestion_conflicts": 2038,
+   "fixtures_by_provider_status_basis": [
+    {
+     "finished_without_history": 0,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 0,
+     "provider": "api_football",
+     "result_overdue": 0,
+     "score_basis": "UNKNOWN",
+     "status": "ABANDONED",
+     "total": 8
+    },
+    {
+     "finished_without_history": 0,
+     "history_on_unfinished": 1,
+     "history_score_mismatch": 1,
+     "identity_unverified": 0,
+     "provider": "api_football",
+     "result_overdue": 0,
+     "score_basis": "UNKNOWN",
+     "status": "AWARDED",
+     "total": 1
+    },
+    {
+     "finished_without_history": 0,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 0,
+     "provider": "api_football",
+     "result_overdue": 0,
+     "score_basis": "UNKNOWN",
+     "status": "CANCELLED",
+     "total": 51
+    },
+    {
+     "finished_without_history": 56,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 0,
+     "provider": "api_football",
+     "result_overdue": 0,
+     "score_basis": "EXTRA_TIME",
+     "status": "FINISHED",
+     "total": 56
+    },
+    {
+     "finished_without_history": 156,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 0,
+     "provider": "api_football",
+     "result_overdue": 0,
+     "score_basis": "PENALTY_SHOOTOUT",
+     "status": "FINISHED",
+     "total": 156
+    },
+    {
+     "finished_without_history": 11244,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 2,
+     "identity_unverified": 0,
+     "provider": "api_football",
+     "result_overdue": 0,
+     "score_basis": "REGULATION_90",
+     "status": "FINISHED",
+     "total": 93822
+    },
+    {
+     "finished_without_history": 4180,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 0,
+     "provider": "api_football",
+     "result_overdue": 0,
+     "score_basis": "UNKNOWN",
+     "status": "FINISHED",
+     "total": 5159
+    },
+    {
+     "finished_without_history": 0,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 0,
+     "provider": "api_football",
+     "result_overdue": 42,
+     "score_basis": "UNKNOWN",
+     "status": "LIVE",
+     "total": 42
+    },
+    {
+     "finished_without_history": 0,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 0,
+     "provider": "api_football",
+     "result_overdue": 0,
+     "score_basis": "UNKNOWN",
+     "status": "POSTPONED",
+     "total": 312
+    },
+    {
+     "finished_without_history": 0,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 0,
+     "provider": "api_football",
+     "result_overdue": 1557,
+     "score_basis": "UNKNOWN",
+     "status": "SCHEDULED",
+     "total": 1753
+    },
+    {
+     "finished_without_history": 10,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 0,
+     "provider": "football_data_org",
+     "result_overdue": 0,
+     "score_basis": "REGULATION_90",
+     "status": "FINISHED",
+     "total": 19
+    },
+    {
+     "finished_without_history": 0,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 0,
+     "provider": "football_data_org",
+     "result_overdue": 0,
+     "score_basis": "UNKNOWN",
+     "status": "FINISHED",
+     "total": 922
+    },
+    {
+     "finished_without_history": 0,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 0,
+     "provider": "football_data_org",
+     "result_overdue": 18,
+     "score_basis": "UNKNOWN",
+     "status": "SCHEDULED",
+     "total": 18
+    },
+    {
+     "finished_without_history": 0,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 0,
+     "provider": "football_data_uk",
+     "result_overdue": 0,
+     "score_basis": "UNKNOWN",
+     "status": "FINISHED",
+     "total": 47964
+    },
+    {
+     "finished_without_history": 0,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 140,
+     "provider": "fotmob",
+     "result_overdue": 0,
+     "score_basis": "UNKNOWN",
+     "status": "AWARDED",
+     "total": 196
+    },
+    {
+     "finished_without_history": 0,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 1406,
+     "provider": "fotmob",
+     "result_overdue": 0,
+     "score_basis": "UNKNOWN",
+     "status": "CANCELLED",
+     "total": 1957
+    },
+    {
+     "finished_without_history": 89,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 62,
+     "provider": "fotmob",
+     "result_overdue": 0,
+     "score_basis": "EXTRA_TIME",
+     "status": "FINISHED",
+     "total": 89
+    },
+    {
+     "finished_without_history": 212,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 180,
+     "provider": "fotmob",
+     "result_overdue": 0,
+     "score_basis": "PENALTY_SHOOTOUT",
+     "status": "FINISHED",
+     "total": 212
+    },
+    {
+     "finished_without_history": 5,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 40007,
+     "provider": "fotmob",
+     "result_overdue": 0,
+     "score_basis": "REGULATION_90",
+     "status": "FINISHED",
+     "total": 71459
+    },
+    {
+     "finished_without_history": 4,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 1,
+     "provider": "fotmob",
+     "result_overdue": 0,
+     "score_basis": "UNKNOWN",
+     "status": "FINISHED",
+     "total": 11
+    },
+    {
+     "finished_without_history": 0,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 31,
+     "provider": "fotmob",
+     "result_overdue": 31,
+     "score_basis": "UNKNOWN",
+     "status": "LIVE",
+     "total": 31
+    },
+    {
+     "finished_without_history": 0,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 3807,
+     "provider": "fotmob",
+     "result_overdue": 402,
+     "score_basis": "UNKNOWN",
+     "status": "SCHEDULED",
+     "total": 6161
+    },
+    {
+     "finished_without_history": 0,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 44,
+     "provider": "(none)",
+     "result_overdue": 0,
+     "score_basis": "UNKNOWN",
+     "status": "AWARDED",
+     "total": 44
+    },
+    {
+     "finished_without_history": 0,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 260,
+     "provider": "(none)",
+     "result_overdue": 0,
+     "score_basis": "UNKNOWN",
+     "status": "CANCELLED",
+     "total": 261
+    },
+    {
+     "finished_without_history": 7,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 7,
+     "provider": "(none)",
+     "result_overdue": 0,
+     "score_basis": "EXTRA_TIME",
+     "status": "FINISHED",
+     "total": 7
+    },
+    {
+     "finished_without_history": 4,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 4,
+     "provider": "(none)",
+     "result_overdue": 0,
+     "score_basis": "PENALTY_SHOOTOUT",
+     "status": "FINISHED",
+     "total": 4
+    },
+    {
+     "finished_without_history": 26,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 14975,
+     "provider": "(none)",
+     "result_overdue": 0,
+     "score_basis": "REGULATION_90",
+     "status": "FINISHED",
+     "total": 16146
+    },
+    {
+     "finished_without_history": 306,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 11,
+     "provider": "(none)",
+     "result_overdue": 0,
+     "score_basis": "UNKNOWN",
+     "status": "FINISHED",
+     "total": 339
+    },
+    {
+     "finished_without_history": 0,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 2,
+     "provider": "(none)",
+     "result_overdue": 2,
+     "score_basis": "UNKNOWN",
+     "status": "LIVE",
+     "total": 2
+    },
+    {
+     "finished_without_history": 0,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 190,
+     "provider": "(none)",
+     "result_overdue": 91,
+     "score_basis": "UNKNOWN",
+     "status": "SCHEDULED",
+     "total": 195
+    },
+    {
+     "finished_without_history": 0,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 0,
+     "provider": "openfootball",
+     "result_overdue": 0,
+     "score_basis": "REGULATION_90",
+     "status": "FINISHED",
+     "total": 1683
+    },
+    {
+     "finished_without_history": 0,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 0,
+     "provider": "openfootball",
+     "result_overdue": 0,
+     "score_basis": "UNKNOWN",
+     "status": "FINISHED",
+     "total": 38237
+    },
+    {
+     "finished_without_history": 0,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 631,
+     "provider": "pitchapi",
+     "result_overdue": 0,
+     "score_basis": "REGULATION_90",
+     "status": "FINISHED",
+     "total": 759
+    },
+    {
+     "finished_without_history": 755,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 755,
+     "provider": "pitchapi",
+     "result_overdue": 0,
+     "score_basis": "UNKNOWN",
+     "status": "FINISHED",
+     "total": 755
+    },
+    {
+     "finished_without_history": 0,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 30,
+     "provider": "pitchapi",
+     "result_overdue": 0,
+     "score_basis": "UNKNOWN",
+     "status": "POSTPONED",
+     "total": 30
+    },
+    {
+     "finished_without_history": 0,
+     "history_on_unfinished": 0,
+     "history_score_mismatch": 0,
+     "identity_unverified": 26,
+     "provider": "pitchapi",
+     "result_overdue": 27,
+     "score_basis": "UNKNOWN",
+     "status": "SCHEDULED",
+     "total": 27
+    }
+   ],
+   "not_audited": [
+    "standings",
+    "h2h_correctness",
+    "team_statistics_beyond_form",
+    "live_events",
+    "lineups",
+    "availability"
+   ],
+   "provider_result_conflicts": 1845
+  },
+  "coverage_fraction": 1.0,
+  "default_window_flags": {
+   "AWARDED_INCLUDED": 2,
+   "ORDER_AMBIGUOUS": 939,
+   "RESULT_PENDING": 13501,
+   "SCORE_CONFLICT": 10,
+   "STALE": 11784,
+   "UNKNOWN_SCORE_BASIS": 22933,
+   "UNQUALIFIED_RESULT": 35386
+  },
+  "divergent_competition_seasons": {
+   "Albania / 1st Division / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 60,
+    "MATCHING": 406,
+    "sides": 466
+   },
+   "Albania / Superliga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 41,
+    "MATCHING": 387,
+    "sides": 428
+   },
+   "Algeria / Ligue 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 235,
+    "MATCHING": 3591,
+    "sides": 3826
+   },
+   "Algeria / Ligue 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 166,
+    "MATCHING": 994,
+    "sides": 1160
+   },
+   "Andorra / 1a Divisi\u00f3 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 22,
+    "MATCHING": 290,
+    "sides": 312
+   },
+   "Angola / Girabola / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 47,
+    "MATCHING": 505,
+    "sides": 552
+   },
+   "Antigua-And-Barbuda / Premier Division / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 17,
+    "sides": 18
+   },
+   "Argentina / Copa Argentina / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 2,
+    "sides": 4
+   },
+   "Argentina / Federal A Promotion Playoff / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 10,
+    "MATCHING": 40,
+    "sides": 50
+   },
+   "Argentina / Liga Profesional Argentina / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 137,
+    "MATCHING": 791,
+    "sides": 928
+   },
+   "Argentina / Primera B Metropolitana / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 62,
+    "MATCHING": 978,
+    "sides": 1040
+   },
+   "Argentina / Primera C / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 28,
+    "MATCHING": 1232,
+    "sides": 1260
+   },
+   "Argentina / Primera Nacional / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 105,
+    "MATCHING": 1529,
+    "sides": 1634
+   },
+   "Argentina / Primera Nacional / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 16,
+    "MATCHING": 20,
+    "sides": 36
+   },
+   "Argentina / Reserve League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 138,
+    "MATCHING": 64,
+    "sides": 202
+   },
+   "Argentina / Torneo Federal A / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 40,
+    "MATCHING": 1110,
+    "sides": 1150
+   },
+   "Argentina / Torneo Promocional Amateur / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 370,
+    "sides": 372
+   },
+   "Armenia / Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 8,
+    "MATCHING": 56,
+    "sides": 64
+   },
+   "Armenia / First League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 47,
+    "MATCHING": 331,
+    "sides": 378
+   },
+   "Armenia / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 265,
+    "MATCHING": 2261,
+    "sides": 2526
+   },
+   "Aruba / Division di Honor / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 20,
+    "MATCHING": 172,
+    "sides": 192
+   },
+   "Australia / A-League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 26,
+    "MATCHING": 362,
+    "sides": 388
+   },
+   "Australia / A-League / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 18,
+    "sides": 20
+   },
+   "Australia / A-League Women / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 16,
+    "MATCHING": 300,
+    "sides": 316
+   },
+   "Australia / Australian Championship / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 33,
+    "MATCHING": 15,
+    "sides": 48
+   },
+   "Australia / Australian Championship Grp. D / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 15,
+    "sides": 16
+   },
+   "Austria / 2. Liga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 48,
+    "MATCHING": 16,
+    "sides": 64
+   },
+   "Austria / 2. Liga / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 12,
+    "MATCHING": 4,
+    "sides": 16
+   },
+   "Austria / Bundesliga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 30,
+    "MATCHING": 408,
+    "sides": 438
+   },
+   "Austria / Bundesliga / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 23,
+    "sides": 24
+   },
+   "Austria / Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 16,
+    "MATCHING": 110,
+    "sides": 126
+   },
+   "Austria / Frauenliga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 20,
+    "MATCHING": 246,
+    "sides": 266
+   },
+   "Austria / Regionalliga - North / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 54,
+    "MATCHING": 16,
+    "sides": 70
+   },
+   "Austria / Regionalliga - Ost / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 64,
+    "MATCHING": 496,
+    "sides": 560
+   },
+   "Austria / Regionalliga - South / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 55,
+    "MATCHING": 17,
+    "sides": 72
+   },
+   "Austria / Regionalliga - West / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 64,
+    "MATCHING": 496,
+    "sides": 560
+   },
+   "Azerbaijan / Birinci Dasta / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 20,
+    "MATCHING": 280,
+    "sides": 300
+   },
+   "Azerbaijan / Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 18,
+    "MATCHING": 62,
+    "sides": 80
+   },
+   "Azerbaijan / Premyer Liqa / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 34,
+    "MATCHING": 386,
+    "sides": 420
+   },
+   "Bahrain / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 20,
+    "MATCHING": 292,
+    "sides": 312
+   },
+   "Bangladesh / Federation Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 13,
+    "MATCHING": 3,
+    "sides": 16
+   },
+   "Bangladesh / Premier League / 2027": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 104,
+    "MATCHING": 652,
+    "sides": 756
+   },
+   "Belarus / 1. Division / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 73,
+    "MATCHING": 631,
+    "sides": 704
+   },
+   "Belarus / Coppa / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "sides": 2
+   },
+   "Belarus / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 52,
+    "MATCHING": 520,
+    "sides": 572
+   },
+   "Belarus / Premier League / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 3,
+    "MATCHING": 1,
+    "sides": 4
+   },
+   "Belgium / Challenger Pro League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 37,
+    "MATCHING": 479,
+    "sides": 516
+   },
+   "Belgium / Cup / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 3,
+    "MATCHING": 29,
+    "sides": 32
+   },
+   "Belgium / First Amateur Division / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 86,
+    "MATCHING": 944,
+    "sides": 1030
+   },
+   "Belgium / Jupiler Pro League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 48,
+    "MATCHING": 4370,
+    "sides": 4418
+   },
+   "Belgium / Reserve Pro League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 28,
+    "MATCHING": 250,
+    "sides": 278
+   },
+   "Belgium / Second Amateur Division - ACFF / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 69,
+    "MATCHING": 635,
+    "sides": 704
+   },
+   "Belgium / Second Amateur Division - VFV A / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 54,
+    "MATCHING": 512,
+    "sides": 566
+   },
+   "Belgium / Second Amateur Division - VFV B / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 54,
+    "MATCHING": 516,
+    "sides": 570
+   },
+   "Belgium / Super League Women / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 16,
+    "MATCHING": 224,
+    "sides": 240
+   },
+   "Benin / Championnat National / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 70,
+    "MATCHING": 1210,
+    "sides": 1280
+   },
+   "Bhutan / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 5,
+    "sides": 6
+   },
+   "Bolivia / Copa de la Divisi\u00f3n Profesional / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 35,
+    "MATCHING": 23,
+    "sides": 58
+   },
+   "Bolivia / Nacional B / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 14,
+    "MATCHING": 22,
+    "sides": 36
+   },
+   "Bolivia / Primera Divisi\u00f3n / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 61,
+    "MATCHING": 661,
+    "sides": 722
+   },
+   "Bolivia / Primera Divisi\u00f3n / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 6,
+    "MATCHING": 10,
+    "sides": 16
+   },
+   "Bosnia / 1st League - FBiH / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 64,
+    "MATCHING": 438,
+    "sides": 502
+   },
+   "Bosnia / 1st League - RS / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 70,
+    "MATCHING": 626,
+    "sides": 696
+   },
+   "Bosnia / Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 28,
+    "MATCHING": 76,
+    "sides": 104
+   },
+   "Bosnia / Premier League / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 9,
+    "sides": 10
+   },
+   "Bosnia / Premijer Liga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 24,
+    "MATCHING": 156,
+    "sides": 180
+   },
+   "Botswana / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 15,
+    "MATCHING": 537,
+    "sides": 552
+   },
+   "Brazil / Brasileiro U17 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 16,
+    "MATCHING": 32,
+    "sides": 48
+   },
+   "Brazil / Brasiliense B / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 9,
+    "MATCHING": 75,
+    "sides": 84
+   },
+   "Brazil / Carioca - 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 60,
+    "MATCHING": 12,
+    "sides": 72
+   },
+   "Brazil / Carioca B2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 42,
+    "MATCHING": 152,
+    "sides": 194
+   },
+   "Brazil / Carioca U20 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 36,
+    "MATCHING": 186,
+    "sides": 222
+   },
+   "Brazil / Catarinense - 3 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 28,
+    "sides": 32
+   },
+   "Brazil / Copa Do Brasil / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 8,
+    "sides": 8
+   },
+   "Brazil / Copa Fares Lopes / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 5,
+    "MATCHING": 9,
+    "sides": 14
+   },
+   "Brazil / Copa Paulista / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 282,
+    "sides": 284
+   },
+   "Brazil / Copa Santa Catarina / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 17,
+    "MATCHING": 77,
+    "sides": 94
+   },
+   "Brazil / Copa do Brasil U20 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 47,
+    "MATCHING": 105,
+    "sides": 152
+   },
+   "Brazil / Ga\u00facho - 3 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 8,
+    "MATCHING": 100,
+    "sides": 108
+   },
+   "Brazil / Goiano - 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 18,
+    "MATCHING": 124,
+    "sides": 142
+   },
+   "Brazil / Goiano - 3 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 10,
+    "MATCHING": 124,
+    "sides": 134
+   },
+   "Brazil / Kings Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 30,
+    "MATCHING": 10,
+    "sides": 40
+   },
+   "Brazil / Mineiro - 3 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 26,
+    "MATCHING": 176,
+    "sides": 202
+   },
+   "Brazil / Mineiro U20 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 6,
+    "MATCHING": 8,
+    "sides": 14
+   },
+   "Brazil / Paraense A3 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 52,
+    "sides": 54
+   },
+   "Brazil / Paraense U20 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 9,
+    "MATCHING": 43,
+    "sides": 52
+   },
+   "Brazil / Paraibano 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 15,
+    "MATCHING": 115,
+    "sides": 130
+   },
+   "Brazil / Paranaense - 3 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 132,
+    "sides": 134
+   },
+   "Brazil / Paulista - U20 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 21,
+    "MATCHING": 1105,
+    "sides": 1126
+   },
+   "Brazil / Pernambucano - 1 / 2027": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 95,
+    "MATCHING": 33,
+    "sides": 128
+   },
+   "Brazil / Pernambucano - U20 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 20,
+    "sides": 22
+   },
+   "Brazil / Piauiense - 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 6,
+    "sides": 8
+   },
+   "Brazil / Sergipano - 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 42,
+    "MATCHING": 278,
+    "sides": 320
+   },
+   "Brazil / Serie A / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 97,
+    "MATCHING": 4097,
+    "sides": 4194
+   },
+   "Brazil / Serie B / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 107,
+    "MATCHING": 803,
+    "sides": 910
+   },
+   "Brazil / Serie C / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 10,
+    "MATCHING": 440,
+    "sides": 450
+   },
+   "Brazil / S\u00e9rie A / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 13,
+    "MATCHING": 5,
+    "sides": 18
+   },
+   "Brazil / S\u00e9rie B / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 9,
+    "MATCHING": 9,
+    "sides": 18
+   },
+   "Brazil / S\u00e9rie C - Final / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "sides": 2
+   },
+   "Bulgaria / Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 170,
+    "sides": 174
+   },
+   "Bulgaria / Cup / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 10,
+    "MATCHING": 22,
+    "sides": 32
+   },
+   "Bulgaria / First League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 37,
+    "MATCHING": 17,
+    "sides": 54
+   },
+   "Bulgaria / Pro Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 3,
+    "MATCHING": 1,
+    "sides": 4
+   },
+   "Bulgaria / Second League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 109,
+    "MATCHING": 4521,
+    "sides": 4630
+   },
+   "Bulgaria / Third League - Northeast / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 69,
+    "MATCHING": 469,
+    "sides": 538
+   },
+   "Bulgaria / Third League - Northwest / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 35,
+    "MATCHING": 329,
+    "sides": 364
+   },
+   "Bulgaria / Third League - Southeast / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 75,
+    "MATCHING": 777,
+    "sides": 852
+   },
+   "Bulgaria / Third League - Southwest / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 98,
+    "MATCHING": 696,
+    "sides": 794
+   },
+   "Burkina-Faso / Ligue 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 58,
+    "MATCHING": 494,
+    "sides": 552
+   },
+   "Burundi / Ligue A / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 90,
+    "MATCHING": 16,
+    "sides": 106
+   },
+   "Cambodia / C-League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 22,
+    "MATCHING": 10,
+    "sides": 32
+   },
+   "Cameroon / Elite One / 2027": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 29,
+    "MATCHING": 15,
+    "sides": 44
+   },
+   "Cameroon / Elite Two / 2027": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 20,
+    "MATCHING": 340,
+    "sides": 360
+   },
+   "Canada / Canadian Championship - Final / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 1,
+    "sides": 2
+   },
+   "Canada / Canadian Championship / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "sides": 2
+   },
+   "Canada / Canadian Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 20,
+    "MATCHING": 244,
+    "sides": 264
+   },
+   "Canada / Northern Super League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 8,
+    "sides": 12
+   },
+   "Chile / Copa Chile / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 8,
+    "MATCHING": 216,
+    "sides": 224
+   },
+   "Chile / Copa de la Liga - Final / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "sides": 2
+   },
+   "Chile / Cup / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 4,
+    "sides": 6
+   },
+   "Chile / Primera B / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 40,
+    "MATCHING": 530,
+    "sides": 570
+   },
+   "Chile / Primera B / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 10,
+    "sides": 14
+   },
+   "Chile / Primera Divisi\u00f3n / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 49,
+    "MATCHING": 19,
+    "sides": 68
+   },
+   "Chile / Segunda Divisi\u00f3n / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 45,
+    "MATCHING": 379,
+    "sides": 424
+   },
+   "China / FA Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "sides": 2
+   },
+   "China / League One / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 64,
+    "MATCHING": 496,
+    "sides": 560
+   },
+   "China / League Two / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 86,
+    "MATCHING": 584,
+    "sides": 670
+   },
+   "China / Super League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 26,
+    "MATCHING": 380,
+    "sides": 406
+   },
+   "China / Super League / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 3,
+    "MATCHING": 13,
+    "sides": 16
+   },
+   "Chinese-Taipei / Taiwan Football Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 8,
+    "MATCHING": 184,
+    "sides": 192
+   },
+   "Colombia / Copa Colombia / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 10,
+    "MATCHING": 140,
+    "sides": 150
+   },
+   "Colombia / Cup / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 3,
+    "MATCHING": 5,
+    "sides": 8
+   },
+   "Colombia / Primera A / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 112,
+    "MATCHING": 922,
+    "sides": 1034
+   },
+   "Colombia / Primera A / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 14,
+    "MATCHING": 2,
+    "sides": 16
+   },
+   "Colombia / Primera B / 2026": {
+    "DIVERGENT_OTHER": 1,
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 89,
+    "MATCHING": 640,
+    "sides": 730
+   },
+   "Colombia / Primera B / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 6,
+    "sides": 10
+   },
+   "Congo-DR / Ligue 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 81,
+    "MATCHING": 31,
+    "sides": 112
+   },
+   "Costa-Rica / Liga de Ascenso / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 49,
+    "MATCHING": 643,
+    "sides": 692
+   },
+   "Costa-Rica / Primera Divisi\u00f3n / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 48,
+    "MATCHING": 12,
+    "sides": 60
+   },
+   "Croatia / Croatian Cup - 8th Finals / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 1,
+    "sides": 2
+   },
+   "Croatia / Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 3,
+    "MATCHING": 87,
+    "sides": 90
+   },
+   "Croatia / First NL / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 45,
+    "MATCHING": 415,
+    "sides": 460
+   },
+   "Croatia / HNL / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 21,
+    "MATCHING": 2525,
+    "sides": 2546
+   },
+   "Croatia / HNL / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 12,
+    "sides": 14
+   },
+   "Croatia / Second NL / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 60,
+    "MATCHING": 262,
+    "sides": 322
+   },
+   "Cyprus / 1. Division / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 41,
+    "MATCHING": 497,
+    "sides": 538
+   },
+   "Cyprus / 2. Division / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 48,
+    "MATCHING": 16,
+    "sides": 64
+   },
+   "Cyprus / 2. Division / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 8,
+    "MATCHING": 8,
+    "sides": 16
+   },
+   "Cyprus / Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 19,
+    "MATCHING": 65,
+    "sides": 84
+   },
+   "Cyprus / Cyprus League / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 7,
+    "MATCHING": 9,
+    "sides": 16
+   },
+   "Czech-Republic / 1. Liga / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 32,
+    "sides": 36
+   },
+   "Czech-Republic / 1. Liga U19 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 64,
+    "MATCHING": 16,
+    "sides": 80
+   },
+   "Czech-Republic / 1. Liga Women / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 16,
+    "MATCHING": 168,
+    "sides": 184
+   },
+   "Czech-Republic / 3. liga - CFL A / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 65,
+    "MATCHING": 497,
+    "sides": 562
+   },
+   "Czech-Republic / 3. liga - CFL B / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 70,
+    "MATCHING": 16,
+    "sides": 86
+   },
+   "Czech-Republic / 3. liga - MSFL / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 70,
+    "MATCHING": 632,
+    "sides": 702
+   },
+   "Czech-Republic / 4. liga - Divizie A / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 53,
+    "MATCHING": 495,
+    "sides": 548
+   },
+   "Czech-Republic / 4. liga - Divizie B / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 64,
+    "MATCHING": 466,
+    "sides": 530
+   },
+   "Czech-Republic / 4. liga - Divizie C / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 64,
+    "MATCHING": 496,
+    "sides": 560
+   },
+   "Czech-Republic / 4. liga - Divizie D / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 63,
+    "MATCHING": 497,
+    "sides": 560
+   },
+   "Czech-Republic / 4. liga - Divizie E / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 64,
+    "MATCHING": 436,
+    "sides": 500
+   },
+   "Czech-Republic / 4. liga - Divizie F / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 64,
+    "MATCHING": 16,
+    "sides": 80
+   },
+   "Czech-Republic / Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 14,
+    "MATCHING": 260,
+    "sides": 274
+   },
+   "Czech-Republic / Czech Liga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 45,
+    "MATCHING": 581,
+    "sides": 626
+   },
+   "Czech-Republic / FNL / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 47,
+    "MATCHING": 497,
+    "sides": 544
+   },
+   "Czech-Republic / FNL / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 12,
+    "sides": 16
+   },
+   "Denmark / 1. Division / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 34,
+    "MATCHING": 398,
+    "sides": 432
+   },
+   "Denmark / 1. Division / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 22,
+    "sides": 26
+   },
+   "Denmark / 2. Division / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 48,
+    "MATCHING": 396,
+    "sides": 444
+   },
+   "Denmark / 2. Division / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 9,
+    "MATCHING": 3,
+    "sides": 12
+   },
+   "Denmark / 3. Division / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 48,
+    "MATCHING": 396,
+    "sides": 444
+   },
+   "Denmark / 3. Division / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 5,
+    "MATCHING": 7,
+    "sides": 12
+   },
+   "Denmark / B-Liga Women / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 26,
+    "MATCHING": 8,
+    "sides": 34
+   },
+   "Denmark / DBU Pokalen / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 16,
+    "sides": 16
+   },
+   "Denmark / Kvindeliga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 28,
+    "MATCHING": 14,
+    "sides": 42
+   },
+   "Denmark / Superliga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 30,
+    "MATCHING": 404,
+    "sides": 434
+   },
+   "Dominican-Republic / Liga Mayor / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 26,
+    "MATCHING": 16,
+    "sides": 42
+   },
+   "Ecuador / Copa Ecuador / 2025": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 8,
+    "sides": 8
+   },
+   "Ecuador / Liga Pro / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 44,
+    "MATCHING": 506,
+    "sides": 550
+   },
+   "Ecuador / Liga Pro Serie B / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 34,
+    "MATCHING": 372,
+    "sides": 406
+   },
+   "Egypt / Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 25,
+    "MATCHING": 7,
+    "sides": 32
+   },
+   "Egypt / League Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 16,
+    "MATCHING": 16,
+    "sides": 32
+   },
+   "Egypt / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 50,
+    "MATCHING": 494,
+    "sides": 544
+   },
+   "Egypt / Premier League / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 14,
+    "sides": 18
+   },
+   "Egypt / Second League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 52,
+    "MATCHING": 780,
+    "sides": 832
+   },
+   "El-Salvador / Copa Presidente / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 12,
+    "MATCHING": 4,
+    "sides": 16
+   },
+   "El-Salvador / Primera Division / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 60,
+    "MATCHING": 506,
+    "sides": 566
+   },
+   "England / Championship / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 131,
+    "MATCHING": 7213,
+    "sides": 7344
+   },
+   "England / Championship / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 14,
+    "MATCHING": 12,
+    "sides": 26
+   },
+   "England / EFL Trophy / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 86,
+    "MATCHING": 20,
+    "sides": 106
+   },
+   "England / EFL Trophy Northern Grp. F / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 1,
+    "sides": 2
+   },
+   "England / EFL Trophy Southern Grp. B / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 1,
+    "sides": 2
+   },
+   "England / FA Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 111,
+    "MATCHING": 935,
+    "sides": 1046
+   },
+   "England / FA Cup Qualification / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 39,
+    "MATCHING": 47,
+    "sides": 86
+   },
+   "England / FA Trophy / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 47,
+    "MATCHING": 589,
+    "sides": 636
+   },
+   "England / FA WSL / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 34,
+    "MATCHING": 300,
+    "sides": 334
+   },
+   "England / League Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 14,
+    "MATCHING": 2,
+    "sides": 16
+   },
+   "England / League One / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 133,
+    "MATCHING": 8843,
+    "sides": 8976
+   },
+   "England / League One / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 40,
+    "sides": 42
+   },
+   "England / League Two / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 100,
+    "MATCHING": 8780,
+    "sides": 8880
+   },
+   "England / League Two / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 16,
+    "MATCHING": 74,
+    "sides": 90
+   },
+   "England / National League - North / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 108,
+    "MATCHING": 1112,
+    "sides": 1220
+   },
+   "England / National League - South / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 127,
+    "MATCHING": 1117,
+    "sides": 1244
+   },
+   "England / National League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 107,
+    "MATCHING": 6913,
+    "sides": 7020
+   },
+   "England / National League Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 53,
+    "MATCHING": 9,
+    "sides": 62
+   },
+   "England / National League Cup Group A / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 3,
+    "MATCHING": 7,
+    "sides": 10
+   },
+   "England / National League Cup Group B / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 4,
+    "sides": 6
+   },
+   "England / National League Cup Group C / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 3,
+    "sides": 4
+   },
+   "England / National League Cup Group D / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 6,
+    "sides": 8
+   },
+   "England / National League North / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 21,
+    "MATCHING": 15,
+    "sides": 36
+   },
+   "England / Non League Premier - Isthmian / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 132,
+    "MATCHING": 16,
+    "sides": 148
+   },
+   "England / Non League Premier - Northern / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 139,
+    "MATCHING": 17,
+    "sides": 156
+   },
+   "England / Non League Premier - Southern Central / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 154,
+    "MATCHING": 16,
+    "sides": 170
+   },
+   "England / Non League Premier - Southern South / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 134,
+    "MATCHING": 960,
+    "sides": 1094
+   },
+   "England / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 579,
+    "MATCHING": 13111,
+    "sides": 13690
+   },
+   "England / Premier League 2 Division One / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 55,
+    "MATCHING": 5,
+    "sides": 60
+   },
+   "England / Premier League Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 46,
+    "MATCHING": 24,
+    "sides": 70
+   },
+   "England / Professional Development League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 43,
+    "MATCHING": 13,
+    "sides": 56
+   },
+   "England / U18 Premier League - North / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 21,
+    "MATCHING": 327,
+    "sides": 348
+   },
+   "England / U18 Premier League - South / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 22,
+    "MATCHING": 16,
+    "sides": 38
+   },
+   "England / WSL Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 36,
+    "MATCHING": 30,
+    "sides": 66
+   },
+   "England / Women's Championship / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 22,
+    "MATCHING": 14,
+    "sides": 36
+   },
+   "England / Women's League Cup / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 25,
+    "sides": 26
+   },
+   "Estonia / Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 134,
+    "sides": 138
+   },
+   "Estonia / Esiliiga A / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 39,
+    "MATCHING": 377,
+    "sides": 416
+   },
+   "Estonia / Esiliiga B / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 35,
+    "MATCHING": 379,
+    "sides": 414
+   },
+   "Estonia / Meistriliiga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 51,
+    "MATCHING": 381,
+    "sides": 432
+   },
+   "Eswatini / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 30,
+    "MATCHING": 382,
+    "sides": 412
+   },
+   "Ethiopia / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 41,
+    "MATCHING": 647,
+    "sides": 688
+   },
+   "Faroe-Islands / 1. Deild / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 8,
+    "MATCHING": 282,
+    "sides": 290
+   },
+   "Faroe-Islands / Meistaradeildin / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 12,
+    "MATCHING": 1898,
+    "sides": 1910
+   },
+   "Finland / Kakkonen - Lohko A / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 184,
+    "sides": 188
+   },
+   "Finland / Kakkonen - Lohko B / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 224,
+    "sides": 228
+   },
+   "Finland / Kakkonen - Lohko C / 2025": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 184,
+    "sides": 188
+   },
+   "Finland / Kakkonen - Play-offs / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 3,
+    "MATCHING": 9,
+    "sides": 12
+   },
+   "Finland / Kansallinen Liiga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 6,
+    "MATCHING": 612,
+    "sides": 618
+   },
+   "Finland / Veikkausliiga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 34,
+    "MATCHING": 358,
+    "sides": 392
+   },
+   "Finland / Veikkausliiga Championship Group / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 15,
+    "sides": 16
+   },
+   "Finland / Veikkausliiga Qualification / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 1,
+    "sides": 2
+   },
+   "Finland / Ykk\u00f6nen / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 335,
+    "sides": 336
+   },
+   "Finland / Ykk\u00f6sliiga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 284,
+    "sides": 288
+   },
+   "Finland / Ykk\u00f6sliiga / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 8,
+    "MATCHING": 2,
+    "sides": 10
+   },
+   "France / Feminine Division 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 32,
+    "MATCHING": 16,
+    "sides": 48
+   },
+   "France / Ligue 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 342,
+    "MATCHING": 12952,
+    "sides": 13294
+   },
+   "France / Ligue 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 279,
+    "MATCHING": 10523,
+    "sides": 10802
+   },
+   "France / Ligue 3 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 84,
+    "MATCHING": 4294,
+    "sides": 4378
+   },
+   "France / National 2 - Group A / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 34,
+    "MATCHING": 16,
+    "sides": 50
+   },
+   "France / National 2 - Group B / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 32,
+    "MATCHING": 16,
+    "sides": 48
+   },
+   "France / National 2 - Group C / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 47,
+    "MATCHING": 17,
+    "sides": 64
+   },
+   "Georgia / David Kipiani Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 82,
+    "sides": 86
+   },
+   "Georgia / Erovnuli Liga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 53,
+    "MATCHING": 2495,
+    "sides": 2548
+   },
+   "Georgia / Erovnuli Liga 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 30,
+    "MATCHING": 10,
+    "sides": 40
+   },
+   "Georgia / Liga 3 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 37,
+    "MATCHING": 507,
+    "sides": 544
+   },
+   "Germany / 2. Bundesliga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 196,
+    "MATCHING": 8484,
+    "sides": 8680
+   },
+   "Germany / 2. Frauen Bundesliga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 31,
+    "MATCHING": 375,
+    "sides": 406
+   },
+   "Germany / 3. Liga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 183,
+    "MATCHING": 5311,
+    "sides": 5494
+   },
+   "Germany / Bundesliga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 318,
+    "MATCHING": 11846,
+    "sides": 12164
+   },
+   "Germany / DFB Pokal - Women / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 12,
+    "MATCHING": 4,
+    "sides": 16
+   },
+   "Germany / DFB Pokal / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 22,
+    "MATCHING": 166,
+    "sides": 188
+   },
+   "Germany / Frauen Bundesliga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 107,
+    "MATCHING": 1977,
+    "sides": 2084
+   },
+   "Germany / Oberliga - Baden-W\u00fcrttemberg / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 74,
+    "MATCHING": 630,
+    "sides": 704
+   },
+   "Germany / Oberliga - Bayern Nord / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 72,
+    "MATCHING": 630,
+    "sides": 702
+   },
+   "Germany / Oberliga - Bayern S\u00fcd / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 73,
+    "MATCHING": 561,
+    "sides": 634
+   },
+   "Germany / Oberliga - Bremen / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 42,
+    "MATCHING": 502,
+    "sides": 544
+   },
+   "Germany / Oberliga - Hamburg / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 76,
+    "MATCHING": 18,
+    "sides": 94
+   },
+   "Germany / Oberliga - Hessen / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 71,
+    "MATCHING": 17,
+    "sides": 88
+   },
+   "Germany / Oberliga - Mittelrhein / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 50,
+    "MATCHING": 16,
+    "sides": 66
+   },
+   "Germany / Oberliga - Niederrhein / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 54,
+    "MATCHING": 18,
+    "sides": 72
+   },
+   "Germany / Oberliga - Niedersachsen / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 50,
+    "MATCHING": 30,
+    "sides": 80
+   },
+   "Germany / Oberliga - Nordost-Nord / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 48,
+    "MATCHING": 18,
+    "sides": 66
+   },
+   "Germany / Oberliga - Nordost-S\u00fcd / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 38,
+    "MATCHING": 506,
+    "sides": 544
+   },
+   "Germany / Oberliga - Rheinland-Pfalz / Saar / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 73,
+    "MATCHING": 19,
+    "sides": 92
+   },
+   "Germany / Oberliga - Schleswig-Holstein / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 66,
+    "MATCHING": 16,
+    "sides": 82
+   },
+   "Germany / Oberliga - Westfalen / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 51,
+    "MATCHING": 25,
+    "sides": 76
+   },
+   "Germany / Regionalliga - Bayern / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 93,
+    "MATCHING": 641,
+    "sides": 734
+   },
+   "Germany / Regionalliga - Nord / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 65,
+    "MATCHING": 635,
+    "sides": 700
+   },
+   "Germany / Regionalliga - Nordost / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 46,
+    "MATCHING": 308,
+    "sides": 354
+   },
+   "Germany / Regionalliga - SudWest / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 76,
+    "MATCHING": 630,
+    "sides": 706
+   },
+   "Germany / Regionalliga - West / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 69,
+    "MATCHING": 607,
+    "sides": 676
+   },
+   "Germany / Regionalliga Bayern / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 19,
+    "MATCHING": 71,
+    "sides": 90
+   },
+   "Germany / U19 Bundesliga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 147,
+    "MATCHING": 1875,
+    "sides": 2022
+   },
+   "Ghana / Division One League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 142,
+    "MATCHING": 50,
+    "sides": 192
+   },
+   "Ghana / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 366,
+    "MATCHING": 4112,
+    "sides": 4478
+   },
+   "Gibraltar / Premier Division / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 27,
+    "MATCHING": 15,
+    "sides": 42
+   },
+   "Greece / Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 15,
+    "MATCHING": 157,
+    "sides": 172
+   },
+   "Greece / Gamma Ethniki - Group 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 30,
+    "MATCHING": 10,
+    "sides": 40
+   },
+   "Greece / Gamma Ethniki - Group 10 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 50,
+    "MATCHING": 12,
+    "sides": 62
+   },
+   "Greece / Gamma Ethniki - Group 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 34,
+    "MATCHING": 550,
+    "sides": 584
+   },
+   "Greece / Gamma Ethniki - Group 3 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 39,
+    "MATCHING": 11,
+    "sides": 50
+   },
+   "Greece / Gamma Ethniki - Group 4 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 38,
+    "MATCHING": 556,
+    "sides": 594
+   },
+   "Greece / Gamma Ethniki - Group 5 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 38,
+    "MATCHING": 12,
+    "sides": 50
+   },
+   "Greece / Gamma Ethniki - Group 6 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 48,
+    "MATCHING": 12,
+    "sides": 60
+   },
+   "Greece / Gamma Ethniki - Group 7 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 48,
+    "MATCHING": 12,
+    "sides": 60
+   },
+   "Greece / Gamma Ethniki - Group 8 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 48,
+    "MATCHING": 12,
+    "sides": 60
+   },
+   "Greece / Gamma Ethniki - Group 9 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 34,
+    "MATCHING": 14,
+    "sides": 48
+   },
+   "Greece / Super League 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 37,
+    "MATCHING": 3709,
+    "sides": 3746
+   },
+   "Greece / Super League 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 65,
+    "MATCHING": 19,
+    "sides": 84
+   },
+   "Greece / Super League 2 / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 14,
+    "sides": 16
+   },
+   "Guatemala / Liga Nacional / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 73,
+    "MATCHING": 471,
+    "sides": 544
+   },
+   "Guatemala / Liga Nacional Apertura / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 6,
+    "sides": 8
+   },
+   "Honduras / Liga Nacional - Apertura / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 2,
+    "sides": 4
+   },
+   "Honduras / Liga Nacional / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 50,
+    "MATCHING": 424,
+    "sides": 474
+   },
+   "Hong-Kong / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 19,
+    "MATCHING": 225,
+    "sides": 244
+   },
+   "Hong-Kong / Senior Shield / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 8,
+    "MATCHING": 16,
+    "sides": 24
+   },
+   "Hungary / Magyar Kupa / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 25,
+    "MATCHING": 297,
+    "sides": 322
+   },
+   "Hungary / NB I / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 75,
+    "MATCHING": 2743,
+    "sides": 2818
+   },
+   "Hungary / NB II / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 126,
+    "MATCHING": 1366,
+    "sides": 1492
+   },
+   "Hungary / NB III - Northeast / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 64,
+    "MATCHING": 16,
+    "sides": 80
+   },
+   "Hungary / NB III - Northwest / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 64,
+    "MATCHING": 16,
+    "sides": 80
+   },
+   "Hungary / NB III - Southeast / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 64,
+    "MATCHING": 496,
+    "sides": 560
+   },
+   "Hungary / NB III - Southwest / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 55,
+    "MATCHING": 15,
+    "sides": 70
+   },
+   "Iceland / \u00darvalsdeild / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 10,
+    "MATCHING": 16,
+    "sides": 26
+   },
+   "India / I-League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 9,
+    "MATCHING": 11,
+    "sides": 20
+   },
+   "India / IFA Shield / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 3,
+    "MATCHING": 5,
+    "sides": 8
+   },
+   "India / Indian Super League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 35,
+    "MATCHING": 27,
+    "sides": 62
+   },
+   "India / Indian Super League / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 7,
+    "MATCHING": 5,
+    "sides": 12
+   },
+   "Indonesia / League Cup Indonesia / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 22,
+    "MATCHING": 2,
+    "sides": 24
+   },
+   "Indonesia / Liga 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 234,
+    "MATCHING": 4128,
+    "sides": 4362
+   },
+   "Indonesia / Liga 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 80,
+    "MATCHING": 600,
+    "sides": 680
+   },
+   "International / AFC Challenge League Grp. B / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 8,
+    "MATCHING": 32,
+    "sides": 40
+   },
+   "International / AFC Champions League Elite East / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 12,
+    "sides": 16
+   },
+   "International / AFC Champions League Two - E / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 14,
+    "sides": 18
+   },
+   "International / CAF Champions League Qualification / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 3,
+    "MATCHING": 31,
+    "sides": 34
+   },
+   "International / CAF Confed Cup - 2nd Preliminary Round / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 28,
+    "sides": 32
+   },
+   "International / CONCACAF Central American Cup Play-In / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 1,
+    "sides": 2
+   },
+   "International / Champions League / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 47,
+    "MATCHING": 97,
+    "sides": 144
+   },
+   "International / Conference League / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 7,
+    "MATCHING": 25,
+    "sides": 32
+   },
+   "International / Copa Libertadores - Semi-finals / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "sides": 4
+   },
+   "International / Copa Sudamericana - Semi-finals / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 5,
+    "MATCHING": 3,
+    "sides": 8
+   },
+   "International / Europa League / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 8,
+    "MATCHING": 30,
+    "sides": 38
+   },
+   "Iran / Azadegan League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 61,
+    "MATCHING": 4019,
+    "sides": 4080
+   },
+   "Iran / Persian Gulf / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 8,
+    "MATCHING": 18,
+    "sides": 26
+   },
+   "Iran / Persian Gulf Pro League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 68,
+    "MATCHING": 498,
+    "sides": 566
+   },
+   "Iraq / Iraqi League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 59,
+    "MATCHING": 781,
+    "sides": 840
+   },
+   "Iraq / Stars League / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 19,
+    "sides": 20
+   },
+   "Ireland / First Division / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 19,
+    "MATCHING": 11,
+    "sides": 30
+   },
+   "Ireland / First Division / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 10,
+    "sides": 10
+   },
+   "Ireland / Premier Division / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 2546,
+    "sides": 2550
+   },
+   "Israel / Liga Alef / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 99,
+    "MATCHING": 965,
+    "sides": 1064
+   },
+   "Israel / Liga Leumit / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 48,
+    "MATCHING": 610,
+    "sides": 658
+   },
+   "Israel / Ligat Ha'al / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 43,
+    "MATCHING": 27,
+    "sides": 70
+   },
+   "Israel / Ligat ha'Al / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 6,
+    "MATCHING": 6,
+    "sides": 12
+   },
+   "Israel / State Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 28,
+    "MATCHING": 6,
+    "sides": 34
+   },
+   "Israel / Toto Cup Ligat Al / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "sides": 2
+   },
+   "Italy / Campionato Primavera - 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 49,
+    "MATCHING": 797,
+    "sides": 846
+   },
+   "Italy / Campionato Primavera - 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 95,
+    "MATCHING": 1009,
+    "sides": 1104
+   },
+   "Italy / Coppa Italia Primavera / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 29,
+    "MATCHING": 3,
+    "sides": 32
+   },
+   "Italy / Coppa Italia Serie C / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 16,
+    "MATCHING": 96,
+    "sides": 112
+   },
+   "Italy / Coppa Italia Serie D / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 96,
+    "sides": 96
+   },
+   "Italy / Serie A / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 634,
+    "MATCHING": 14372,
+    "sides": 15006
+   },
+   "Italy / Serie A Women / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 32,
+    "MATCHING": 276,
+    "sides": 308
+   },
+   "Italy / Serie B / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 88,
+    "MATCHING": 7120,
+    "sides": 7208
+   },
+   "Italy / Serie B / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 15,
+    "MATCHING": 5,
+    "sides": 20
+   },
+   "Italy / Serie C - Girone A / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 88,
+    "MATCHING": 780,
+    "sides": 868
+   },
+   "Italy / Serie C - Girone B / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 79,
+    "MATCHING": 781,
+    "sides": 860
+   },
+   "Italy / Serie C - Girone C / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 79,
+    "MATCHING": 465,
+    "sides": 544
+   },
+   "Italy / Serie C Grp. A / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 61,
+    "sides": 62
+   },
+   "Italy / Serie D - Girone A / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 66,
+    "MATCHING": 768,
+    "sides": 834
+   },
+   "Italy / Serie D - Girone B / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 72,
+    "MATCHING": 780,
+    "sides": 852
+   },
+   "Italy / Serie D - Girone C / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 72,
+    "MATCHING": 778,
+    "sides": 850
+   },
+   "Italy / Serie D - Girone D / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 72,
+    "MATCHING": 632,
+    "sides": 704
+   },
+   "Italy / Serie D - Girone E / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 72,
+    "MATCHING": 630,
+    "sides": 702
+   },
+   "Italy / Serie D - Girone F / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 72,
+    "MATCHING": 630,
+    "sides": 702
+   },
+   "Italy / Serie D - Girone G / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 72,
+    "MATCHING": 630,
+    "sides": 702
+   },
+   "Italy / Serie D - Girone H / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 72,
+    "MATCHING": 630,
+    "sides": 702
+   },
+   "Italy / Serie D - Girone I / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 74,
+    "MATCHING": 616,
+    "sides": 690
+   },
+   "Ivory-Coast / Ligue 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 51,
+    "MATCHING": 501,
+    "sides": 552
+   },
+   "Jamaica / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 59,
+    "MATCHING": 577,
+    "sides": 636
+   },
+   "Japan / Emperor Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 6,
+    "MATCHING": 14,
+    "sides": 20
+   },
+   "Japan / J-League Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 32,
+    "MATCHING": 4,
+    "sides": 36
+   },
+   "Japan / J. League / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 32,
+    "MATCHING": 8,
+    "sides": 40
+   },
+   "Japan / J. League 2 / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 34,
+    "MATCHING": 6,
+    "sides": 40
+   },
+   "Japan / J1 League / 2027": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 112,
+    "MATCHING": 346,
+    "sides": 458
+   },
+   "Japan / J2 League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 122,
+    "MATCHING": 784,
+    "sides": 906
+   },
+   "Japan / J3 League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 269,
+    "MATCHING": 4623,
+    "sides": 4892
+   },
+   "Japan / League Cup / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 11,
+    "MATCHING": 9,
+    "sides": 20
+   },
+   "Japan / WE League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 32,
+    "MATCHING": 12,
+    "sides": 44
+   },
+   "Jordan / League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 30,
+    "MATCHING": 274,
+    "sides": 304
+   },
+   "Kazakhstan / 1. Division / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 14,
+    "MATCHING": 448,
+    "sides": 462
+   },
+   "Kazakhstan / Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "sides": 2
+   },
+   "Kazakhstan / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 29,
+    "MATCHING": 335,
+    "sides": 364
+   },
+   "Kazakhstan / Premier League / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 19,
+    "sides": 20
+   },
+   "Kenya / FKF Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 82,
+    "MATCHING": 648,
+    "sides": 730
+   },
+   "Kosovo / Liga E Pare / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 104,
+    "MATCHING": 22,
+    "sides": 126
+   },
+   "Kosovo / Superliga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 42,
+    "MATCHING": 372,
+    "sides": 414
+   },
+   "Kuwait / Division 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 17,
+    "MATCHING": 7,
+    "sides": 24
+   },
+   "Kuwait / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 38,
+    "MATCHING": 236,
+    "sides": 274
+   },
+   "Kuwait / Premier League / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 8,
+    "MATCHING": 2,
+    "sides": 10
+   },
+   "Kyrgyzstan / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 70,
+    "MATCHING": 286,
+    "sides": 356
+   },
+   "Laos / Lao League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 25,
+    "MATCHING": 15,
+    "sides": 40
+   },
+   "Latvia / 1. Liga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 38,
+    "MATCHING": 18,
+    "sides": 56
+   },
+   "Latvia / Virsliga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 23,
+    "MATCHING": 387,
+    "sides": 410
+   },
+   "Lebanon / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 40,
+    "MATCHING": 326,
+    "sides": 366
+   },
+   "Lesotho / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 51,
+    "MATCHING": 497,
+    "sides": 548
+   },
+   "Liberia / LFA First Division / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 90,
+    "MATCHING": 18,
+    "sides": 108
+   },
+   "Libya / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 2,
+    "sides": 4
+   },
+   "Liechtenstein / Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 34,
+    "sides": 36
+   },
+   "Lithuania / 1 Lyga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 56,
+    "MATCHING": 496,
+    "sides": 552
+   },
+   "Lithuania / A Lyga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 6,
+    "MATCHING": 398,
+    "sides": 404
+   },
+   "Lithuania / Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 1,
+    "sides": 2
+   },
+   "Luxembourg / Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 10,
+    "MATCHING": 22,
+    "sides": 32
+   },
+   "Luxembourg / National Division / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 222,
+    "MATCHING": 3158,
+    "sides": 3380
+   },
+   "Macedonia / Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 13,
+    "MATCHING": 5,
+    "sides": 18
+   },
+   "Macedonia / First League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 28,
+    "MATCHING": 396,
+    "sides": 424
+   },
+   "Macedonia / Second League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 40,
+    "MATCHING": 16,
+    "sides": 56
+   },
+   "Malawi / Super League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 24,
+    "MATCHING": 24,
+    "sides": 48
+   },
+   "Malaysia / FA Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 7,
+    "MATCHING": 45,
+    "sides": 52
+   },
+   "Malaysia / Super League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 3,
+    "MATCHING": 5,
+    "sides": 8
+   },
+   "Mali / Premi\u00e8re Division / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 14,
+    "MATCHING": 14,
+    "sides": 28
+   },
+   "Malta / Challenge League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 40,
+    "MATCHING": 24,
+    "sides": 64
+   },
+   "Malta / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 44,
+    "MATCHING": 410,
+    "sides": 454
+   },
+   "Mauritania / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 40,
+    "MATCHING": 18,
+    "sides": 58
+   },
+   "Mexico / Liga MX / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 76,
+    "MATCHING": 2264,
+    "sides": 2340
+   },
+   "Mexico / Liga MX / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 15,
+    "MATCHING": 11,
+    "sides": 26
+   },
+   "Mexico / Liga MX Femenil / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 68,
+    "MATCHING": 18,
+    "sides": 86
+   },
+   "Mexico / Liga MX U21 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 67,
+    "MATCHING": 25,
+    "sides": 92
+   },
+   "Mexico / Liga Premier Serie A / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 77,
+    "MATCHING": 25,
+    "sides": 102
+   },
+   "Mexico / Liga Premier Serie B / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 21,
+    "MATCHING": 13,
+    "sides": 34
+   },
+   "Mexico / Liga de Expansi\u00f3n MX / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 68,
+    "MATCHING": 494,
+    "sides": 562
+   },
+   "Mexico / Primera Premier / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 70,
+    "MATCHING": 18,
+    "sides": 88
+   },
+   "Moldova / Cupa / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 13,
+    "MATCHING": 79,
+    "sides": 92
+   },
+   "Moldova / Liga 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 29,
+    "MATCHING": 249,
+    "sides": 278
+   },
+   "Moldova / Super Liga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 22,
+    "MATCHING": 10,
+    "sides": 32
+   },
+   "Moldova / Super Liga / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 6,
+    "sides": 8
+   },
+   "Mongolia / Premier League / 2027": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 52,
+    "MATCHING": 16,
+    "sides": 68
+   },
+   "Montenegro / Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 8,
+    "sides": 12
+   },
+   "Montenegro / First League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 76,
+    "MATCHING": 2324,
+    "sides": 2400
+   },
+   "Montenegro / Second League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 34,
+    "MATCHING": 324,
+    "sides": 358
+   },
+   "Morocco / Botola 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 64,
+    "MATCHING": 496,
+    "sides": 560
+   },
+   "Morocco / Botola Pro / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 71,
+    "MATCHING": 2933,
+    "sides": 3004
+   },
+   "Myanmar / National League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 18,
+    "MATCHING": 280,
+    "sides": 298
+   },
+   "Netherlands / Derde Divisie / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 108,
+    "MATCHING": 648,
+    "sides": 756
+   },
+   "Netherlands / Eerste Divisie / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 315,
+    "MATCHING": 5067,
+    "sides": 5382
+   },
+   "Netherlands / Eredivisie / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 68,
+    "MATCHING": 7142,
+    "sides": 7210
+   },
+   "Netherlands / Eredivisie / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 18,
+    "sides": 18
+   },
+   "Netherlands / Eredivisie Women / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 24,
+    "MATCHING": 266,
+    "sides": 290
+   },
+   "Netherlands / KNVB Beker / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 32,
+    "MATCHING": 20,
+    "sides": 52
+   },
+   "Netherlands / Tweede Divisie / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 278,
+    "MATCHING": 4024,
+    "sides": 4302
+   },
+   "Netherlands / U21 Divisie 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 40,
+    "sides": 44
+   },
+   "New-Zealand / National League - National / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 38,
+    "MATCHING": 102,
+    "sides": 140
+   },
+   "Nicaragua / Primera Division / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 40,
+    "MATCHING": 406,
+    "sides": 446
+   },
+   "Nigeria / NPFL / 2027": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 73,
+    "MATCHING": 799,
+    "sides": 872
+   },
+   "Nigeria / NPFL / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 10,
+    "MATCHING": 10,
+    "sides": 20
+   },
+   "Northern-Ireland / Championship / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 64,
+    "MATCHING": 476,
+    "sides": 540
+   },
+   "Northern-Ireland / League Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 24,
+    "sides": 24
+   },
+   "Northern-Ireland / League Cup / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 6,
+    "MATCHING": 16,
+    "sides": 22
+   },
+   "Northern-Ireland / Premiership / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 50,
+    "MATCHING": 478,
+    "sides": 528
+   },
+   "Northern-Ireland / Premiership / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 13,
+    "MATCHING": 1,
+    "sides": 14
+   },
+   "Norway / 1. Division / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 69,
+    "MATCHING": 3335,
+    "sides": 3404
+   },
+   "Norway / 1. Division Women / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 6,
+    "MATCHING": 24,
+    "sides": 30
+   },
+   "Norway / 2. Division - Group 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 41,
+    "MATCHING": 379,
+    "sides": 420
+   },
+   "Norway / 2. Division - Group 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 38,
+    "MATCHING": 382,
+    "sides": 420
+   },
+   "Norway / 2. Divisjon Avd. 1 / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 26,
+    "sides": 28
+   },
+   "Norway / 3. Division - Girone 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 45,
+    "MATCHING": 379,
+    "sides": 424
+   },
+   "Norway / 3. Division - Girone 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 42,
+    "MATCHING": 14,
+    "sides": 56
+   },
+   "Norway / 3. Division - Girone 3 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 46,
+    "MATCHING": 378,
+    "sides": 424
+   },
+   "Norway / 3. Division - Girone 4 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 42,
+    "MATCHING": 14,
+    "sides": 56
+   },
+   "Norway / 3. Division - Girone 5 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 42,
+    "MATCHING": 14,
+    "sides": 56
+   },
+   "Norway / 3. Division - Girone 6 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 40,
+    "MATCHING": 14,
+    "sides": 54
+   },
+   "Norway / Eliteserien / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 60,
+    "MATCHING": 3356,
+    "sides": 3416
+   },
+   "Norway / NM Cupen / 2027": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 13,
+    "MATCHING": 25,
+    "sides": 38
+   },
+   "Norway / Nasjonal U19 Champions League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 146,
+    "sides": 148
+   },
+   "Norway / Toppserien / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 36,
+    "MATCHING": 286,
+    "sides": 322
+   },
+   "Oman / Professional League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 27,
+    "MATCHING": 271,
+    "sides": 298
+   },
+   "Oman / Sultan Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 5,
+    "MATCHING": 55,
+    "sides": 60
+   },
+   "Panama / Liga Paname\u00f1a de F\u00fatbol / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 56,
+    "MATCHING": 428,
+    "sides": 484
+   },
+   "Paraguay / Copa Paraguay / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 7,
+    "MATCHING": 447,
+    "sides": 454
+   },
+   "Paraguay / Division Intermedia / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 38,
+    "MATCHING": 498,
+    "sides": 536
+   },
+   "Paraguay / Division Profesional - Clausura / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 48,
+    "MATCHING": 284,
+    "sides": 332
+   },
+   "Paraguay / Division Profesional / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 5,
+    "MATCHING": 29,
+    "sides": 34
+   },
+   "Peru / Liga Women / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 7,
+    "MATCHING": 5,
+    "sides": 12
+   },
+   "Peru / Primera Divisi\u00f3n / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 66,
+    "MATCHING": 638,
+    "sides": 704
+   },
+   "Peru / Segunda Divisi\u00f3n / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 34,
+    "MATCHING": 384,
+    "sides": 418
+   },
+   "Philippines / PFL / 2027": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 17,
+    "MATCHING": 223,
+    "sides": 240
+   },
+   "Poland / Central Youth League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 68,
+    "MATCHING": 16,
+    "sides": 84
+   },
+   "Poland / Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 19,
+    "MATCHING": 113,
+    "sides": 132
+   },
+   "Poland / Ekstraklasa / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 60,
+    "MATCHING": 34,
+    "sides": 94
+   },
+   "Poland / Ekstraklasa / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 9,
+    "MATCHING": 9,
+    "sides": 18
+   },
+   "Poland / Ekstraliga Women / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 28,
+    "MATCHING": 14,
+    "sides": 42
+   },
+   "Poland / I Liga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 159,
+    "MATCHING": 4205,
+    "sides": 4364
+   },
+   "Poland / II Liga - East / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 271,
+    "MATCHING": 4315,
+    "sides": 4586
+   },
+   "Poland / III Liga - Group 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 74,
+    "MATCHING": 18,
+    "sides": 92
+   },
+   "Poland / III Liga - Group 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 74,
+    "MATCHING": 18,
+    "sides": 92
+   },
+   "Poland / III Liga - Group 3 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 76,
+    "MATCHING": 18,
+    "sides": 94
+   },
+   "Poland / III Liga - Group 4 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 70,
+    "MATCHING": 18,
+    "sides": 88
+   },
+   "Portugal / 1a Divis\u00e3o - Women / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 10,
+    "MATCHING": 274,
+    "sides": 284
+   },
+   "Portugal / Campeonato de Portugal Prio - Group A / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 28,
+    "MATCHING": 392,
+    "sides": 420
+   },
+   "Portugal / Campeonato de Portugal Prio - Group B / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 36,
+    "MATCHING": 384,
+    "sides": 420
+   },
+   "Portugal / Campeonato de Portugal Prio - Group C / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 26,
+    "MATCHING": 394,
+    "sides": 420
+   },
+   "Portugal / Campeonato de Portugal Prio - Group D / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 33,
+    "MATCHING": 391,
+    "sides": 424
+   },
+   "Portugal / J\u00faniores U19 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 53,
+    "MATCHING": 615,
+    "sides": 668
+   },
+   "Portugal / Liga 3 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 50,
+    "MATCHING": 224,
+    "sides": 274
+   },
+   "Portugal / Liga Revela\u00e7\u00e3o U23 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 64,
+    "MATCHING": 468,
+    "sides": 532
+   },
+   "Portugal / Primeira Liga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 229,
+    "MATCHING": 7685,
+    "sides": 7914
+   },
+   "Portugal / Segunda Liga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 168,
+    "MATCHING": 4224,
+    "sides": 4392
+   },
+   "Portugal / Ta\u00e7a da Liga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 6,
+    "MATCHING": 2,
+    "sides": 8
+   },
+   "Portugal / Ta\u00e7a de Portugal / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 8,
+    "MATCHING": 336,
+    "sides": 344
+   },
+   "Qatar / Qatar Stars League / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 3,
+    "MATCHING": 21,
+    "sides": 24
+   },
+   "Qatar / Second Division / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 15,
+    "MATCHING": 125,
+    "sides": 140
+   },
+   "Qatar / Stars League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 36,
+    "MATCHING": 276,
+    "sides": 312
+   },
+   "Romania / Cupa Rom\u00e2niei / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 24,
+    "MATCHING": 350,
+    "sides": 374
+   },
+   "Romania / Liga 1 Feminin / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 30,
+    "MATCHING": 10,
+    "sides": 40
+   },
+   "Romania / Liga I / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 51,
+    "MATCHING": 671,
+    "sides": 722
+   },
+   "Romania / Liga II / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 66,
+    "MATCHING": 602,
+    "sides": 668
+   },
+   "Romania / Liga II / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 18,
+    "sides": 22
+   },
+   "Romania / Liga III - Serie 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 48,
+    "MATCHING": 12,
+    "sides": 60
+   },
+   "Romania / Liga III - Serie 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 44,
+    "MATCHING": 264,
+    "sides": 308
+   },
+   "Romania / Liga III - Serie 3 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 48,
+    "MATCHING": 288,
+    "sides": 336
+   },
+   "Romania / Liga III - Serie 4 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 46,
+    "MATCHING": 290,
+    "sides": 336
+   },
+   "Romania / Liga III - Serie 5 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 48,
+    "MATCHING": 288,
+    "sides": 336
+   },
+   "Romania / Liga III - Serie 6 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 46,
+    "MATCHING": 290,
+    "sides": 336
+   },
+   "Romania / Liga III - Serie 7 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 45,
+    "MATCHING": 291,
+    "sides": 336
+   },
+   "Romania / Liga III - Serie 8 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 48,
+    "MATCHING": 262,
+    "sides": 310
+   },
+   "Romania / Superliga / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 19,
+    "sides": 20
+   },
+   "Russia / Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 37,
+    "MATCHING": 305,
+    "sides": 342
+   },
+   "Russia / Cup / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 5,
+    "MATCHING": 11,
+    "sides": 16
+   },
+   "Russia / First League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 54,
+    "MATCHING": 632,
+    "sides": 686
+   },
+   "Russia / First League / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 11,
+    "MATCHING": 7,
+    "sides": 18
+   },
+   "Russia / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 42,
+    "MATCHING": 528,
+    "sides": 570
+   },
+   "Russia / Second League - Final Four / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 8,
+    "sides": 8
+   },
+   "Russia / Second League - Group 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 44,
+    "MATCHING": 20,
+    "sides": 64
+   },
+   "Russia / Second League - Group 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 32,
+    "MATCHING": 22,
+    "sides": 54
+   },
+   "Russia / Second League - Group 3 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 45,
+    "MATCHING": 21,
+    "sides": 66
+   },
+   "Russia / Second League - Group 4 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 40,
+    "MATCHING": 376,
+    "sides": 416
+   },
+   "Russia / Second League A - Division A Gold / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 40,
+    "MATCHING": 190,
+    "sides": 230
+   },
+   "Russia / Second League A - Division A Silver / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 9,
+    "MATCHING": 187,
+    "sides": 196
+   },
+   "Russia / Supreme Division Women / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 35,
+    "MATCHING": 325,
+    "sides": 360
+   },
+   "Russia / Youth Championship / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 48,
+    "MATCHING": 576,
+    "sides": 624
+   },
+   "Rwanda / National Soccer League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 62,
+    "MATCHING": 506,
+    "sides": 568
+   },
+   "San-Marino / Campionato / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 42,
+    "MATCHING": 534,
+    "sides": 576
+   },
+   "San-Marino / Coppa Titano / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 14,
+    "MATCHING": 50,
+    "sides": 64
+   },
+   "Saudi-Arabia / Division 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 64,
+    "MATCHING": 22,
+    "sides": 86
+   },
+   "Saudi-Arabia / Division 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 113,
+    "MATCHING": 37,
+    "sides": 150
+   },
+   "Saudi-Arabia / Premier League Women / 2027": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 22,
+    "MATCHING": 8,
+    "sides": 30
+   },
+   "Saudi-Arabia / Pro League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 76,
+    "MATCHING": 646,
+    "sides": 722
+   },
+   "Saudi-Arabia / Saudi First Division / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 64,
+    "sides": 66
+   },
+   "Scotland / Challenge Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 62,
+    "MATCHING": 94,
+    "sides": 156
+   },
+   "Scotland / Challenge Cup / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 19,
+    "MATCHING": 21,
+    "sides": 40
+   },
+   "Scotland / Championship / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 43,
+    "MATCHING": 2617,
+    "sides": 2660
+   },
+   "Scotland / Championship / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 8,
+    "sides": 12
+   },
+   "Scotland / FA Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 39,
+    "MATCHING": 283,
+    "sides": 322
+   },
+   "Scotland / Football League - Highland League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 62,
+    "MATCHING": 612,
+    "sides": 674
+   },
+   "Scotland / Football League - Lowland League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 97,
+    "MATCHING": 5,
+    "sides": 102
+   },
+   "Scotland / League Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "sides": 4
+   },
+   "Scotland / League One / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 42,
+    "MATCHING": 2568,
+    "sides": 2610
+   },
+   "Scotland / League One / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 9,
+    "MATCHING": 1,
+    "sides": 10
+   },
+   "Scotland / League Two / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 30,
+    "MATCHING": 2570,
+    "sides": 2600
+   },
+   "Scotland / League Two / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 10,
+    "sides": 10
+   },
+   "Scotland / Premiership / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 47,
+    "MATCHING": 3161,
+    "sides": 3208
+   },
+   "Scotland / Premiership / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 12,
+    "sides": 12
+   },
+   "Senegal / Ligue 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 33,
+    "MATCHING": 493,
+    "sides": 526
+   },
+   "Serbia / Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 22,
+    "MATCHING": 70,
+    "sides": 92
+   },
+   "Serbia / Prva Liga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 64,
+    "MATCHING": 608,
+    "sides": 672
+   },
+   "Serbia / Super Liga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 45,
+    "MATCHING": 29,
+    "sides": 74
+   },
+   "Serbia / Super Liga / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 12,
+    "sides": 14
+   },
+   "Serbia / U19 league / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 54,
+    "MATCHING": 14,
+    "sides": 68
+   },
+   "Singapore / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 20,
+    "MATCHING": 300,
+    "sides": 320
+   },
+   "Slovakia / 1. Liga / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 10,
+    "MATCHING": 2,
+    "sides": 12
+   },
+   "Slovakia / 2. liga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 63,
+    "MATCHING": 381,
+    "sides": 444
+   },
+   "Slovakia / 3. liga - Center / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 42,
+    "MATCHING": 14,
+    "sides": 56
+   },
+   "Slovakia / 3. liga - East / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 41,
+    "MATCHING": 15,
+    "sides": 56
+   },
+   "Slovakia / 3. liga - West / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 58,
+    "MATCHING": 560,
+    "sides": 618
+   },
+   "Slovakia / Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 29,
+    "MATCHING": 1389,
+    "sides": 1418
+   },
+   "Slovakia / I Liga - Women / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 24,
+    "MATCHING": 276,
+    "sides": 300
+   },
+   "Slovakia / Super Liga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 38,
+    "MATCHING": 14,
+    "sides": 52
+   },
+   "Slovenia / 1. SNL / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 112,
+    "MATCHING": 2438,
+    "sides": 2550
+   },
+   "Slovenia / 2. SNL / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 64,
+    "MATCHING": 496,
+    "sides": 560
+   },
+   "Slovenia / 3. SNL - East / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 54,
+    "MATCHING": 18,
+    "sides": 72
+   },
+   "Slovenia / 3. SNL - West / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 56,
+    "MATCHING": 14,
+    "sides": 70
+   },
+   "Slovenia / Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 24,
+    "MATCHING": 336,
+    "sides": 360
+   },
+   "South-Africa / 1st Division / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 46,
+    "MATCHING": 18,
+    "sides": 64
+   },
+   "South-Africa / Diski Challenge / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 64,
+    "MATCHING": 436,
+    "sides": 500
+   },
+   "South-Africa / League Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 16,
+    "MATCHING": 32,
+    "sides": 48
+   },
+   "South-Africa / Premier Soccer League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 32,
+    "MATCHING": 6,
+    "sides": 38
+   },
+   "South-Africa / Super League Women / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 44,
+    "MATCHING": 20,
+    "sides": 64
+   },
+   "South-Korea / K League 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 40,
+    "MATCHING": 22,
+    "sides": 62
+   },
+   "South-Korea / K League 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 51,
+    "MATCHING": 501,
+    "sides": 552
+   },
+   "South-Korea / K League 2 / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 3,
+    "MATCHING": 13,
+    "sides": 16
+   },
+   "South-Korea / K-League 1 / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 10,
+    "MATCHING": 2,
+    "sides": 12
+   },
+   "South-Korea / K3 League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 42,
+    "MATCHING": 494,
+    "sides": 536
+   },
+   "South-Korea / K4 League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 37,
+    "MATCHING": 13,
+    "sides": 50
+   },
+   "South-Korea / WK-League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 20,
+    "MATCHING": 236,
+    "sides": 256
+   },
+   "Spain / Copa Federacion / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 10,
+    "sides": 12
+   },
+   "Spain / Copa de la Reina / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 8,
+    "MATCHING": 8,
+    "sides": 16
+   },
+   "Spain / Copa del Rey / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 102,
+    "MATCHING": 236,
+    "sides": 338
+   },
+   "Spain / La Liga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 407,
+    "MATCHING": 14411,
+    "sides": 14818
+   },
+   "Spain / LaLiga2 / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 51,
+    "sides": 52
+   },
+   "Spain / Primera Divisi\u00f3n Femenina / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 43,
+    "MATCHING": 501,
+    "sides": 544
+   },
+   "Spain / Primera Divisi\u00f3n RFEF - Group 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 76,
+    "MATCHING": 780,
+    "sides": 856
+   },
+   "Spain / Primera Divisi\u00f3n RFEF - Group 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 77,
+    "MATCHING": 783,
+    "sides": 860
+   },
+   "Spain / Segunda Divisi\u00f3n / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 106,
+    "MATCHING": 6178,
+    "sides": 6284
+   },
+   "Spain / Segunda Divisi\u00f3n RFEF - Group 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 70,
+    "MATCHING": 20,
+    "sides": 90
+   },
+   "Spain / Segunda Divisi\u00f3n RFEF - Group 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 69,
+    "MATCHING": 21,
+    "sides": 90
+   },
+   "Spain / Segunda Divisi\u00f3n RFEF - Group 3 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 82,
+    "MATCHING": 630,
+    "sides": 712
+   },
+   "Spain / Segunda Divisi\u00f3n RFEF - Group 4 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 69,
+    "MATCHING": 21,
+    "sides": 90
+   },
+   "Spain / Segunda Divisi\u00f3n RFEF - Group 5 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 71,
+    "MATCHING": 21,
+    "sides": 92
+   },
+   "Spain / Tercera Divisi\u00f3n RFEF - Group 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 72,
+    "MATCHING": 630,
+    "sides": 702
+   },
+   "Spain / Tercera Divisi\u00f3n RFEF - Group 10 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 68,
+    "MATCHING": 636,
+    "sides": 704
+   },
+   "Spain / Tercera Divisi\u00f3n RFEF - Group 11 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 78,
+    "MATCHING": 630,
+    "sides": 708
+   },
+   "Spain / Tercera Divisi\u00f3n RFEF - Group 12 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 89,
+    "MATCHING": 631,
+    "sides": 720
+   },
+   "Spain / Tercera Divisi\u00f3n RFEF - Group 13 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 90,
+    "MATCHING": 630,
+    "sides": 720
+   },
+   "Spain / Tercera Divisi\u00f3n RFEF - Group 14 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 66,
+    "MATCHING": 636,
+    "sides": 702
+   },
+   "Spain / Tercera Divisi\u00f3n RFEF - Group 15 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 72,
+    "MATCHING": 630,
+    "sides": 702
+   },
+   "Spain / Tercera Divisi\u00f3n RFEF - Group 16 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 72,
+    "MATCHING": 630,
+    "sides": 702
+   },
+   "Spain / Tercera Divisi\u00f3n RFEF - Group 17 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 72,
+    "MATCHING": 630,
+    "sides": 702
+   },
+   "Spain / Tercera Divisi\u00f3n RFEF - Group 18 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 72,
+    "MATCHING": 630,
+    "sides": 702
+   },
+   "Spain / Tercera Divisi\u00f3n RFEF - Group 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 72,
+    "MATCHING": 630,
+    "sides": 702
+   },
+   "Spain / Tercera Divisi\u00f3n RFEF - Group 3 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 72,
+    "MATCHING": 630,
+    "sides": 702
+   },
+   "Spain / Tercera Divisi\u00f3n RFEF - Group 4 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 72,
+    "MATCHING": 630,
+    "sides": 702
+   },
+   "Spain / Tercera Divisi\u00f3n RFEF - Group 5 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 62,
+    "MATCHING": 640,
+    "sides": 702
+   },
+   "Spain / Tercera Divisi\u00f3n RFEF - Group 6 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 84,
+    "MATCHING": 630,
+    "sides": 714
+   },
+   "Spain / Tercera Divisi\u00f3n RFEF - Group 7 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 74,
+    "MATCHING": 630,
+    "sides": 704
+   },
+   "Spain / Tercera Divisi\u00f3n RFEF - Group 8 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 70,
+    "MATCHING": 704,
+    "sides": 774
+   },
+   "Spain / Tercera Divisi\u00f3n RFEF - Group 9 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 72,
+    "MATCHING": 630,
+    "sides": 702
+   },
+   "Suriname / Eerste Divisie / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 31,
+    "MATCHING": 15,
+    "sides": 46
+   },
+   "Sweden / Allsvenskan / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 59,
+    "MATCHING": 503,
+    "sides": 562
+   },
+   "Sweden / Allsvenskan / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 3,
+    "MATCHING": 13,
+    "sides": 16
+   },
+   "Sweden / Damallsvenskan / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 21,
+    "MATCHING": 417,
+    "sides": 438
+   },
+   "Sweden / Division 2 - Norra G\u00f6taland / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 17,
+    "MATCHING": 15,
+    "sides": 32
+   },
+   "Sweden / Division 2 - Norra Svealand / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 17,
+    "MATCHING": 15,
+    "sides": 32
+   },
+   "Sweden / Division 2 - Norrland / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 15,
+    "MATCHING": 17,
+    "sides": 32
+   },
+   "Sweden / Division 2 - Play-offs / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 12,
+    "MATCHING": 16,
+    "sides": 28
+   },
+   "Sweden / Division 2 - S\u00f6dra G\u00f6taland / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 15,
+    "MATCHING": 15,
+    "sides": 30
+   },
+   "Sweden / Division 2 - S\u00f6dra Svealand / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 17,
+    "MATCHING": 15,
+    "sides": 32
+   },
+   "Sweden / Division 2 - V\u00e4stra G\u00f6taland / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 17,
+    "MATCHING": 15,
+    "sides": 32
+   },
+   "Sweden / Elitettan / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 43,
+    "MATCHING": 755,
+    "sides": 798
+   },
+   "Sweden / Ettan - Norra / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 64,
+    "MATCHING": 16,
+    "sides": 80
+   },
+   "Sweden / Ettan - S\u00f6dra / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 62,
+    "MATCHING": 16,
+    "sides": 78
+   },
+   "Sweden / Ettan Norra / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 12,
+    "MATCHING": 20,
+    "sides": 32
+   },
+   "Sweden / Superettan / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 31,
+    "MATCHING": 3475,
+    "sides": 3506
+   },
+   "Sweden / Svenska Cupen - Women / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 6,
+    "sides": 10
+   },
+   "Sweden / Svenska Cupen / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 1,
+    "sides": 2
+   },
+   "Switzerland / 1. Liga Classic - Group 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 64,
+    "MATCHING": 16,
+    "sides": 80
+   },
+   "Switzerland / 1. Liga Classic - Group 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 60,
+    "MATCHING": 20,
+    "sides": 80
+   },
+   "Switzerland / 1. Liga Classic - Group 3 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 64,
+    "MATCHING": 16,
+    "sides": 80
+   },
+   "Switzerland / 1. Liga Promotion / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 76,
+    "MATCHING": 634,
+    "sides": 710
+   },
+   "Switzerland / AXA Women\u2019s Super League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 19,
+    "MATCHING": 223,
+    "sides": 242
+   },
+   "Switzerland / Challenge League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 30,
+    "MATCHING": 370,
+    "sides": 400
+   },
+   "Switzerland / Cup / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 10,
+    "MATCHING": 22,
+    "sides": 32
+   },
+   "Switzerland / Erste Liga Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "sides": 4
+   },
+   "Switzerland / Super League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 32,
+    "MATCHING": 1016,
+    "sides": 1048
+   },
+   "Syria / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 43,
+    "MATCHING": 157,
+    "sides": 200
+   },
+   "Tajikistan / Vysshaya Liga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 41,
+    "MATCHING": 279,
+    "sides": 320
+   },
+   "Tanzania / Ligi kuu Bara / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 198,
+    "MATCHING": 3314,
+    "sides": 3512
+   },
+   "Thailand / FA Cup - 2nd Round / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 10,
+    "MATCHING": 34,
+    "sides": 44
+   },
+   "Thailand / FA Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 25,
+    "MATCHING": 39,
+    "sides": 64
+   },
+   "Thailand / Thai League / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 5,
+    "MATCHING": 11,
+    "sides": 16
+   },
+   "Thailand / Thai League 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 57,
+    "MATCHING": 499,
+    "sides": 556
+   },
+   "Thailand / Thai League 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 77,
+    "MATCHING": 631,
+    "sides": 708
+   },
+   "Tunisia / Ligue 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 17,
+    "MATCHING": 23,
+    "sides": 40
+   },
+   "Tunisia / Ligue 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 124,
+    "MATCHING": 760,
+    "sides": 884
+   },
+   "Turkey / 1. Lig / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 111,
+    "MATCHING": 807,
+    "sides": 918
+   },
+   "Turkey / 1. Lig / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 3,
+    "MATCHING": 3,
+    "sides": 6
+   },
+   "Turkey / 2. Lig / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 133,
+    "MATCHING": 1249,
+    "sides": 1382
+   },
+   "Turkey / 3. Lig - Group 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 90,
+    "MATCHING": 498,
+    "sides": 588
+   },
+   "Turkey / 3. Lig - Group 2 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 90,
+    "MATCHING": 480,
+    "sides": 570
+   },
+   "Turkey / 3. Lig - Group 3 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 83,
+    "MATCHING": 503,
+    "sides": 586
+   },
+   "Turkey / S\u00fcper Lig / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 273,
+    "MATCHING": 10785,
+    "sides": 11058
+   },
+   "Turkey / T\u00fcrkiye Kupas\u0131 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 122,
+    "MATCHING": 304,
+    "sides": 426
+   },
+   "Turkey / U19 league / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 44,
+    "MATCHING": 28,
+    "sides": 72
+   },
+   "Turkmenistan / \u00ddokary Liga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 19,
+    "MATCHING": 269,
+    "sides": 288
+   },
+   "USA / MLS Next Pro - Conference - Quarter-finals / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 15,
+    "sides": 16
+   },
+   "USA / MLS Next Pro / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 8,
+    "MATCHING": 664,
+    "sides": 672
+   },
+   "USA / Major League Soccer / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 129,
+    "MATCHING": 1357,
+    "sides": 1486
+   },
+   "USA / Major League Soccer / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 40,
+    "MATCHING": 10,
+    "sides": 50
+   },
+   "USA / NWSL Women / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 40,
+    "MATCHING": 390,
+    "sides": 430
+   },
+   "USA / US Open Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 1,
+    "sides": 2
+   },
+   "USA / USL Championship / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 47,
+    "MATCHING": 6599,
+    "sides": 6646
+   },
+   "USA / USL League One / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 58,
+    "MATCHING": 310,
+    "sides": 368
+   },
+   "USA / USL League One / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 11,
+    "MATCHING": 7,
+    "sides": 18
+   },
+   "USA / USL Super League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 26,
+    "MATCHING": 236,
+    "sides": 262
+   },
+   "USA / USL Super League / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 2,
+    "sides": 6
+   },
+   "Uganda / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 86,
+    "MATCHING": 498,
+    "sides": 584
+   },
+   "Ukraine / Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 15,
+    "MATCHING": 3,
+    "sides": 18
+   },
+   "Ukraine / Druha Liga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 60,
+    "MATCHING": 386,
+    "sides": 446
+   },
+   "Ukraine / Persha Liga / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 63,
+    "MATCHING": 427,
+    "sides": 490
+   },
+   "Ukraine / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 46,
+    "MATCHING": 512,
+    "sides": 558
+   },
+   "Ukraine / Premier League / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 6,
+    "MATCHING": 10,
+    "sides": 16
+   },
+   "Ukraine / U19 League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 54,
+    "MATCHING": 14,
+    "sides": 68
+   },
+   "United-Arab-Emirates / Division 1 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 26,
+    "MATCHING": 388,
+    "sides": 414
+   },
+   "United-Arab-Emirates / League Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 8,
+    "MATCHING": 62,
+    "sides": 70
+   },
+   "United-Arab-Emirates / Presidents Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 16,
+    "MATCHING": 4,
+    "sides": 20
+   },
+   "United-Arab-Emirates / Pro League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 28,
+    "sides": 28
+   },
+   "United-Arab-Emirates / Pro League / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 7,
+    "MATCHING": 21,
+    "sides": 28
+   },
+   "United-Arab-Emirates / Pro League U23 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 22,
+    "MATCHING": 14,
+    "sides": 36
+   },
+   "Unknown / LaLiga / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 25,
+    "sides": 26
+   },
+   "Uruguay / Copa Uruguay / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 25,
+    "MATCHING": 111,
+    "sides": 136
+   },
+   "Uruguay / Liga AUF Uruguaya Clausura / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 14,
+    "sides": 16
+   },
+   "Uruguay / Primera Divisi\u00f3n / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 42,
+    "MATCHING": 380,
+    "sides": 422
+   },
+   "Uruguay / Segunda Division / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 8,
+    "MATCHING": 6,
+    "sides": 14
+   },
+   "Uruguay / Segunda Divisi\u00f3n / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 45,
+    "MATCHING": 481,
+    "sides": 526
+   },
+   "Uzbekistan / Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 3,
+    "MATCHING": 5,
+    "sides": 8
+   },
+   "Uzbekistan / Pro League A / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 51,
+    "MATCHING": 21,
+    "sides": 72
+   },
+   "Uzbekistan / Super League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 46,
+    "MATCHING": 384,
+    "sides": 430
+   },
+   "Uzbekistan / Superliga / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 1,
+    "MATCHING": 15,
+    "sides": 16
+   },
+   "Venezuela / Copa Venezuela / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 36,
+    "MATCHING": 16,
+    "sides": 52
+   },
+   "Venezuela / Primera Divisi\u00f3n / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 51,
+    "MATCHING": 17,
+    "sides": 68
+   },
+   "Venezuela / Primera Divisi\u00f3n / Unknown": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 8,
+    "MATCHING": 6,
+    "sides": 14
+   },
+   "Venezuela / Segunda Divisi\u00f3n / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 36,
+    "MATCHING": 504,
+    "sides": 540
+   },
+   "Vietnam / V.League 1 / 2027": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 99,
+    "MATCHING": 1833,
+    "sides": 1932
+   },
+   "Vietnam / V.League 2 / 2027": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 55,
+    "MATCHING": 11,
+    "sides": 66
+   },
+   "Wales / FAW Championship / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 130,
+    "MATCHING": 992,
+    "sides": 1122
+   },
+   "Wales / Premier League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 63,
+    "MATCHING": 407,
+    "sides": 470
+   },
+   "World / AFC Challenge League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 29,
+    "MATCHING": 11,
+    "sides": 40
+   },
+   "World / AFC Champions League Elite / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 83,
+    "MATCHING": 235,
+    "sides": 318
+   },
+   "World / AFC Champions League Two / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 119,
+    "MATCHING": 1329,
+    "sides": 1448
+   },
+   "World / AFC U17 Asian Cup / 2027": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 18,
+    "MATCHING": 38,
+    "sides": 56
+   },
+   "World / AFC Women's Champions League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 27,
+    "MATCHING": 9,
+    "sides": 36
+   },
+   "World / AGCFF Gulf Champions League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 35,
+    "MATCHING": 1,
+    "sides": 36
+   },
+   "World / Africa Cup of Nations U20 / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 16,
+    "MATCHING": 24,
+    "sides": 40
+   },
+   "World / Asian Games / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 6,
+    "sides": 8
+   },
+   "World / CAF Champions League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 17,
+    "MATCHING": 19,
+    "sides": 36
+   },
+   "World / CAF Confederation Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 16,
+    "MATCHING": 18,
+    "sides": 34
+   },
+   "World / CAF Super Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "sides": 2
+   },
+   "World / CAF U23 Cup of Nations / 2027": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 9,
+    "MATCHING": 47,
+    "sides": 56
+   },
+   "World / CAF Women's Champions League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 21,
+    "MATCHING": 7,
+    "sides": 28
+   },
+   "World / CONCACAF Caribbean Club Championship / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 2,
+    "sides": 6
+   },
+   "World / CONCACAF Central American Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 14,
+    "MATCHING": 2,
+    "sides": 16
+   },
+   "World / CONCACAF Nations League / 2025": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 29,
+    "MATCHING": 37,
+    "sides": 66
+   },
+   "World / CONMEBOL Libertadores / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 4,
+    "MATCHING": 298,
+    "sides": 302
+   },
+   "World / CONMEBOL Libertadores Femenina / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 26,
+    "MATCHING": 110,
+    "sides": 136
+   },
+   "World / CONMEBOL Sudamericana / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 6,
+    "MATCHING": 296,
+    "sides": 302
+   },
+   "World / FIFA Asean Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 12,
+    "sides": 14
+   },
+   "World / Friendlies / 2026": {
+    "DIVERGENT_OTHER": 1,
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 7,
+    "MATCHING": 228,
+    "sides": 236
+   },
+   "World / Friendlies Clubs / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 3,
+    "MATCHING": 473,
+    "sides": 476
+   },
+   "World / Friendlies Women / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 3,
+    "MATCHING": 111,
+    "sides": 114
+   },
+   "World / Gulf Cup of Nations / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 2,
+    "MATCHING": 8,
+    "sides": 10
+   },
+   "World / Olympics Women - Qualification CAF / 2028": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 22,
+    "MATCHING": 102,
+    "sides": 124
+   },
+   "World / Premier League International Cup / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 16,
+    "MATCHING": 16,
+    "sides": 32
+   },
+   "World / SAFF Championship / 2026": {
+    "DIVERGENT_OTHER": 1,
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 7,
+    "MATCHING": 4,
+    "sides": 12
+   },
+   "World / UEFA Champions League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 84,
+    "MATCHING": 874,
+    "sides": 958
+   },
+   "World / UEFA Champions League Women / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 26,
+    "MATCHING": 286,
+    "sides": 312
+   },
+   "World / UEFA Europa Conference League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 103,
+    "MATCHING": 1113,
+    "sides": 1216
+   },
+   "World / UEFA Europa Cup - Women / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 27,
+    "MATCHING": 37,
+    "sides": 64
+   },
+   "World / UEFA Europa League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 123,
+    "MATCHING": 953,
+    "sides": 1076
+   },
+   "World / UEFA Nations League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 36,
+    "MATCHING": 52,
+    "sides": 88
+   },
+   "World / UEFA U17 Championship - Qualification / 2027": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 7,
+    "MATCHING": 45,
+    "sides": 52
+   },
+   "World / UEFA U21 Championship - Qualification / 2027": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 10,
+    "MATCHING": 66,
+    "sides": 76
+   },
+   "World / UEFA Youth League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 138,
+    "MATCHING": 494,
+    "sides": 632
+   },
+   "World / World Cup - U17 - Women / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 64,
+    "MATCHING": 24,
+    "sides": 88
+   },
+   "World / World Cup - Women - Qualification Europe / 2027": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 32,
+    "MATCHING": 32,
+    "sides": 64
+   },
+   "Zambia / Super League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 94,
+    "MATCHING": 632,
+    "sides": 726
+   },
+   "Zimbabwe / Premier Soccer League / 2026": {
+    "DIVERGENT_POLICY_OR_UNQUALIFIED": 36,
+    "MATCHING": 632,
+    "sides": 668
+   }
+  },
+  "findings_records": 257629,
+  "findings_sha256": "25c8a4053e75b1e04a32842acc2b450febfbf90290d448d78911ddd3b699da11",
+  "form_policy_version": "form-policy-v1",
+  "form_sides": {
+   "DIVERGENT_OTHER": 3,
+   "DIVERGENT_POLICY_OR_UNQUALIFIED": 34805,
+   "MATCHING": 480448,
+   "coverage_COMPLETE": 20822,
+   "coverage_EMPTY": 476333,
+   "coverage_PARTIAL": 18101,
+   "fixture_missing": 2,
+   "fixtures": 257629,
+   "report_current": 257628,
+   "served_older_than_stale_limit": 13961,
+   "served_untraceable": 0,
+   "sides": 515256
+  },
+  "population": {
+   "context_fixtures": 257629,
+   "scope_id_md5": "3bd9c1ccd0f2405b66e7bbde72a5a983"
+  },
+  "watermark": "2026-11-11T09:03:16.401258+00:00"
+ },
+ "form_audit_notes": [
+  "Served reports reflect the pre-P02 policy; recomputation uses form-policy-v1 on the same frozen watermark. MATCHING plus DIVERGENT counts are form comparisons, not proof that the underlying results are correct.",
+  "Most sides are EMPTY on both paths because a historical fixture's context uses its own kickoff as the knowledge cutoff, before the history decisions were recorded.",
+  "The 3 DIVERGENT_OTHER sides are one cross-provider score conflict and two friendlies now excluded by policy.",
+  "The before/after effect of the D-01 fix on qualified history cannot be measured on the operating database without an operating write; it appears as UNQUALIFIED_RESULT flags."
+ ],
+ "not_audited": [
+  "standings",
+  "h2h_correctness",
+  "team_statistics_beyond_form",
+  "live_events",
+  "lineups",
+  "availability"
+ ],
+ "per_record_findings": {
+  "path": ".local/p02-audit/2026-11-11/findings.jsonl",
+  "sha256": "25c8a4053e75b1e04a32842acc2b450febfbf90290d448d78911ddd3b699da11",
+  "records": 257629
+ }
+}

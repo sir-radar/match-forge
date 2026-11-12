@@ -7,34 +7,26 @@ from datetime import datetime
 from typing import Any
 
 from football.context.live import rest_context
+from football.product.form import (
+    DEFAULT_WINDOW,
+    FORM_ORDER,
+    FORM_POLICY_VERSION,
+    team_form,
+    window_matches,
+)
 from football.product.public_analytics import summarize_form, summarize_h2h
 
 
-def _form(history: list[dict[str, Any]], team_id: str) -> tuple[dict[str, Any], ...]:
-    matches = []
-    for row in history:
-        if team_id not in (row["home_team_id"], row["away_team_id"]):
-            continue
-        home = row["home_team_id"] == team_id
-        goals_for = row["home_goals"] if home else row["away_goals"]
-        goals_against = row["away_goals"] if home else row["home_goals"]
-        matches.append(
-            {
-                "kickoff_at": row["kickoff_at"],
-                "opponent": row["away_team"] if home else row["home_team"],
-                "venue": "HOME" if home else "AWAY",
-                "goals_for": goals_for,
-                "goals_against": goals_against,
-                "result": "W"
-                if goals_for > goals_against
-                else "L"
-                if goals_for < goals_against
-                else "D",
-            }
-        )
-        if len(matches) == 5:
-            break
-    return tuple(matches)
+def _form_rows(form: dict[str, Any], window: str, *, played: bool) -> tuple[dict[str, Any], ...]:
+    """Selected matches of one window; played=True reports the on-field score."""
+    rows = []
+    for match in window_matches(form, window):
+        row = dict(match)
+        if played:
+            row["goals_for"] = row["played_goals_for"]
+            row["goals_against"] = row["played_goals_against"]
+        rows.append(row)
+    return tuple(rows)
 
 
 def _coaches(source: dict[str, Any], kickoff: datetime) -> list[dict[str, Any]]:
@@ -62,11 +54,14 @@ def context_features(source: dict[str, Any]) -> dict[str, Any]:
     if any(row["fixture_id"] == source["fixture_id"] for row in history):
         raise ValueError("target outcomes cannot enter context features")
     home_id, away_id = source["home_team_id"], source["away_team_id"]
-    home, away = _form(history, home_id), _form(history, away_id)
+    if source.get("form_policy_version", FORM_POLICY_VERSION) != FORM_POLICY_VERSION:
+        raise ValueError("context source was built for a different form policy")
+    home_form, away_form = team_form(source, home_id), team_form(source, away_id)
     h2h = tuple(
         {
             key: row[key]
             for key in (
+                "fixture_id",
                 "kickoff_at",
                 "home_team",
                 "away_team",
@@ -93,12 +88,23 @@ def context_features(source: dict[str, Any]) -> dict[str, Any]:
         )
     return {
         "fixture_id": source["fixture_id"],
-        "home_form": list(home),
-        "away_form": list(away),
+        "home_form": list(_form_rows(home_form, DEFAULT_WINDOW, played=False)),
+        "away_form": list(_form_rows(away_form, DEFAULT_WINDOW, played=False)),
+        "form": {
+            "policy_version": FORM_POLICY_VERSION,
+            "order": FORM_ORDER,
+            "default_window": DEFAULT_WINDOW,
+            "home": home_form,
+            "away": away_form,
+        },
         "h2h": list(h2h),
         "h2h_summary": summarize_h2h(h2h),
-        "home_team_statistics": summarize_form(home),
-        "away_team_statistics": summarize_form(away),
+        "home_team_statistics": summarize_form(
+            _form_rows(home_form, "FORECAST_ELIGIBLE_ALL_5", played=True)
+        ),
+        "away_team_statistics": summarize_form(
+            _form_rows(away_form, "FORECAST_ELIGIBLE_ALL_5", played=True)
+        ),
         "coach_context": _coaches(source, kickoff),
         "rest_context": rest,
     }

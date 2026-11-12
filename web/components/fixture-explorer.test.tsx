@@ -230,6 +230,28 @@ describe("FixtureExplorer", () => {
     expect(screen.getAllByText("Not enough qualified match history")).toHaveLength(2);
   });
 
+  it("labels form order, marks awarded results and lists selected matches", async () => {
+    const window = { basis: "OFFICIAL", scope: "ALL_COMPETITIONS", venue: "ALL", requested: 5, actual: 2, coverage: "PARTIAL", flags: ["AWARDED_INCLUDED", "STALE"], results: "LW", fixture_ids: ["a", "p"], oldest_kickoff_at: "2026-01-20T15:00:00Z", fingerprint: "a".repeat(64) };
+    const team = { team_id: "t", windows: { OFFICIAL_ALL_5: window }, pending_fixture_ids: [] };
+    const formContext = {
+      ...context,
+      home_form: [
+        { kickoff_at: "2026-09-20T15:00:00Z", opponent: "Liverpool", venue: "AWAY", goals_for: 0, goals_against: 3, result: "L", fixture_id: "a", result_class: "AWARDED", score_basis: "UNKNOWN", competition_scope: "LEAGUE", verification: "CANONICAL_RESULT" },
+        { kickoff_at: "2026-01-20T15:00:00Z", opponent: "Everton", venue: "HOME", goals_for: 2, goals_against: 1, result: "W", fixture_id: "p", result_class: "PLAYED", score_basis: "REGULATION_90", competition_scope: "LEAGUE", verification: "QUALIFIED_HISTORY" },
+      ],
+      form: { policy_version: "form-policy-v1", order: "NEWEST_FIRST", default_window: "OFFICIAL_ALL_5", home: team, away: { ...team, windows: {} } },
+    };
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => new Response(JSON.stringify(String(input).includes("/context") ? formContext : liveMatch), { status: 200 })));
+    const group = parseFixtureGroups({ groups: [{ competition, fixtures: [fixture] }] })[0];
+    render(<ExpandedFixture fixture={group.fixtures[0]} competition={group.competition} />);
+    expect(await screen.findByText("Last 5 official results · newest first →")).toBeInTheDocument();
+    expect(screen.getByLabelText("L 0-3 at Liverpool, 2026-09-20, awarded")).toHaveTextContent("L*");
+    expect(screen.getByText("Form details")).toBeInTheDocument();
+    expect(screen.getByText("Only 2 of 5 results available")).toBeInTheDocument();
+    expect(screen.getByText("Oldest match is more than 180 days before kickoff")).toBeInTheDocument();
+    expect(screen.getByText(/at Liverpool.*\(not yet qualified\)/)).toBeInTheDocument();
+  });
+
   it("refreshes successful context while open without refetching its immutable forecast", async () => {
     vi.useFakeTimers();
     let contextRequests = 0;
@@ -317,6 +339,13 @@ describe("FixtureExplorer", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it("marks a fixture whose result is overdue instead of showing it as upcoming", async () => {
+    const overdue = { ...fixture, lifecycle_state: "RESULT_OVERDUE" };
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => new Response(JSON.stringify(String(input).includes("/fixtures?") ? { groups: [{ competition, fixtures: [overdue] }] } : liveMatch), { status: 200 })));
+    render(<FixtureExplorer initialDate="2026-09-29" />);
+    expect(await screen.findByText(/SCHEDULED · result overdue/)).toBeInTheDocument();
   });
 
   it("distinguishes unknown freshness and unresolved lifecycle from timed incidents", async () => {

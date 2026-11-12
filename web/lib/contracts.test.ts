@@ -34,6 +34,21 @@ describe("API contract boundary", () => {
     expect(() => parseContext({ ...context, home_form: [form] })).toThrow(/venue/);
     expect(parseContext({ ...context, home_form: [{ ...form, venue: "AWAY" }] }).home_form[0].venue).toBe("AWAY");
   });
+  it("parses form policy metadata and keeps older reports readable", () => {
+    const form = { kickoff_at: fixture.kickoff_at, opponent: "Other", venue: "AWAY", goals_for: 0, goals_against: 3, result: "L", fixture_id: "x", result_class: "AWARDED", score_basis: "UNKNOWN", competition_scope: "LEAGUE", verification: "CANONICAL_RESULT" };
+    const window = { basis: "OFFICIAL", scope: "ALL_COMPETITIONS", venue: "ALL", requested: 5, actual: 1, coverage: "PARTIAL", flags: ["AWARDED_INCLUDED"], results: "L", fixture_ids: ["x"], oldest_kickoff_at: fixture.kickoff_at, fingerprint: "a".repeat(64) };
+    const team = { team_id: "t", windows: { OFFICIAL_ALL_5: window }, pending_fixture_ids: [] };
+    const parsed = parseContext({ ...context, home_form: [form], form: { policy_version: "form-policy-v1", order: "NEWEST_FIRST", default_window: "OFFICIAL_ALL_5", home: team, away: team } });
+    expect(parsed.home_form[0].result_class).toBe("AWARDED");
+    expect(parsed.form?.home.OFFICIAL_ALL_5.coverage).toBe("PARTIAL");
+    expect(parseContext(context).form).toBeNull();
+    const empty = { ...window, actual: 0, coverage: "EMPTY", flags: [], results: "", fixture_ids: [], oldest_kickoff_at: null };
+    const emptyTeam = { team_id: "t", windows: { OFFICIAL_ALL_5: empty }, pending_fixture_ids: [] };
+    expect(parseContext({ ...context, form: { policy_version: "form-policy-v1", order: "NEWEST_FIRST", default_window: "OFFICIAL_ALL_5", home: emptyTeam, away: emptyTeam } }).form?.home.OFFICIAL_ALL_5.results).toBe("");
+    expect(() => parseContext({ ...context, form: { policy_version: "form-policy-v1", order: "NEWEST_FIRST", default_window: "OFFICIAL_ALL_5", home: { ...emptyTeam, windows: { OFFICIAL_ALL_5: { ...empty, results: "WX" } } }, away: emptyTeam } })).toThrow(/form results/);
+    expect(() => parseContext({ ...context, form: { policy_version: "v", order: "OLDEST_FIRST", default_window: "x", home: team, away: team } })).toThrow(/order/);
+    expect(() => parseContext({ ...context, home_form: [{ ...form, result_class: "FORFEIT" }] })).toThrow(/result_class/);
+  });
   it("parses zero-valued live scores and statistics", () => {
     const value = parseLiveMatch({
       fixture_id: "f", status: "LIVE",

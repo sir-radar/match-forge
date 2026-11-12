@@ -156,7 +156,24 @@ type Fixture struct {
 	Period               *string          `json:"period"`
 	LastSuccessfulUpdate *time.Time       `json:"last_successful_update"`
 	Stale                bool             `json:"stale"`
+	LifecycleState       string           `json:"lifecycle_state,omitempty"`
 	GoalScorers          []LiveEvent      `json:"goal_scorers"`
+}
+
+// resultOverdueAfter covers regulation, extra time, a shootout and normal delays.
+const resultOverdueAfter = 4 * time.Hour
+
+// lifecycleState marks a fixture whose stored status still says it has not
+// ended long after kickoff. The stored status is kept; only its currency is
+// reported, so the fixture is not presented as an ordinary upcoming match.
+func lifecycleState(status string, kickoff, now time.Time) string {
+	switch status {
+	case "SCHEDULED", "LIVE", "HALF_TIME", "SUSPENDED", "INTERRUPTED":
+		if now.Sub(kickoff) > resultOverdueAfter {
+			return "RESULT_OVERDUE"
+		}
+	}
+	return ""
 }
 
 type LiveEvent struct {
@@ -246,12 +263,46 @@ type Forecast struct {
 }
 
 type FormMatch struct {
-	KickoffAt    time.Time `json:"kickoff_at"`
-	Opponent     string    `json:"opponent"`
-	Venue        string    `json:"venue"`
-	GoalsFor     int       `json:"goals_for"`
-	GoalsAgainst int       `json:"goals_against"`
-	Result       string    `json:"result"`
+	KickoffAt        time.Time `json:"kickoff_at"`
+	Opponent         string    `json:"opponent"`
+	Venue            string    `json:"venue"`
+	GoalsFor         int       `json:"goals_for"`
+	GoalsAgainst     int       `json:"goals_against"`
+	Result           string    `json:"result"`
+	FixtureID        string    `json:"fixture_id,omitempty"`
+	ResultClass      string    `json:"result_class,omitempty"`
+	ScoreBasis       string    `json:"score_basis,omitempty"`
+	CompetitionScope string    `json:"competition_scope,omitempty"`
+	Verification     string    `json:"verification,omitempty"`
+}
+
+// FormWindow is one policy-governed selection; FixtureIDs trace every symbol.
+type FormWindow struct {
+	Basis           string   `json:"basis"`
+	Scope           string   `json:"scope"`
+	Venue           string   `json:"venue"`
+	Requested       int      `json:"requested"`
+	Actual          int      `json:"actual"`
+	Coverage        string   `json:"coverage"`
+	Flags           []string `json:"flags"`
+	Results         string   `json:"results"`
+	FixtureIDs      []string `json:"fixture_ids"`
+	OldestKickoffAt *string  `json:"oldest_kickoff_at"`
+	Fingerprint     string   `json:"fingerprint"`
+}
+
+type TeamForm struct {
+	TeamID            string                `json:"team_id"`
+	Windows           map[string]FormWindow `json:"windows"`
+	PendingFixtureIDs []string              `json:"pending_fixture_ids"`
+}
+
+type FormContext struct {
+	PolicyVersion string   `json:"policy_version"`
+	Order         string   `json:"order"`
+	DefaultWindow string   `json:"default_window"`
+	Home          TeamForm `json:"home"`
+	Away          TeamForm `json:"away"`
 }
 
 type H2HMatch struct {
@@ -285,6 +336,7 @@ type MatchContext struct {
 	FixtureID          string                 `json:"fixture_id"`
 	HomeForm           []FormMatch            `json:"home_form"`
 	AwayForm           []FormMatch            `json:"away_form"`
+	Form               *FormContext           `json:"form"`
 	H2H                []H2HMatch             `json:"h2h"`
 	H2HSummary         H2HSummary             `json:"h2h_summary"`
 	HomeStats          *TeamStatistics        `json:"home_team_statistics"`

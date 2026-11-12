@@ -779,6 +779,11 @@ def test_context_source_seals_target_outcomes_even_after_earlier_revision(report
             "SELECT football.public_context_source(%s)", (FIXTURE,)
         ).fetchone()[0]
         assert source["history"] == [] and source["kickoff_at"] == KICKOFF.isoformat()
+        current = connection.execute(
+            "SELECT football.public_context_source_v2(%s)", (FIXTURE,)
+        ).fetchone()[0]
+        assert current["history"] == [] and current["results"] == []
+        assert current["form_policy_version"] == "form-policy-v1"
 
 
 def test_go_retrieves_python_reports_and_rejects_missing_stale_versions(report_database):

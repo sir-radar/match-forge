@@ -377,6 +377,8 @@ def fixture_status(short_status: str) -> str:
         return "CANCELLED"
     if short_status in {"ABD"}:
         return "ABANDONED"
+    if short_status in {"AWD", "WO"}:
+        return "AWARDED"
     return "SCHEDULED"
 
 

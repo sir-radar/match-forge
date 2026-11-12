@@ -57,6 +57,7 @@ export type Fixture = {
   last_successful_update: string | null;
   freshness?: "UNKNOWN" | "FRESH" | "STALE";
   stale: boolean;
+  lifecycle_state?: "RESULT_OVERDUE";
   goal_scorers: LiveEvent[];
 };
 
@@ -142,6 +143,32 @@ export type FormMatch = {
   goals_for: number;
   goals_against: number;
   result: "W" | "D" | "L";
+  fixture_id?: string;
+  result_class?: "PLAYED" | "AWARDED" | "AWARDED_AFTER_PLAY";
+  score_basis?: string;
+  competition_scope?: string;
+  verification?: "QUALIFIED_HISTORY" | "CANONICAL_RESULT";
+};
+
+export type FormWindow = {
+  basis: string;
+  scope: string;
+  venue: string;
+  requested: number;
+  actual: number;
+  coverage: "COMPLETE" | "PARTIAL" | "EMPTY";
+  flags: string[];
+  results: string;
+  fixture_ids: string[];
+  oldest_kickoff_at: string | null;
+};
+
+export type FormContext = {
+  policy_version: string;
+  order: "NEWEST_FIRST";
+  default_window: string;
+  home: Record<string, FormWindow>;
+  away: Record<string, FormWindow>;
 };
 
 export type H2HMatch = {
@@ -180,6 +207,7 @@ export type MatchContext = {
   fixture_id: string;
   home_form: FormMatch[];
   away_form: FormMatch[];
+  form?: FormContext | null;
   h2h: H2HMatch[];
   h2h_summary: { meetings: number; home_wins: number; draws: number; away_wins: number; home_goals: number; away_goals: number };
   home_team_statistics: TeamStatistics | null;
@@ -453,12 +481,14 @@ export function parseContext(value: unknown): MatchContext {
       goals_for: numeric(row.goals_for, "goals_for"),
       goals_against: numeric(row.goals_against, "goals_against"),
       result: result as FormMatch["result"],
+      ...optionalFormFields(row),
     };
   };
   return {
     fixture_id: text(item.fixture_id, "fixture_id"),
     home_form: array(item.home_form, "home_form").map(form),
     away_form: array(item.away_form, "away_form").map(form),
+    form: item.form === undefined || item.form === null ? null : parseFormContext(item.form),
     h2h: array(item.h2h, "h2h").map((entry) => {
       const row = object(entry, "h2h match");
       return {
@@ -535,6 +565,66 @@ export function parsePerformanceList(value: unknown): PerformancePage {
 function parseH2HSummary(value: unknown): MatchContext["h2h_summary"] {
   const item = object(value, "h2h summary");
   return { meetings: numeric(item.meetings, "meetings"), home_wins: numeric(item.home_wins, "home_wins"), draws: numeric(item.draws, "draws"), away_wins: numeric(item.away_wins, "away_wins"), home_goals: numeric(item.home_goals, "home_goals"), away_goals: numeric(item.away_goals, "away_goals") };
+}
+
+const RESULT_CLASSES = ["PLAYED", "AWARDED", "AWARDED_AFTER_PLAY"] as const;
+
+function optionalFormFields(row: Record<string, unknown>): Partial<FormMatch> {
+  const fields: Partial<FormMatch> = {};
+  if (row.fixture_id !== undefined) fields.fixture_id = text(row.fixture_id, "fixture_id");
+  if (row.result_class !== undefined) {
+    const value = text(row.result_class, "result_class");
+    if (!(RESULT_CLASSES as readonly string[]).includes(value)) throw new Error("invalid result_class");
+    fields.result_class = value as FormMatch["result_class"];
+  }
+  if (row.score_basis !== undefined) fields.score_basis = text(row.score_basis, "score_basis");
+  if (row.competition_scope !== undefined) fields.competition_scope = text(row.competition_scope, "competition_scope");
+  if (row.verification !== undefined) {
+    const value = text(row.verification, "verification");
+    if (value !== "QUALIFIED_HISTORY" && value !== "CANONICAL_RESULT") throw new Error("invalid verification");
+    fields.verification = value;
+  }
+  return fields;
+}
+
+function parseFormWindow(value: unknown): FormWindow {
+  const item = object(value, "form window");
+  const coverage = text(item.coverage, "coverage");
+  if (coverage !== "COMPLETE" && coverage !== "PARTIAL" && coverage !== "EMPTY") throw new Error("invalid form coverage");
+  return {
+    basis: text(item.basis, "basis"),
+    scope: text(item.scope, "scope"),
+    venue: text(item.venue, "venue"),
+    requested: integer(item.requested, "requested", 1),
+    actual: integer(item.actual, "actual", 0),
+    coverage,
+    flags: array(item.flags, "flags").map((flag) => text(flag, "flag")),
+    results: formResults(item.results),
+    fixture_ids: array(item.fixture_ids, "fixture_ids").map((id) => text(id, "fixture_id")),
+    oldest_kickoff_at: nullableTimestamp(item.oldest_kickoff_at, "oldest_kickoff_at"),
+  };
+}
+
+function formResults(value: unknown): string {
+  // An EMPTY window serves "", so this field cannot use the non-empty text rule.
+  if (typeof value !== "string" || !/^[WDL]*$/.test(value)) throw new Error("invalid form results");
+  return value;
+}
+
+function parseFormContext(value: unknown): FormContext {
+  const item = object(value, "form");
+  if (item.order !== "NEWEST_FIRST") throw new Error("unsupported form order");
+  const windows = (team: unknown, field: string) => {
+    const entry = object(object(team, field).windows, `${field}.windows`);
+    return Object.fromEntries(Object.entries(entry).map(([key, window]) => [key, parseFormWindow(window)]));
+  };
+  return {
+    policy_version: text(item.policy_version, "policy_version"),
+    order: "NEWEST_FIRST",
+    default_window: text(item.default_window, "default_window"),
+    home: windows(item.home, "home"),
+    away: windows(item.away, "away"),
+  };
 }
 
 function parseTeamStatistics(value: unknown): TeamStatistics {
@@ -770,6 +860,7 @@ function parseFixture(value: unknown): Fixture {
     last_successful_update: item.last_successful_update === undefined ? null : nullableTimestamp(item.last_successful_update, "last_successful_update"),
     freshness: parseFreshness(item.freshness),
     stale: item.stale === undefined ? false : boolean(item.stale, "stale"),
+    ...(item.lifecycle_state === "RESULT_OVERDUE" ? { lifecycle_state: "RESULT_OVERDUE" as const } : {}),
     goal_scorers: item.goal_scorers === undefined ? [] : array(item.goal_scorers, "goal_scorers").map(parseLiveEvent),
   };
 }

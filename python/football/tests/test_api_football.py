@@ -253,7 +253,14 @@ def test_context_capability_distinguishes_explicit_unsupported_from_unknown() ->
 
 @pytest.mark.parametrize(
     ("provider_status", "expected"),
-    [("NS", "SCHEDULED"), ("1H", "LIVE"), ("FT", "FINISHED"), ("PST", "POSTPONED")],
+    [
+        ("NS", "SCHEDULED"),
+        ("1H", "LIVE"),
+        ("FT", "FINISHED"),
+        ("PST", "POSTPONED"),
+        ("AWD", "AWARDED"),
+        ("WO", "AWARDED"),
+    ],
 )
 def test_fixture_status_mapping(provider_status: str, expected: str) -> None:
     assert fixture_status(provider_status) == expected

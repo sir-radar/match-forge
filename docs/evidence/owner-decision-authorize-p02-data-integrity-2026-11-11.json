@@ -1,0 +1,53 @@
+{
+  "contract": "OwnerDecisionRecordV1",
+  "decision_id": "AUTHORIZE_UNIFIED_P02_DATA_INTEGRITY_IMPLEMENTATION_V1",
+  "recorded_at": "2026-11-11T05:09:04Z",
+  "title": "Authorize roadmap tickets P02-01 and P02-02 with the full P02 data-integrity task scope",
+  "status": "APPROVED",
+  "owner": "repository owner / sir-radar",
+  "map": "unified-architecture-redesign",
+  "ticket": "P02-01, P02-02",
+  "source": {
+    "execution_instruction": "Owner instruction in this session to implement the local CURRENT_TASK.md (P02 global football data integrity) from start to finish on a branch from main, followed by owner answers to four scoped questions",
+    "owner_answers": {
+      "authorization_and_scope": "Full original prompt scope",
+      "default_form": "Official last 5, newest first",
+      "score_basis": "After extra time; pens = D",
+      "data_access": "Read-only on both"
+    },
+    "roadmap_reference": "docs/architecture/unified-redesign-2026-11-10/roadmap.md"
+  },
+  "scope": [
+    "Roadmap tickets P02-01 (root-cause investigation) and P02-02 (verified ingestion and publication corrections) on branch ft/p02-data-integrity",
+    "The task's wider sections built in the same pull request: shared result and form policies, one governed recent-form engine, the bounded read-only integrity audit, and the foundations for integrity findings, dependency-aware refresh and review escalation on the existing work registry"
+  ],
+  "authorizes": [
+    "code and test changes in the existing Python, Go, SQL and web owners",
+    "additive SQL migrations applied to disposable databases only",
+    "read-only queries against the operating database and GET requests to the local API for baseline capture and the audit",
+    "documentation commits that amend the roadmap and record evidence"
+  ],
+  "product_decisions": {
+    "default_form": "The fixture page shows the last 5 official results across all competitive matches, newest first. Awarded results are included and visibly marked. Friendlies are excluded. Played-only form stays the basis for goal averages, team statistics and forecast inputs.",
+    "score_basis": "W/D/L uses the score after extra time. A match decided on penalties counts as a draw with the shootout winner as an annotation. Half-time scores are never used. A row with UNKNOWN score basis is excluded from played-only form and flagged.",
+    "form_staleness_days": 180,
+    "audit_batch_fixtures": 500,
+    "audit_run_limit_minutes": 30
+  },
+  "requires": [
+    "fix shared causes in their earliest owner; no production code branches on a specific team, fixture, competition, country, provider or form string",
+    "keep unknown, missing and unverified data distinct from verified data",
+    "leave published forecasts, model artifacts and historical cutoffs unchanged",
+    "report audit coverage honestly; anything not checked is NOT_AUDITED",
+    "open a pull request against main and leave it unmerged"
+  ],
+  "explicitly_not_authorized": [
+    "applying migrations or any other write to the operating database",
+    "provider acquisition, backfill or broad historical reprocessing",
+    "identity admissions",
+    "model training, promotion, retirement or republication",
+    "Architecture V2 cutover, merging or deploying",
+    "the remaining proposed roadmap phases (P03 onwards) beyond the compatible foundations this task names"
+  ],
+  "supersession": "Adds P02-01 and P02-02 to the authorized unified-architecture tickets. The investigation's implementation_of_proposed_architecture_authorized flag stays false for every other proposed phase. The default staleness and audit limits are the task's suggested values, taken without a separate owner answer."
+}

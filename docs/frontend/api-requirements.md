@@ -66,6 +66,19 @@ matching the existing settlement contract. Unknown, extra-time and shootout
 scores cannot establish a regulation-time winner. Older API responses without
 the field remain readable but are excluded from active result filters.
 
+Fixture rows add `lifecycle_state=RESULT_OVERDUE` when the stored status is
+still unresolved four hours after kickoff. Show the stored status with that
+marker; do not present the fixture as upcoming.
+
+`GET /v1/fixtures/{fixture_id}/context` serves `home_form` and `away_form` from
+the `form.default_window` of `form-policy-v1`: the last 5 official results,
+newest first, awarded results included and marked by `result_class`,
+friendlies excluded. `form` lists every window with its coverage, flags and
+selected fixture IDs. Render the arrays in the served order; do not re-sort,
+filter or recompute them. Reports built before the policy have `form: null`
+and the missingness code `RECENT_FORM_POLICY_UNKNOWN`. Team statistics use the
+`FORECAST_ELIGIBLE_ALL_5` on-field scores.
+
 `GET /v1/fixtures/{fixture_id}/live` returns the canonical score, status and
 clock plus normalized incidents, current provider statistics, separate
 score/event/statistics provenance, resource availability and a partial-data
