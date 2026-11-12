@@ -64,7 +64,10 @@
  "classification": "VERIFIED_RECOVERABLE",
  "full_recovery_verified": false,
  "full_recovery_blocker": "A FULL_RECOVERY capture enumerates every registration, including the 159 governed exclusions (145 missing files, 33 unresolved), so it fails by design. VERIFIED_GOVERNED_SCOPE is proposed separately.",
- "retained": [
-  ".local/recovery-drills/cli-recoverable-20261112T132949Z (9.3 GB isolated restore)"
- ]
+ "drill_directory": {
+  "path": ".local/recovery-drills/cli-recoverable-20261112T132949Z",
+  "bytes_approx": "9.3 GB",
+  "verification": "PASS_RECOVERABLE",
+  "removed": "after verification, on owner instruction 'Yes, remove it'"
+ }
 }
