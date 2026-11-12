@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-12T03:30:00Z",
+  "updated_at": "2026-11-12T06:45:00Z",
   "unified_architecture_investigation": {
     "status": "PASS_WITH_WARNINGS",
     "scope": "CURRENT_TASK.md revision 3; architecture investigation/planning only",
@@ -84,7 +84,8 @@
     "AUTHORIZE_PUBLIC_DEVELOPMENT_DATA_ACQUISITION_V1",
     "ALLOW_FLASH_RESEARCH_SOURCE_ELIGIBILITY_EXCEPTION_R03",
     "AUTHORIZE_UNIFIED_P02_DATA_INTEGRITY_IMPLEMENTATION_V1",
-    "AUTHORIZE_P02_OPERATING_ROLLOUT_V1"
+    "AUTHORIZE_P02_OPERATING_ROLLOUT_V1",
+    "AUTHORIZE_STORAGE_OPERATING_ROLLOUT_V1"
   ],
   "closed_routes": [
     {
@@ -4083,6 +4084,24 @@
       "P5": "NOT_STARTED",
       "P6": "NOT_STARTED"
     },
-    "required_next_action": "Owner P0 phase-gate handoff. P1 exact resource-by-resource reclamation manifest is next; deletion requires resource-specific approval. P2\u2013P6 lifecycle implementation remains pending."
+    "operating_rollout": {
+      "decision_id": "AUTHORIZE_STORAGE_OPERATING_ROLLOUT_V1",
+      "decision_ref": "docs/evidence/owner-decision-authorize-storage-operating-rollout-2026-11-12.json",
+      "evidence_ref": "docs/evidence/storage-operating-rollout-2026-11-12.json",
+      "status": "APPLIED",
+      "release_git_sha": "cefc8059abc20ab69c4780da8b159082aed13917",
+      "migrations": [
+        "202611110400_storage_lifecycle",
+        "202611110500_competition_noop_updates",
+        "202611120100_storage_resource_management"
+      ],
+      "pending_migrations_after": 0,
+      "preservation": "UNCHANGED",
+      "backup": "VERIFIED_LOGICAL_DUMP_RESTORE_CHECK; admin backup FAILED (VERIFICATION_FAILED)",
+      "authoritative_database_registered": true,
+      "existing_resources_removed": 0,
+      "candidate_deletions_awaiting_owner_approval": 10
+    },
+    "required_next_action": "Owner resource-specific approval for the 10 revalidated deletion candidates (plan eb5f276f\u2026, 43.9 GB expected). Diagnose the failing admin backup. Recovery-gap remediation needs a governed retirement and correction mechanism for registrations other than forecasts and evaluations."
   }
 }
