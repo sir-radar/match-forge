@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
+	"football-forecasting/go/api/internal/testdb"
 	"net"
 	"net/url"
 	"os"
@@ -21,10 +22,7 @@ import (
 
 func databasePool(t *testing.T) *pgxpool.Pool {
 	t.Helper()
-	url := os.Getenv("TEST_DATABASE_URL")
-	if url == "" {
-		t.Skip("requires disposable TEST_DATABASE_URL")
-	}
+	url := testdb.URL(t)
 	pool, err := pgxpool.New(context.Background(), url)
 	if err != nil {
 		t.Fatal(err)

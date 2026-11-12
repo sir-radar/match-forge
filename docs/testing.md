@@ -130,6 +130,53 @@ Use for:
 - retry/reconciliation;
 - cross-module contracts.
 
+#### Database isolation
+
+Integration tests run only through `make integration` (`scripts/storage-integration.sh`
+and `scripts/integration.sh`). Between 29 August and 5 September 2026 test runs
+committed 158 synthetic registrations into the operating database: nothing stopped a
+run whose `TEST_DATABASE_URL` or `DATABASE_URL` named it. See
+[recovery-scope dispositions](recovery.md#recovery-scope-dispositions).
+
+`tests/integration/database_isolation.py` now enforces isolation by identity, not name:
+
+- The harness creates a database, stores the SHA-256 of a per-run token as its comment
+  and passes the token in the environment. It refuses to mark a database that already
+  holds a `football` schema or a comment.
+- `tests/integration/conftest.py` stops the run with a usage error before any test
+  module is imported unless both URLs reach this run's marked database. It then checks
+  every psycopg connection, in the test process and in Python child processes, by
+  `pg_control_system().system_identifier` and database OID. A database that registers
+  itself in `football.storage_protections` as `AUTHORITATIVE_OPERATING_DATABASE` is
+  always refused, even when it carries the marker. The one exception is the exact
+  database `prepare` marked (`MATCHFORGE_PREPARED_TEST_DATABASE_IDENTITY`): storage tests
+  run `VerifyAuthority` against it, which records it as authoritative in its own
+  registry, and `prepare` had already proved it fresh. A copied marker on any other
+  database is still refused. A pre-existing unmarked database with
+  a `football` schema, an unverified cluster or an unreadable identity is refused too.
+- A database a test creates is tagged with the run's ownership comment on first
+  connection. Harness cleanup drops every database carrying this run's marker or tag,
+  so an interrupted run does not leave test databases behind.
+
+`tests/integration/test_database_isolation.py` proves that the whole suite refuses to
+start against a simulated authoritative database and writes nothing to it.
+`tests/test_database_isolation.py` fails when an integration test file is not listed
+in the harness, because CI would then never run it.
+
+Go integration tests read `TEST_DATABASE_URL` only, and only through
+`go/api/internal/testdb`. It applies the same identity rule as the Python guard and fails
+the test, rather than skipping it, when the URL is set but the harness environment or the
+database marker is missing, so `TEST_DATABASE_URL=… go test ./...` cannot reach the
+operating database. It also puts the Python guard on `PYTHONPATH` for the CLI and
+worker processes those tests start. The harness additionally verifies the URL with
+`python -m tests.integration.database_isolation verify` before Go tests start.
+
+Lease-expiry tests do not wait out very short wall-clock leases. A 30 ms lease can expire
+inside `claim_history_work` itself (its `lock_work` re-check runs after the queue detail
+lock), which made those tests fail only under full-suite load. They claim with a normal
+lease and move `lease_until` into the past, so the production comparison with
+`clock_timestamp()` is still what decides expiry.
+
 ### End-to-end / operator tests
 
 Use for critical workflows such as:
@@ -324,6 +371,15 @@ Prefer:
 6. phase/evaluation commands only when the current authorization explicitly permits them.
 
 Do not run an authoritative evaluation merely because implementation tests pass.
+
+The CI workflow skips the full suites on pull requests and pushes to `main`
+when the diff changes only prose or documentation JSON. It still runs
+`git diff --check`. JSON under `docs/` requires the full suites when a tracked
+file other than prose references its filename in either revision. Project
+status, schemas, contracts, evaluation inputs, and evidence files discovered
+by the project-status and V4 qualification tools also require the full suites.
+When a tool builds input filenames at runtime, register the path pattern in
+`.github/scripts/classify-changes.sh` so CI can recognize it.
 
 ## Evidence
 

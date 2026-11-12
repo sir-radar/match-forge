@@ -8,14 +8,14 @@ export MATCHFORGE_PYTHON_COMMAND MATCHFORGE_RUST_COMMAND
 PROTOTYPE_DIR := experiments/sprint1_roundtrip
 PROTOTYPE_COMPOSE := $(PROTOTYPE_DIR)/compose.yaml
 MIGRATIONS_DIR := infrastructure/migrations
-RECOVERY_SCRIPTS := scripts/foundation_release.py scripts/capture_architecture_v2_baseline.py scripts/backup_recovery.py scripts/recovery_files.py scripts/recovery_scope.py scripts/recovery_dispositions.py scripts/backup_destination.py scripts/manual_backup.py scripts/install_restic.py
+RECOVERY_SCRIPTS := scripts/foundation_release.py scripts/capture_architecture_v2_baseline.py scripts/backup_recovery.py scripts/recovery_files.py scripts/recovery_scope.py scripts/recovery_dispositions.py scripts/source_manifest_bindings.py scripts/source_manifest_path_digest_audit.py scripts/backup_destination.py scripts/manual_backup.py scripts/install_restic.py
 SPRINT2_REPORT_ROOT ?= $(CURDIR)/.local/reports/sprint2
 CODE_COMMIT_SHA ?= $(shell git rev-parse HEAD)
 DEPENDENCY_LOCK_SHA256 ?= $(shell shasum -a 256 uv.lock | cut -d ' ' -f 1)
 BUILD_WORKTREE_STATE := $(shell test -z "$$(git status --porcelain)" && echo clean || echo dirty)
 export UV_CACHE_DIR := $(CURDIR)/.local/uv-cache
 
-.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test test-coverage test-native build integration integration-check check project-status-check identity-check entity-crosswalk-review entity-crosswalk-apply canonical-history-audit pretraining-snapshot-check pretraining-check postgres-restore-test sprint2-evaluate h2h-context-evaluate full-coverage-v2-reevaluate full-coverage-v2-replacement-evaluate v2-final-readiness v2-final-evaluate model-fit model-forecast model-evaluate probability-benchmark dev dev-go dev-python dev-rust mvp-sync fotmob-sync pitchapi-sync openfootball-sync football-data-uk-sync history-backfill forecast-refresh all-data-sync external-predictions web-install web-lint web-test web-build web-e2e \
+.PHONY: bootstrap doctor up down clean migrate migration-status migrations-current format format-check lint test test-coverage test-native build integration integration-check check project-status-check identity-check entity-crosswalk-review entity-crosswalk-apply canonical-history-audit pretraining-snapshot-check pretraining-check postgres-restore-test sprint2-evaluate h2h-context-evaluate full-coverage-v2-reevaluate full-coverage-v2-replacement-evaluate v2-final-readiness v2-final-evaluate model-fit model-forecast model-evaluate probability-benchmark dev dev-go dev-python dev-rust mvp-sync fotmob-sync pitchapi-sync openfootball-sync football-data-uk-sync history-backfill forecast-refresh all-data-sync external-predictions web-install web-lint web-test web-build web-e2e \
 	prototype-bootstrap prototype-up prototype-down prototype-test prototype-run \
 	prototype-gate-a prototype-clean codex-luna codex-terra codex-sol architecture-check
 
@@ -40,6 +40,11 @@ migrate: up
 migration-status: up
 	@set -a; . ./.env; set +a; $(TOOL_ENV); : "$${DATABASE_URL:?Set DATABASE_URL in .env}"; goose -dir $(MIGRATIONS_DIR) postgres "$$DATABASE_URL" status
 
+# Dev and sync targets depend on this, not on migrate: they refuse to start
+# while migrations are pending instead of applying them to DATABASE_URL.
+migrations-current: up
+	@set -a; . ./.env; set +a; $(TOOL_ENV); ./scripts/check-migrations-current.sh $(MIGRATIONS_DIR)
+
 format:
 	@$(TOOL_ENV); uv run ruff check --fix python tests experiments scripts
 	@$(TOOL_ENV); uv run ruff format python tests experiments scripts
@@ -60,7 +65,7 @@ lint:
 	@$(TOOL_ENV); cd go/api && go vet ./...
 	@$(TOOL_ENV); cd go/api && golangci-lint run ./...
 	@$(TOOL_ENV); goose -dir $(MIGRATIONS_DIR) validate
-	@sh -n scripts/bootstrap.sh scripts/doctor.sh scripts/integration.sh scripts/storage-integration.sh scripts/toolchain.sh scripts/code-intelligence.sh
+	@sh -n scripts/bootstrap.sh scripts/doctor.sh scripts/integration.sh scripts/storage-integration.sh scripts/toolchain.sh scripts/code-intelligence.sh scripts/check-migrations-current.sh
 
 test: test-coverage test-native
 
@@ -99,16 +104,16 @@ architecture-check:
 project-status-check:
 	@$(TOOL_ENV); uv run python -m football.project_status docs/project-status.json
 
-identity-check: migrate
+identity-check: migrations-current
 	@set -a; . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.identity_audit --database-url "$$DATABASE_URL"
 
-entity-crosswalk-review: migrate
+entity-crosswalk-review: migrations-current
 	@set -a; . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.crosswalk_resolution --database-url "$$DATABASE_URL"
 
-entity-crosswalk-apply: migrate
+entity-crosswalk-apply: migrations-current
 	@set -a; . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.crosswalk_resolution --database-url "$$DATABASE_URL" --apply
 
-canonical-history-audit: migrate
+canonical-history-audit: migrations-current
 	@set -a; . ./.env; set +a; $(TOOL_ENV); : "$${DATABASE_URL:?Set DATABASE_URL in .env}"; uv run python -m scripts.audit_canonical_history --database-url "$$DATABASE_URL"
 
 pretraining-snapshot-check:
@@ -193,34 +198,34 @@ web-build:
 web-e2e: web-build
 	cd web && pnpm test:e2e
 
-mvp-sync: migrate
+mvp-sync: migrations-current
 	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli sync $(if $(DATE),--date $(DATE),) $(if $(FROM_DATE),--from-date $(FROM_DATE),) $(if $(HISTORY_CONCURRENCY),--history-concurrency $(HISTORY_CONCURRENCY),)
 
-fotmob-sync: migrate
+fotmob-sync: migrations-current
 	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli fotmob-sync $(if $(DATE),--date $(DATE),) $(if $(FROM_DATE),--from-date $(FROM_DATE),) $(if $(COMPETITION),--competition "$(COMPETITION)",)
 
-pitchapi-sync: migrate
+pitchapi-sync: migrations-current
 	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli pitchapi-sync $(if $(DATE),--date $(DATE),) $(if $(FROM_DATE),--from-date $(FROM_DATE),) $(if $(COMPETITION),--competition "$(COMPETITION)",)
 
-openfootball-sync: migrate
+openfootball-sync: migrations-current
 	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli backfill-openfootball $(if $(SEASON),--season $(SEASON),) $(if $(COMPETITION),--competition "$(COMPETITION)",) $(if $(COUNTRY),--country "$(COUNTRY)",) $(if $(REFRESH),--refresh,)
 
-football-data-uk-sync: migrate
+football-data-uk-sync: migrations-current
 	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli backfill-football-data-uk $(if $(SEASON),--season $(SEASON),) $(if $(COMPETITION),--competition "$(COMPETITION)",) $(if $(COUNTRY),--country "$(COUNTRY)",) $(if $(REFRESH),--refresh,)
 
-history-backfill: migrate
+history-backfill: migrations-current
 	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli backfill-history $(if $(SEASON),--season $(SEASON),) $(if $(COMPETITION),--competition "$(COMPETITION)",) $(if $(COUNTRY),--country "$(COUNTRY)",) $(if $(REFRESH),--refresh,)
 
-forecast-refresh: migrate
+forecast-refresh: migrations-current
 	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli refresh-forecasts
 
-all-data-sync: migrate
+all-data-sync: migrations-current
 	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli sync-all $(if $(DATE),--date $(DATE),) $(if $(FROM_DATE),--from-date $(FROM_DATE),) $(if $(HISTORY_CONCURRENCY),--history-concurrency $(HISTORY_CONCURRENCY),)
 
 external-predictions:
 	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli external-predictions $(if $(DATE),--date $(DATE),) $(if $(SOURCE),--source $(SOURCE),)
 
-dev: migrate
+dev: migrations-current
 	./scripts/dev.sh
 
 dev-go:

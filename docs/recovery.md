@@ -294,6 +294,10 @@ reader and logical digest; its trailing-newline representation has a distinct
 physical checksum. Recovery preserves both identities and never rewrites a legacy
 registration or source to make a checksum appear valid.
 
+The 47 Football-Data.co.uk snapshots with path digests, a proposed append-only binding to
+their resource checksums and a guard against new path digests are described in
+[Football-Data.co.uk manifest path digests](operations/fduk-manifest-path-digests-2026-11-12.md).
+
 ## Recovery when original dependencies are unavailable
 
 `MATCHFORGE_BACKUP_SCOPE=FULL_RECOVERY` is the default. It fails closed if
@@ -334,6 +338,10 @@ validates the pinned evidence (`docs/evidence/storage-recovery-gaps-2026-11-12.j
 and its shared-owner supplement) and prints the counts. Adding `--apply` writes to
 `DATABASE_URL`, which for the operating database needs its own owner decision. A retry
 with the same decision verifies the existing rows; a different one fails.
+The 161 reviewed dispositions were rehearsed on a restored copy on 12 November 2026
+([evidence](evidence/recovery-disposition-rehearsal-2026-11-12.json)): 0 unavailable and
+159 excluded afterwards, registrations unchanged. They are not applied to the operating
+database until an owner decision authorizes it.
 
 Set `MATCHFORGE_BACKUP_RECOVERABLE_INVENTORY` to the protected inventory path
 inside the service checkout. Use `--recoverable-inventory` for an explicitly

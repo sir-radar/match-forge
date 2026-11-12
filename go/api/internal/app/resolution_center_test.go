@@ -3,11 +3,11 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"football-forecasting/go/api/internal/testdb"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -66,10 +66,7 @@ func TestResolutionOutputIsBounded(t *testing.T) {
 	}
 }
 func TestResolutionDatabaseBridge(t *testing.T) {
-	url := os.Getenv("TEST_DATABASE_URL")
-	if url == "" {
-		t.Skip("integration database required")
-	}
+	url := testdb.URL(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Second)
 	defer cancel()
 	pool, err := pgxpool.New(ctx, url)

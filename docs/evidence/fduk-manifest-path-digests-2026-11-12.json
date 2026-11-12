@@ -1,0 +1,2033 @@
+{
+ "observed_at": "2026-11-12",
+ "phase": "Stage F recovery remediation, Football-Data.co.uk manifest path digests",
+ "scope": "read-only (default_transaction_read_only=on); no registration, file or backup changed",
+ "database_migration_version": 202611120200,
+ "data_root": "<repo>/.local/football-data",
+ "defect": {
+  "writer": "HistoricalBackfillStore.ensure_snapshot",
+  "registered": "manifest_sha256 = sha256(manifest_path UTF-8 bytes)",
+  "fixed_by_commit": "55a7e35d0d4078092e5665d3a9f2772e65dbd360",
+  "fixed_registration": "source_revision manifest-v1:<revision>:<manifest bytes sha256>"
+ },
+ "path_digest_snapshots_by_provider": {
+  "football_data_uk": 47,
+  "openfootball": 1
+ },
+ "provider_snapshots": 68,
+ "provider_manifest_v1_snapshots": 20,
+ "provider_first_manifest_v1_created_at": "2026-10-14T06:24:38.892025+00:00",
+ "registrations": 47,
+ "created_at_range": [
+  "2026-09-30T15:26:15.529854+00:00",
+  "2026-10-07T15:42:57.305471+00:00"
+ ],
+ "classification_counts": {
+  "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND": 45,
+  "RAW_FILE_PATH_DIGEST_SIBLING_BOUND": 2
+ },
+ "excluded": {
+  "openfootball": "1 path-digest snapshot is a never-written catalog with no file to bind; it is the MANIFEST_NEVER_WRITTEN_PATH_DIGEST correction in docs/evidence/storage-recovery-gaps-2026-11-12.json"
+ },
+ "consumers": {
+  "source_snapshots": {
+   "competition_provider_mappings.source_snapshot_id": 44,
+   "match_provider_mappings.source_snapshot_id": 241442,
+   "product_identity_admissions.source_snapshot_id": 927,
+   "product_source_result_conflicts.existing_snapshot_id": 2,
+   "product_source_result_conflicts.incoming_snapshot_id": 8,
+   "product_team_match_history.source_snapshot_id": 235923,
+   "provider_mapping_history.source_snapshot_id": 242514,
+   "source_resources.source_snapshot_id": 45,
+   "team_provider_mappings.source_snapshot_id": 1028
+  },
+  "source_resources": {}
+ },
+ "backup_dependency": "none: scripts/recovery_files.py source_manifest_reference and legacy_source_path already resolve every path to the raw file bound by its resource checksum",
+ "registrations_modified": 0,
+ "fabricated_values": 0,
+ "findings": [
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "5c4f7a44-abf0-5571-8719-bcd95b1a753a"
+   },
+   "source_identity": "http://www.football-data.co.uk/fixtures.csv",
+   "source_revision": "938b87fdbfca24e459630871f24a611f439febb0bb35857e82d6fb79980568ad",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/unknown/938b87fdbfca24e459630871f24a611f439febb0bb35857e82d6fb79980568ad.csv",
+   "registered_sha256": "fac79571966d79f22a068c694faa33071f9791bfa205b0897cf8385900b3902e",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:26:15.529854+00:00",
+   "resources": [
+    {
+     "id": "00a19831-3027-58ca-a173-f5dcc72ab291",
+     "provider_path": "fixtures.csv",
+     "sha256": "938b87fdbfca24e459630871f24a611f439febb0bb35857e82d6fb79980568ad",
+     "size_bytes": 4052,
+     "media_type": "text/csv",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "00a19831-3027-58ca-a173-f5dcc72ab291",
+    "provider_path": "fixtures.csv",
+    "sha256": "938b87fdbfca24e459630871f24a611f439febb0bb35857e82d6fb79980568ad",
+    "size_bytes": 4052,
+    "media_type": "text/csv",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "938b87fdbfca24e459630871f24a611f439febb0bb35857e82d6fb79980568ad",
+    "size_bytes": 4052
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_SIBLING_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "42e00e5d-dcee-5290-9c75-d40926907b32"
+   },
+   "source_identity": "https://www.football-data.co.uk/fixtures.csv",
+   "source_revision": "938b87fdbfca24e459630871f24a611f439febb0bb35857e82d6fb79980568ad",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/unknown/938b87fdbfca24e459630871f24a611f439febb0bb35857e82d6fb79980568ad.csv",
+   "registered_sha256": "fac79571966d79f22a068c694faa33071f9791bfa205b0897cf8385900b3902e",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:26:16.816898+00:00",
+   "resources": [],
+   "sibling": {
+    "source_snapshot_id": "5c4f7a44-abf0-5571-8719-bcd95b1a753a",
+    "source_identity": "http://www.football-data.co.uk/fixtures.csv",
+    "resources": [
+     {
+      "id": "00a19831-3027-58ca-a173-f5dcc72ab291",
+      "provider_path": "fixtures.csv",
+      "sha256": "938b87fdbfca24e459630871f24a611f439febb0bb35857e82d6fb79980568ad",
+      "size_bytes": 4052,
+      "media_type": "text/csv",
+      "acquired_raw_path": null
+     }
+    ]
+   },
+   "bound_resource": {
+    "id": "00a19831-3027-58ca-a173-f5dcc72ab291",
+    "provider_path": "fixtures.csv",
+    "sha256": "938b87fdbfca24e459630871f24a611f439febb0bb35857e82d6fb79980568ad",
+    "size_bytes": 4052,
+    "media_type": "text/csv",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "938b87fdbfca24e459630871f24a611f439febb0bb35857e82d6fb79980568ad",
+    "size_bytes": 4052
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "c3cb0119-6c75-5d5f-af91-db5f89864e44"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/0001/data.zip",
+   "source_revision": "56d48575f4100b37467f945fe8e06c69d70040f36071909493634d2d703ed6ef",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2000-2001/56d48575f4100b37467f945fe8e06c69d70040f36071909493634d2d703ed6ef.zip",
+   "registered_sha256": "58cb7f0f9a6c3fba3339ceb54f016af46c5dafa1ed4ba7a93fadf3f0c908b9d7",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:26:18.595069+00:00",
+   "resources": [
+    {
+     "id": "77e58390-1520-5d03-8d87-b0057f4bcec5",
+     "provider_path": "mmz4281/0001/data.zip",
+     "sha256": "56d48575f4100b37467f945fe8e06c69d70040f36071909493634d2d703ed6ef",
+     "size_bytes": 215164,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "77e58390-1520-5d03-8d87-b0057f4bcec5",
+    "provider_path": "mmz4281/0001/data.zip",
+    "sha256": "56d48575f4100b37467f945fe8e06c69d70040f36071909493634d2d703ed6ef",
+    "size_bytes": 215164,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "56d48575f4100b37467f945fe8e06c69d70040f36071909493634d2d703ed6ef",
+    "size_bytes": 215164
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "3d1a541f-ede1-5c15-8416-e4045eb7d297"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/0102/data.zip",
+   "source_revision": "71c13582810352bedb98170acce85d8574115db2ca567231f0bd000124978781",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2001-2002/71c13582810352bedb98170acce85d8574115db2ca567231f0bd000124978781.zip",
+   "registered_sha256": "7f9242925e07cf41245946dcc3f5917f14ba65e8185480ce879a4d89d669f5a1",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:26:39.479970+00:00",
+   "resources": [
+    {
+     "id": "9d9d218e-67bd-5348-b7b6-2d77414e2497",
+     "provider_path": "mmz4281/0102/data.zip",
+     "sha256": "71c13582810352bedb98170acce85d8574115db2ca567231f0bd000124978781",
+     "size_bytes": 234160,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "9d9d218e-67bd-5348-b7b6-2d77414e2497",
+    "provider_path": "mmz4281/0102/data.zip",
+    "sha256": "71c13582810352bedb98170acce85d8574115db2ca567231f0bd000124978781",
+    "size_bytes": 234160,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "71c13582810352bedb98170acce85d8574115db2ca567231f0bd000124978781",
+    "size_bytes": 234160
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "ff263cb9-a22b-57f6-b80e-e33e43c51e4c"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/0203/data.zip",
+   "source_revision": "71a32fe8d545a66eeb3741f72ced5af95fad083e6229f6b54dde3f9a1b8e7331",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2002-2003/71a32fe8d545a66eeb3741f72ced5af95fad083e6229f6b54dde3f9a1b8e7331.zip",
+   "registered_sha256": "68980bf7ad188efe14a49c1e382e5085b854601564c5313a7329615b85f0ffb9",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:27:02.352743+00:00",
+   "resources": [
+    {
+     "id": "44b1b182-78f4-5842-98b4-4cc46a624085",
+     "provider_path": "mmz4281/0203/data.zip",
+     "sha256": "71a32fe8d545a66eeb3741f72ced5af95fad083e6229f6b54dde3f9a1b8e7331",
+     "size_bytes": 225967,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "44b1b182-78f4-5842-98b4-4cc46a624085",
+    "provider_path": "mmz4281/0203/data.zip",
+    "sha256": "71a32fe8d545a66eeb3741f72ced5af95fad083e6229f6b54dde3f9a1b8e7331",
+    "size_bytes": 225967,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "71a32fe8d545a66eeb3741f72ced5af95fad083e6229f6b54dde3f9a1b8e7331",
+    "size_bytes": 225967
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "dc08ea2b-a216-5cee-bc7a-9004fe2dc4be"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/0304/data.zip",
+   "source_revision": "65c090af1e9dc6380a74d861b58e9b3ad96b44b46b6bd65d658ba54e394c7d7b",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2003-2004/65c090af1e9dc6380a74d861b58e9b3ad96b44b46b6bd65d658ba54e394c7d7b.zip",
+   "registered_sha256": "ea90bbcd6922c7238820620f69a6e8669a1813ecd98bc5fd5526f58fffa4c6ce",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:27:26.402874+00:00",
+   "resources": [
+    {
+     "id": "d607ff24-6def-5cd9-ae30-da6778ee0d1d",
+     "provider_path": "mmz4281/0304/data.zip",
+     "sha256": "65c090af1e9dc6380a74d861b58e9b3ad96b44b46b6bd65d658ba54e394c7d7b",
+     "size_bytes": 272702,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "d607ff24-6def-5cd9-ae30-da6778ee0d1d",
+    "provider_path": "mmz4281/0304/data.zip",
+    "sha256": "65c090af1e9dc6380a74d861b58e9b3ad96b44b46b6bd65d658ba54e394c7d7b",
+    "size_bytes": 272702,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "65c090af1e9dc6380a74d861b58e9b3ad96b44b46b6bd65d658ba54e394c7d7b",
+    "size_bytes": 272702
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "14ceb568-9601-586b-a55a-325d0276aaad"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/0405/data.zip",
+   "source_revision": "2ebab6e1ec004e2d7a6b5e642f75c86ea0303c49a8197ea0a96d07e66c624f77",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2004-2005/2ebab6e1ec004e2d7a6b5e642f75c86ea0303c49a8197ea0a96d07e66c624f77.zip",
+   "registered_sha256": "f3e7047f7a3a07d0dd4d2e10d2c1c7894904ca3fdd6d0610b5d0809f1f931fbc",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:27:52.445533+00:00",
+   "resources": [
+    {
+     "id": "6b4756a2-28b2-545b-83cf-5d90d385e69c",
+     "provider_path": "mmz4281/0405/data.zip",
+     "sha256": "2ebab6e1ec004e2d7a6b5e642f75c86ea0303c49a8197ea0a96d07e66c624f77",
+     "size_bytes": 318591,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "6b4756a2-28b2-545b-83cf-5d90d385e69c",
+    "provider_path": "mmz4281/0405/data.zip",
+    "sha256": "2ebab6e1ec004e2d7a6b5e642f75c86ea0303c49a8197ea0a96d07e66c624f77",
+    "size_bytes": 318591,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "2ebab6e1ec004e2d7a6b5e642f75c86ea0303c49a8197ea0a96d07e66c624f77",
+    "size_bytes": 318591
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "864c8aea-9483-5d14-b496-28a156db61ba"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/0506/data.zip",
+   "source_revision": "598b520cb85ae1b9beb67f6c9ccf589bf83d773472a321e65522f072457b87e6",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2005-2006/598b520cb85ae1b9beb67f6c9ccf589bf83d773472a321e65522f072457b87e6.zip",
+   "registered_sha256": "3734e0193b82d16d87c22f7315e04f897e2bf553263759fac878004539fef233",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:28:20.746711+00:00",
+   "resources": [
+    {
+     "id": "90c39615-255b-5832-90c5-afd2d6fbf383",
+     "provider_path": "mmz4281/0506/data.zip",
+     "sha256": "598b520cb85ae1b9beb67f6c9ccf589bf83d773472a321e65522f072457b87e6",
+     "size_bytes": 533858,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "90c39615-255b-5832-90c5-afd2d6fbf383",
+    "provider_path": "mmz4281/0506/data.zip",
+    "sha256": "598b520cb85ae1b9beb67f6c9ccf589bf83d773472a321e65522f072457b87e6",
+    "size_bytes": 533858,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "598b520cb85ae1b9beb67f6c9ccf589bf83d773472a321e65522f072457b87e6",
+    "size_bytes": 533858
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "d378853d-5864-54ba-8116-0145e4cdefa1"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/0607/data.zip",
+   "source_revision": "ec5e92fbab5fb925e3fc89862a0931b885c5209ae5f35bc08ad84031c2dd3519",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2006-2007/ec5e92fbab5fb925e3fc89862a0931b885c5209ae5f35bc08ad84031c2dd3519.zip",
+   "registered_sha256": "35552daeb0e105978bdaf5681c6df0af8b68e6fca7a00f010344304657476aa9",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:28:53.369246+00:00",
+   "resources": [
+    {
+     "id": "8c837a96-68ef-5e6f-b8cc-bd58ed848a19",
+     "provider_path": "mmz4281/0607/data.zip",
+     "sha256": "ec5e92fbab5fb925e3fc89862a0931b885c5209ae5f35bc08ad84031c2dd3519",
+     "size_bytes": 542385,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "8c837a96-68ef-5e6f-b8cc-bd58ed848a19",
+    "provider_path": "mmz4281/0607/data.zip",
+    "sha256": "ec5e92fbab5fb925e3fc89862a0931b885c5209ae5f35bc08ad84031c2dd3519",
+    "size_bytes": 542385,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "ec5e92fbab5fb925e3fc89862a0931b885c5209ae5f35bc08ad84031c2dd3519",
+    "size_bytes": 542385
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "70803624-8782-55e1-b72d-5a53e9f1b574"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/0708/data.zip",
+   "source_revision": "25e7948b004aba3b6566d1ec1aa4f9e75fd3cdfd3f47f01a7def3736137686c0",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2007-2008/25e7948b004aba3b6566d1ec1aa4f9e75fd3cdfd3f47f01a7def3736137686c0.zip",
+   "registered_sha256": "a28ffb6d9f603cadf9f1dcef389e5b7f81d42767ddf28ac71fc323ee6ecfb417",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:29:27.132722+00:00",
+   "resources": [
+    {
+     "id": "bcc85d30-6190-5f31-9ffb-ddf0666bfc4e",
+     "provider_path": "mmz4281/0708/data.zip",
+     "sha256": "25e7948b004aba3b6566d1ec1aa4f9e75fd3cdfd3f47f01a7def3736137686c0",
+     "size_bytes": 559032,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "bcc85d30-6190-5f31-9ffb-ddf0666bfc4e",
+    "provider_path": "mmz4281/0708/data.zip",
+    "sha256": "25e7948b004aba3b6566d1ec1aa4f9e75fd3cdfd3f47f01a7def3736137686c0",
+    "size_bytes": 559032,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "25e7948b004aba3b6566d1ec1aa4f9e75fd3cdfd3f47f01a7def3736137686c0",
+    "size_bytes": 559032
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "1baf435c-0883-5fc5-8744-0a6af4cb6371"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/0809/data.zip",
+   "source_revision": "00164f38eb7706b908af0717d86a862f3f139a0fffa5f7c174caab7afd2f6067",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2008-2009/00164f38eb7706b908af0717d86a862f3f139a0fffa5f7c174caab7afd2f6067.zip",
+   "registered_sha256": "5ca4f1576c13222ff0204a4fe5555d88adc54009fc3bed52e299c88f9a73e8cb",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:30:02.706453+00:00",
+   "resources": [
+    {
+     "id": "eded86e4-efd8-51b7-a1ae-97e306989de9",
+     "provider_path": "mmz4281/0809/data.zip",
+     "sha256": "00164f38eb7706b908af0717d86a862f3f139a0fffa5f7c174caab7afd2f6067",
+     "size_bytes": 570663,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "eded86e4-efd8-51b7-a1ae-97e306989de9",
+    "provider_path": "mmz4281/0809/data.zip",
+    "sha256": "00164f38eb7706b908af0717d86a862f3f139a0fffa5f7c174caab7afd2f6067",
+    "size_bytes": 570663,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "00164f38eb7706b908af0717d86a862f3f139a0fffa5f7c174caab7afd2f6067",
+    "size_bytes": 570663
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "ddded6aa-cdcf-5cf8-9d39-059ee77410cc"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/0910/data.zip",
+   "source_revision": "bdde8488309834c5960b92916cbfc0d3e909f52dab925ef1532f2decfb3fda2a",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2009-2010/bdde8488309834c5960b92916cbfc0d3e909f52dab925ef1532f2decfb3fda2a.zip",
+   "registered_sha256": "ac1428162bdda27203dfc39b108dfbe20cbfb14e5adc8cba298c2178265b9ee4",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:30:40.474117+00:00",
+   "resources": [
+    {
+     "id": "c57a25c7-10f0-523f-a1f0-bb54c98013f7",
+     "provider_path": "mmz4281/0910/data.zip",
+     "sha256": "bdde8488309834c5960b92916cbfc0d3e909f52dab925ef1532f2decfb3fda2a",
+     "size_bytes": 563753,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "c57a25c7-10f0-523f-a1f0-bb54c98013f7",
+    "provider_path": "mmz4281/0910/data.zip",
+    "sha256": "bdde8488309834c5960b92916cbfc0d3e909f52dab925ef1532f2decfb3fda2a",
+    "size_bytes": 563753,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "bdde8488309834c5960b92916cbfc0d3e909f52dab925ef1532f2decfb3fda2a",
+    "size_bytes": 563753
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "b80a2257-36e8-587f-8f93-019974aa4ef8"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/1011/data.zip",
+   "source_revision": "7f874ac455d644dc8713c03b7f1fbcac98587a1ca021658a7672bb0d9fd3cd4c",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2010-2011/7f874ac455d644dc8713c03b7f1fbcac98587a1ca021658a7672bb0d9fd3cd4c.zip",
+   "registered_sha256": "f3d605df81b71fcddeed886b42e2fd374c02a6d4f2ac1ebde0d92a7308f64dfb",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:31:19.540166+00:00",
+   "resources": [
+    {
+     "id": "a7c18bb8-ee04-53cc-a90e-b5efc2899886",
+     "provider_path": "mmz4281/1011/data.zip",
+     "sha256": "7f874ac455d644dc8713c03b7f1fbcac98587a1ca021658a7672bb0d9fd3cd4c",
+     "size_bytes": 574982,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "a7c18bb8-ee04-53cc-a90e-b5efc2899886",
+    "provider_path": "mmz4281/1011/data.zip",
+    "sha256": "7f874ac455d644dc8713c03b7f1fbcac98587a1ca021658a7672bb0d9fd3cd4c",
+    "size_bytes": 574982,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "7f874ac455d644dc8713c03b7f1fbcac98587a1ca021658a7672bb0d9fd3cd4c",
+    "size_bytes": 574982
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "7de09381-ed87-5f85-8cbc-7afe30624d23"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/1112/data.zip",
+   "source_revision": "d750b4c6d21f522cda10b5c7c038802df4f9903ae5aa83d4ab3eabce844b3223",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2011-2012/d750b4c6d21f522cda10b5c7c038802df4f9903ae5aa83d4ab3eabce844b3223.zip",
+   "registered_sha256": "002fbd63cdd998bb0bc7f0246217ff1f68ff2b4c88457467aaafb396f531eaef",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:31:59.539156+00:00",
+   "resources": [
+    {
+     "id": "8b79b90a-a0a6-5fce-8d82-930e87af6b75",
+     "provider_path": "mmz4281/1112/data.zip",
+     "sha256": "d750b4c6d21f522cda10b5c7c038802df4f9903ae5aa83d4ab3eabce844b3223",
+     "size_bytes": 579123,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "8b79b90a-a0a6-5fce-8d82-930e87af6b75",
+    "provider_path": "mmz4281/1112/data.zip",
+    "sha256": "d750b4c6d21f522cda10b5c7c038802df4f9903ae5aa83d4ab3eabce844b3223",
+    "size_bytes": 579123,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "d750b4c6d21f522cda10b5c7c038802df4f9903ae5aa83d4ab3eabce844b3223",
+    "size_bytes": 579123
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "44cedecb-9d76-5b9b-b67e-804702c5d65c"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/1213/data.zip",
+   "source_revision": "ff119aa195bedcffe8df3121457be117509f51bd6229c058525fbcaa338c2888",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2012-2013/ff119aa195bedcffe8df3121457be117509f51bd6229c058525fbcaa338c2888.zip",
+   "registered_sha256": "bca9f700cd1a1f255f8e29827f223f6af80bcda2e470d5ba8b11c48cf61d540b",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:32:42.617565+00:00",
+   "resources": [
+    {
+     "id": "c3d8e606-53d0-5761-aa96-2d4da81f70db",
+     "provider_path": "mmz4281/1213/data.zip",
+     "sha256": "ff119aa195bedcffe8df3121457be117509f51bd6229c058525fbcaa338c2888",
+     "size_bytes": 624416,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "c3d8e606-53d0-5761-aa96-2d4da81f70db",
+    "provider_path": "mmz4281/1213/data.zip",
+    "sha256": "ff119aa195bedcffe8df3121457be117509f51bd6229c058525fbcaa338c2888",
+    "size_bytes": 624416,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "ff119aa195bedcffe8df3121457be117509f51bd6229c058525fbcaa338c2888",
+    "size_bytes": 624416
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "e448cfd1-a8d2-576a-8cec-b3ec7dd57bad"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/1314/data.zip",
+   "source_revision": "4842f097d198919edc4d4e66059fa54606e3e0ff70331b5fa075c32617c1d822",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2013-2014/4842f097d198919edc4d4e66059fa54606e3e0ff70331b5fa075c32617c1d822.zip",
+   "registered_sha256": "d51e3c7c035bac9d54d57d7508245220c440f1b13731d7f74e8985351d8b6591",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:33:28.057359+00:00",
+   "resources": [
+    {
+     "id": "dcd3f84e-4868-58a2-9bd1-ff5c510bdb89",
+     "provider_path": "mmz4281/1314/data.zip",
+     "sha256": "4842f097d198919edc4d4e66059fa54606e3e0ff70331b5fa075c32617c1d822",
+     "size_bytes": 603603,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "dcd3f84e-4868-58a2-9bd1-ff5c510bdb89",
+    "provider_path": "mmz4281/1314/data.zip",
+    "sha256": "4842f097d198919edc4d4e66059fa54606e3e0ff70331b5fa075c32617c1d822",
+    "size_bytes": 603603,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "4842f097d198919edc4d4e66059fa54606e3e0ff70331b5fa075c32617c1d822",
+    "size_bytes": 603603
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "17251906-5918-5984-be66-fcfadd4d8fc2"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/1415/data.zip",
+   "source_revision": "e69e7701b9023cfa80da26a99e799717c1ca66899958b36663ad0584fbbeb3e9",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2014-2015/e69e7701b9023cfa80da26a99e799717c1ca66899958b36663ad0584fbbeb3e9.zip",
+   "registered_sha256": "1d7963f9f419b9a98d41f0119859a752a814ad01c612a8a828fc1f90a3df7792",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:34:15.267505+00:00",
+   "resources": [
+    {
+     "id": "cc202a94-c3ef-51df-9332-3379b3b21925",
+     "provider_path": "mmz4281/1415/data.zip",
+     "sha256": "e69e7701b9023cfa80da26a99e799717c1ca66899958b36663ad0584fbbeb3e9",
+     "size_bytes": 596354,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "cc202a94-c3ef-51df-9332-3379b3b21925",
+    "provider_path": "mmz4281/1415/data.zip",
+    "sha256": "e69e7701b9023cfa80da26a99e799717c1ca66899958b36663ad0584fbbeb3e9",
+    "size_bytes": 596354,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "e69e7701b9023cfa80da26a99e799717c1ca66899958b36663ad0584fbbeb3e9",
+    "size_bytes": 596354
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "656a647e-bf5a-5217-b468-c195c6af49bd"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/1516/data.zip",
+   "source_revision": "8d97b6f0a987d1ee208e21c95e00a0b7d53dcaa23c5d72601638a5c35c7f5e6c",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2015-2016/8d97b6f0a987d1ee208e21c95e00a0b7d53dcaa23c5d72601638a5c35c7f5e6c.zip",
+   "registered_sha256": "04e49eb0719093a9b4f210d1b0f72378afffb5449b96e3a432b68a5df65d1808",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:35:04.365074+00:00",
+   "resources": [
+    {
+     "id": "4f1f3584-0599-5537-bbeb-78dd3454e059",
+     "provider_path": "mmz4281/1516/data.zip",
+     "sha256": "8d97b6f0a987d1ee208e21c95e00a0b7d53dcaa23c5d72601638a5c35c7f5e6c",
+     "size_bytes": 582695,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "4f1f3584-0599-5537-bbeb-78dd3454e059",
+    "provider_path": "mmz4281/1516/data.zip",
+    "sha256": "8d97b6f0a987d1ee208e21c95e00a0b7d53dcaa23c5d72601638a5c35c7f5e6c",
+    "size_bytes": 582695,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "8d97b6f0a987d1ee208e21c95e00a0b7d53dcaa23c5d72601638a5c35c7f5e6c",
+    "size_bytes": 582695
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "796d8772-23d0-5c6c-9ae2-6e0296929ac8"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/1617/data.zip",
+   "source_revision": "08b2243da79490835935a927f0fc773a060aa276e7d4881e666232d1566bc98e",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2016-2017/08b2243da79490835935a927f0fc773a060aa276e7d4881e666232d1566bc98e.zip",
+   "registered_sha256": "85b58947c5b640f2d5978a655423ef48d4a1fd940dc75475b03e820ff7540ced",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:36:00.944325+00:00",
+   "resources": [
+    {
+     "id": "eeab01cf-989f-58de-a6f9-4ad9e3027c87",
+     "provider_path": "mmz4281/1617/data.zip",
+     "sha256": "08b2243da79490835935a927f0fc773a060aa276e7d4881e666232d1566bc98e",
+     "size_bytes": 583838,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "eeab01cf-989f-58de-a6f9-4ad9e3027c87",
+    "provider_path": "mmz4281/1617/data.zip",
+    "sha256": "08b2243da79490835935a927f0fc773a060aa276e7d4881e666232d1566bc98e",
+    "size_bytes": 583838,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "08b2243da79490835935a927f0fc773a060aa276e7d4881e666232d1566bc98e",
+    "size_bytes": 583838
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "ce0fc8e5-8be4-58dd-a12f-abd6ef123eb9"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/1718/data.zip",
+   "source_revision": "86000f657b8e7f8764d31189bd7f9fa73edb2f128ca64a0d3ea93141894c259a",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2017-2018/86000f657b8e7f8764d31189bd7f9fa73edb2f128ca64a0d3ea93141894c259a.zip",
+   "registered_sha256": "c59f899f869407178df2c6efba48aba27f6c4f69ce9a20ba49deb39f4180638a",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:37:07.052557+00:00",
+   "resources": [
+    {
+     "id": "2a147c37-5ba2-592c-9756-59768e65ea8b",
+     "provider_path": "mmz4281/1718/data.zip",
+     "sha256": "86000f657b8e7f8764d31189bd7f9fa73edb2f128ca64a0d3ea93141894c259a",
+     "size_bytes": 629547,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "2a147c37-5ba2-592c-9756-59768e65ea8b",
+    "provider_path": "mmz4281/1718/data.zip",
+    "sha256": "86000f657b8e7f8764d31189bd7f9fa73edb2f128ca64a0d3ea93141894c259a",
+    "size_bytes": 629547,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "86000f657b8e7f8764d31189bd7f9fa73edb2f128ca64a0d3ea93141894c259a",
+    "size_bytes": 629547
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "e9b2e672-1199-5244-91fb-240d62909e59"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/1819/data.zip",
+   "source_revision": "39f29ed74b7428b471f7a0e0ab28e5bc43611b7787d10e23bd38a4e512ac432b",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2018-2019/39f29ed74b7428b471f7a0e0ab28e5bc43611b7787d10e23bd38a4e512ac432b.zip",
+   "registered_sha256": "264d2de7ab0a3d4214d3cba2ee633978b382c6a7ca489bf1d3cd2ccd6019d114",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:38:07.078606+00:00",
+   "resources": [
+    {
+     "id": "05641d28-dd95-5f56-87a4-f37b3063bb58",
+     "provider_path": "mmz4281/1819/data.zip",
+     "sha256": "39f29ed74b7428b471f7a0e0ab28e5bc43611b7787d10e23bd38a4e512ac432b",
+     "size_bytes": 563218,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "05641d28-dd95-5f56-87a4-f37b3063bb58",
+    "provider_path": "mmz4281/1819/data.zip",
+    "sha256": "39f29ed74b7428b471f7a0e0ab28e5bc43611b7787d10e23bd38a4e512ac432b",
+    "size_bytes": 563218,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "39f29ed74b7428b471f7a0e0ab28e5bc43611b7787d10e23bd38a4e512ac432b",
+    "size_bytes": 563218
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "9536bc5d-cc89-5f6f-a695-87208056a4cd"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/1920/data.zip",
+   "source_revision": "97dae86444f2683c4c95feeee1fd61e98ba212123a0bcb1cf94710506a195edc",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2019-2020/97dae86444f2683c4c95feeee1fd61e98ba212123a0bcb1cf94710506a195edc.zip",
+   "registered_sha256": "b8219223b78de81f7be684bc12b76c86782e4c2817bc66bded02dc52e065739b",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:39:02.881571+00:00",
+   "resources": [
+    {
+     "id": "74eca431-0923-56ae-96a9-133c7a232a5c",
+     "provider_path": "mmz4281/1920/data.zip",
+     "sha256": "97dae86444f2683c4c95feeee1fd61e98ba212123a0bcb1cf94710506a195edc",
+     "size_bytes": 863697,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "74eca431-0923-56ae-96a9-133c7a232a5c",
+    "provider_path": "mmz4281/1920/data.zip",
+    "sha256": "97dae86444f2683c4c95feeee1fd61e98ba212123a0bcb1cf94710506a195edc",
+    "size_bytes": 863697,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "97dae86444f2683c4c95feeee1fd61e98ba212123a0bcb1cf94710506a195edc",
+    "size_bytes": 863697
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "47008b39-cc7e-5cc3-9654-79c410b09896"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/2021/data.zip",
+   "source_revision": "e7852023136ad15a3b821a6dc0175fc282874ca4dccaf3d5e578a02f3478c868",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2020-2021/e7852023136ad15a3b821a6dc0175fc282874ca4dccaf3d5e578a02f3478c868.zip",
+   "registered_sha256": "77b11b200fe9ead54404f58e898ab44a931b4e202e168ca646f8f80ecc25f29c",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:39:53.223939+00:00",
+   "resources": [
+    {
+     "id": "6ef5d4ce-ab7f-5f05-983f-3ee75c1b84b6",
+     "provider_path": "mmz4281/2021/data.zip",
+     "sha256": "e7852023136ad15a3b821a6dc0175fc282874ca4dccaf3d5e578a02f3478c868",
+     "size_bytes": 959415,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "6ef5d4ce-ab7f-5f05-983f-3ee75c1b84b6",
+    "provider_path": "mmz4281/2021/data.zip",
+    "sha256": "e7852023136ad15a3b821a6dc0175fc282874ca4dccaf3d5e578a02f3478c868",
+    "size_bytes": 959415,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "e7852023136ad15a3b821a6dc0175fc282874ca4dccaf3d5e578a02f3478c868",
+    "size_bytes": 959415
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "797f3303-8841-5a3b-a32f-0473302e74e0"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/2122/data.zip",
+   "source_revision": "8a633f9e6340f8e1deff46a0bc83341a5ce35250721b98a21a541083d20c8968",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2021-2022/8a633f9e6340f8e1deff46a0bc83341a5ce35250721b98a21a541083d20c8968.zip",
+   "registered_sha256": "a0b9144b24d45501e2bd9b006fa7e347889f63626d3b7cfc6aaea85bf08f7832",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:40:51.540199+00:00",
+   "resources": [
+    {
+     "id": "fbfa225f-f597-5b2a-8ff2-fe7a48a6604f",
+     "provider_path": "mmz4281/2122/data.zip",
+     "sha256": "8a633f9e6340f8e1deff46a0bc83341a5ce35250721b98a21a541083d20c8968",
+     "size_bytes": 987169,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "fbfa225f-f597-5b2a-8ff2-fe7a48a6604f",
+    "provider_path": "mmz4281/2122/data.zip",
+    "sha256": "8a633f9e6340f8e1deff46a0bc83341a5ce35250721b98a21a541083d20c8968",
+    "size_bytes": 987169,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "8a633f9e6340f8e1deff46a0bc83341a5ce35250721b98a21a541083d20c8968",
+    "size_bytes": 987169
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "586e69b4-9aec-5722-9ced-ea909ed96a47"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/2223/data.zip",
+   "source_revision": "64797eeba5a25286da0e0dfcaf82f7b31a4f821263cebb993573a120b7a9d558",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2022-2023/64797eeba5a25286da0e0dfcaf82f7b31a4f821263cebb993573a120b7a9d558.zip",
+   "registered_sha256": "e0b677536789723ac5b2577b644b097e174f96631e28797816743c877e342c07",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:41:59.807301+00:00",
+   "resources": [
+    {
+     "id": "a09a9e77-1dbc-526c-bbb8-269272d382d3",
+     "provider_path": "mmz4281/2223/data.zip",
+     "sha256": "64797eeba5a25286da0e0dfcaf82f7b31a4f821263cebb993573a120b7a9d558",
+     "size_bytes": 973079,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "a09a9e77-1dbc-526c-bbb8-269272d382d3",
+    "provider_path": "mmz4281/2223/data.zip",
+    "sha256": "64797eeba5a25286da0e0dfcaf82f7b31a4f821263cebb993573a120b7a9d558",
+    "size_bytes": 973079,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "64797eeba5a25286da0e0dfcaf82f7b31a4f821263cebb993573a120b7a9d558",
+    "size_bytes": 973079
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "b0a4f233-0b23-53fb-ac9a-1d1370148ad3"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/2324/data.zip",
+   "source_revision": "f86ac89c3df57be812fc25d4d4aeca0ef98b910483e59560c0f7b406118e3c5a",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2023-2024/f86ac89c3df57be812fc25d4d4aeca0ef98b910483e59560c0f7b406118e3c5a.zip",
+   "registered_sha256": "cb53274236f1b5c2d54519fe8e26cabcdef5929ea84c1025cf83df501f3c7d1c",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:43:02.773670+00:00",
+   "resources": [
+    {
+     "id": "ea37628d-1e0e-5aa0-ad4f-0d4a5b654498",
+     "provider_path": "mmz4281/2324/data.zip",
+     "sha256": "f86ac89c3df57be812fc25d4d4aeca0ef98b910483e59560c0f7b406118e3c5a",
+     "size_bytes": 1013430,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "ea37628d-1e0e-5aa0-ad4f-0d4a5b654498",
+    "provider_path": "mmz4281/2324/data.zip",
+    "sha256": "f86ac89c3df57be812fc25d4d4aeca0ef98b910483e59560c0f7b406118e3c5a",
+    "size_bytes": 1013430,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "f86ac89c3df57be812fc25d4d4aeca0ef98b910483e59560c0f7b406118e3c5a",
+    "size_bytes": 1013430
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "f9aaad0f-3658-5ace-a82a-a79775d363cb"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/2425/data.zip",
+   "source_revision": "4dc3abfdc48a6b7e507873f356e9ef84c24e86e6dd654995a050e1aa5ed9f0de",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2024-2025/4dc3abfdc48a6b7e507873f356e9ef84c24e86e6dd654995a050e1aa5ed9f0de.zip",
+   "registered_sha256": "64d54bf90d313b59ce86f9108b50926487332f54f01a7aac37708862349e8bed",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:44:06.168704+00:00",
+   "resources": [
+    {
+     "id": "71678fe4-7b99-52d7-982e-fcb1add7b67f",
+     "provider_path": "mmz4281/2425/data.zip",
+     "sha256": "4dc3abfdc48a6b7e507873f356e9ef84c24e86e6dd654995a050e1aa5ed9f0de",
+     "size_bytes": 1111382,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "71678fe4-7b99-52d7-982e-fcb1add7b67f",
+    "provider_path": "mmz4281/2425/data.zip",
+    "sha256": "4dc3abfdc48a6b7e507873f356e9ef84c24e86e6dd654995a050e1aa5ed9f0de",
+    "size_bytes": 1111382,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "4dc3abfdc48a6b7e507873f356e9ef84c24e86e6dd654995a050e1aa5ed9f0de",
+    "size_bytes": 1111382
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "6197cf53-8bbd-5184-8b91-6b066a1073d0"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/2526/data.zip",
+   "source_revision": "0cf572edf7185ac08bb56b0940056ed693a6300d7ca348c91700bbd5f9bbfa66",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2025-2026/0cf572edf7185ac08bb56b0940056ed693a6300d7ca348c91700bbd5f9bbfa66.zip",
+   "registered_sha256": "e1d722314825036db058201ab2e1aeb4759a81fcbf5b775fabf0e1cf5e5c7ef1",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T15:45:14.239390+00:00",
+   "resources": [
+    {
+     "id": "7a5c363d-51f8-5863-9fb1-fb400959bb61",
+     "provider_path": "mmz4281/2526/data.zip",
+     "sha256": "0cf572edf7185ac08bb56b0940056ed693a6300d7ca348c91700bbd5f9bbfa66",
+     "size_bytes": 1040382,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "7a5c363d-51f8-5863-9fb1-fb400959bb61",
+    "provider_path": "mmz4281/2526/data.zip",
+    "sha256": "0cf572edf7185ac08bb56b0940056ed693a6300d7ca348c91700bbd5f9bbfa66",
+    "size_bytes": 1040382,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "0cf572edf7185ac08bb56b0940056ed693a6300d7ca348c91700bbd5f9bbfa66",
+    "size_bytes": 1040382
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "41168147-99f7-5ebd-9014-f4d9c999808f"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/2627/Latest_Results.csv",
+   "source_revision": "6ab1c992e59dfbc51dc41a93516a1eab78cc391d95ae576282f93dd927c2eafa",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2026-2027/6ab1c992e59dfbc51dc41a93516a1eab78cc391d95ae576282f93dd927c2eafa.csv",
+   "registered_sha256": "163fce9462f79e3927ce6d84ec82368730dcc8725ead97a45465865b29f12002",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T17:01:45.602449+00:00",
+   "resources": [
+    {
+     "id": "4095fcf7-3005-556f-82d4-0e3ff16f1af3",
+     "provider_path": "mmz4281/2627/Latest_Results.csv",
+     "sha256": "6ab1c992e59dfbc51dc41a93516a1eab78cc391d95ae576282f93dd927c2eafa",
+     "size_bytes": 20505,
+     "media_type": "text/csv",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "4095fcf7-3005-556f-82d4-0e3ff16f1af3",
+    "provider_path": "mmz4281/2627/Latest_Results.csv",
+    "sha256": "6ab1c992e59dfbc51dc41a93516a1eab78cc391d95ae576282f93dd927c2eafa",
+    "size_bytes": 20505,
+    "media_type": "text/csv",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "6ab1c992e59dfbc51dc41a93516a1eab78cc391d95ae576282f93dd927c2eafa",
+    "size_bytes": 20505
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "921bf80f-1a77-549b-b1fc-8d05deb46914"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/2627/data.zip",
+   "source_revision": "d2770b851b82f14497c1201ed0bf8a4dfab0072b033938ded4687b02cf396b3a",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2026-2027/d2770b851b82f14497c1201ed0bf8a4dfab0072b033938ded4687b02cf396b3a.zip",
+   "registered_sha256": "d89fd4a5f68a35b63fa881ed5f2d0a9f5da49abfa03544bf38f19301a686f3dd",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T17:01:48.933107+00:00",
+   "resources": [
+    {
+     "id": "41e96ed4-d18a-5d7d-9934-4ee5bee82c31",
+     "provider_path": "mmz4281/2627/data.zip",
+     "sha256": "d2770b851b82f14497c1201ed0bf8a4dfab0072b033938ded4687b02cf396b3a",
+     "size_bytes": 188383,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "41e96ed4-d18a-5d7d-9934-4ee5bee82c31",
+    "provider_path": "mmz4281/2627/data.zip",
+    "sha256": "d2770b851b82f14497c1201ed0bf8a4dfab0072b033938ded4687b02cf396b3a",
+    "size_bytes": 188383,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "d2770b851b82f14497c1201ed0bf8a4dfab0072b033938ded4687b02cf396b3a",
+    "size_bytes": 188383
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "4e9baf72-8207-52ff-a78a-a1c1ebf601ee"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/9394/data.zip",
+   "source_revision": "3783336656574f3f2ed05c8428a44f00fb43ec040ed2f91c996d0da9072a6acb",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/1993-1994/3783336656574f3f2ed05c8428a44f00fb43ec040ed2f91c996d0da9072a6acb.zip",
+   "registered_sha256": "3843ad662636bcc33a0ac8a9554c2342981478dbc19497f22a610c10ceff3d44",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T17:02:02.857367+00:00",
+   "resources": [
+    {
+     "id": "70a23161-b637-5492-9405-a076d2009888",
+     "provider_path": "mmz4281/9394/data.zip",
+     "sha256": "3783336656574f3f2ed05c8428a44f00fb43ec040ed2f91c996d0da9072a6acb",
+     "size_bytes": 32265,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "70a23161-b637-5492-9405-a076d2009888",
+    "provider_path": "mmz4281/9394/data.zip",
+    "sha256": "3783336656574f3f2ed05c8428a44f00fb43ec040ed2f91c996d0da9072a6acb",
+    "size_bytes": 32265,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "3783336656574f3f2ed05c8428a44f00fb43ec040ed2f91c996d0da9072a6acb",
+    "size_bytes": 32265
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "f9adb791-a70a-5486-ba5f-fa3845773073"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/9495/data.zip",
+   "source_revision": "fba4ccf231c8ce16cd45249fdc6a6142453344a3d425dff44f4bd275f6ed80f1",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/1994-1995/fba4ccf231c8ce16cd45249fdc6a6142453344a3d425dff44f4bd275f6ed80f1.zip",
+   "registered_sha256": "e03010640fbb497f2b9a2705acb9f2dcc51217b4dc27f3371fa2b4bb414c69cf",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T18:25:15.648180+00:00",
+   "resources": [
+    {
+     "id": "ef6cf2c9-bddf-58da-983f-9d9065a5450a",
+     "provider_path": "mmz4281/9495/data.zip",
+     "sha256": "fba4ccf231c8ce16cd45249fdc6a6142453344a3d425dff44f4bd275f6ed80f1",
+     "size_bytes": 42463,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "ef6cf2c9-bddf-58da-983f-9d9065a5450a",
+    "provider_path": "mmz4281/9495/data.zip",
+    "sha256": "fba4ccf231c8ce16cd45249fdc6a6142453344a3d425dff44f4bd275f6ed80f1",
+    "size_bytes": 42463,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "fba4ccf231c8ce16cd45249fdc6a6142453344a3d425dff44f4bd275f6ed80f1",
+    "size_bytes": 42463
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "bea6bb2e-d896-59ca-8bb9-9b605f47110f"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/9596/data.zip",
+   "source_revision": "064d8e0854d56b5477112fd334de1c66dbea3f8c6300a4071b545b5b2497148c",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/1995-1996/064d8e0854d56b5477112fd334de1c66dbea3f8c6300a4071b545b5b2497148c.zip",
+   "registered_sha256": "05ada978feb55030df1c6db5d2f04dceac40a3811a00fb56b248375e13b954f2",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T18:26:02.013911+00:00",
+   "resources": [
+    {
+     "id": "9f713bfc-84c5-5d78-b205-bc8f825aad22",
+     "provider_path": "mmz4281/9596/data.zip",
+     "sha256": "064d8e0854d56b5477112fd334de1c66dbea3f8c6300a4071b545b5b2497148c",
+     "size_bytes": 47144,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "9f713bfc-84c5-5d78-b205-bc8f825aad22",
+    "provider_path": "mmz4281/9596/data.zip",
+    "sha256": "064d8e0854d56b5477112fd334de1c66dbea3f8c6300a4071b545b5b2497148c",
+    "size_bytes": 47144,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "064d8e0854d56b5477112fd334de1c66dbea3f8c6300a4071b545b5b2497148c",
+    "size_bytes": 47144
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "7cc8a2c4-456f-554c-b71a-8f330aafe6a8"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/9697/data.zip",
+   "source_revision": "894519ed707b37345f12cd8bb2343a5cded1e9fbac1b9c4f7d0ffee3a395e728",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/1996-1997/894519ed707b37345f12cd8bb2343a5cded1e9fbac1b9c4f7d0ffee3a395e728.zip",
+   "registered_sha256": "ea0f52bac3ccc938a206180f8cf211c9a533a1ba33b402a4dc2fb2b92528c511",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T18:26:50.402225+00:00",
+   "resources": [
+    {
+     "id": "4b9266cb-0775-57f5-8d92-c9b1dfe1d4fc",
+     "provider_path": "mmz4281/9697/data.zip",
+     "sha256": "894519ed707b37345f12cd8bb2343a5cded1e9fbac1b9c4f7d0ffee3a395e728",
+     "size_bytes": 54074,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "4b9266cb-0775-57f5-8d92-c9b1dfe1d4fc",
+    "provider_path": "mmz4281/9697/data.zip",
+    "sha256": "894519ed707b37345f12cd8bb2343a5cded1e9fbac1b9c4f7d0ffee3a395e728",
+    "size_bytes": 54074,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "894519ed707b37345f12cd8bb2343a5cded1e9fbac1b9c4f7d0ffee3a395e728",
+    "size_bytes": 54074
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "c7499b8c-7488-5113-98ee-67a60930694f"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/9798/data.zip",
+   "source_revision": "4c95333397e81ce3a37cbbf340dd80b9e2e38db1ce16128e7b365ce7619b5cb4",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/1997-1998/4c95333397e81ce3a37cbbf340dd80b9e2e38db1ce16128e7b365ce7619b5cb4.zip",
+   "registered_sha256": "d28b866fcb294ae1753fabedc3d37b219f8c3167108d64f15b7807ffe22b278b",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T18:27:49.929676+00:00",
+   "resources": [
+    {
+     "id": "89847cd5-b684-5b40-b6af-104d72aaa3b6",
+     "provider_path": "mmz4281/9798/data.zip",
+     "sha256": "4c95333397e81ce3a37cbbf340dd80b9e2e38db1ce16128e7b365ce7619b5cb4",
+     "size_bytes": 60152,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "89847cd5-b684-5b40-b6af-104d72aaa3b6",
+    "provider_path": "mmz4281/9798/data.zip",
+    "sha256": "4c95333397e81ce3a37cbbf340dd80b9e2e38db1ce16128e7b365ce7619b5cb4",
+    "size_bytes": 60152,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "4c95333397e81ce3a37cbbf340dd80b9e2e38db1ce16128e7b365ce7619b5cb4",
+    "size_bytes": 60152
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "dcdd5749-fcfb-519f-93f7-d56594cee9e4"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/9899/data.zip",
+   "source_revision": "a45829bf957092091e173aa85cace87ddc3510411010a9df184763fb00c65f7a",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/1998-1999/a45829bf957092091e173aa85cace87ddc3510411010a9df184763fb00c65f7a.zip",
+   "registered_sha256": "598faad720add1601b479263ff129ccc8fcf744d8532f051e41aee6b2c61e867",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T18:28:52.142067+00:00",
+   "resources": [
+    {
+     "id": "a925efa5-7cd3-5c68-9933-395988c75e52",
+     "provider_path": "mmz4281/9899/data.zip",
+     "sha256": "a45829bf957092091e173aa85cace87ddc3510411010a9df184763fb00c65f7a",
+     "size_bytes": 60902,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "a925efa5-7cd3-5c68-9933-395988c75e52",
+    "provider_path": "mmz4281/9899/data.zip",
+    "sha256": "a45829bf957092091e173aa85cace87ddc3510411010a9df184763fb00c65f7a",
+    "size_bytes": 60902,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "a45829bf957092091e173aa85cace87ddc3510411010a9df184763fb00c65f7a",
+    "size_bytes": 60902
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "a607270a-65de-5a05-83b6-4ca6c942bd5e"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/9900/data.zip",
+   "source_revision": "58e9b6b440ecf157aa0a843585f0c03c17907c731c429dc61ec3f31f59e4b158",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/1999-2000/58e9b6b440ecf157aa0a843585f0c03c17907c731c429dc61ec3f31f59e4b158.zip",
+   "registered_sha256": "43c55dd39dc568b007c375f38b50fdbfd33ba7c5920049454369fb6e0e562d5c",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-09-30T15:26:14.595882+00:00",
+   "created_at": "2026-09-30T18:29:56.910339+00:00",
+   "resources": [
+    {
+     "id": "fa8a49c9-c095-558b-8ddb-92ff417f90be",
+     "provider_path": "mmz4281/9900/data.zip",
+     "sha256": "58e9b6b440ecf157aa0a843585f0c03c17907c731c429dc61ec3f31f59e4b158",
+     "size_bytes": 61907,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "fa8a49c9-c095-558b-8ddb-92ff417f90be",
+    "provider_path": "mmz4281/9900/data.zip",
+    "sha256": "58e9b6b440ecf157aa0a843585f0c03c17907c731c429dc61ec3f31f59e4b158",
+    "size_bytes": 61907,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "58e9b6b440ecf157aa0a843585f0c03c17907c731c429dc61ec3f31f59e4b158",
+    "size_bytes": 61907
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "cf8a6868-f808-5bb5-8545-f6439ef30316"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/2627/Latest_Results.csv",
+   "source_revision": "e72e766dbcaacb515c3e945be5911d5576ed30cb86372033842cf716eb169a94",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2026-2027/e72e766dbcaacb515c3e945be5911d5576ed30cb86372033842cf716eb169a94.csv",
+   "registered_sha256": "37fa5f45a0fc3e7b1a56b6be79cb60ea0f8c25ac27c066efc90d6b56000190d1",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-10-01T04:27:11.514443+00:00",
+   "created_at": "2026-10-01T04:27:14.498255+00:00",
+   "resources": [
+    {
+     "id": "3846dc08-0c5e-5e61-a171-16c84d54da77",
+     "provider_path": "mmz4281/2627/Latest_Results.csv",
+     "sha256": "e72e766dbcaacb515c3e945be5911d5576ed30cb86372033842cf716eb169a94",
+     "size_bytes": 6409,
+     "media_type": "text/csv",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "3846dc08-0c5e-5e61-a171-16c84d54da77",
+    "provider_path": "mmz4281/2627/Latest_Results.csv",
+    "sha256": "e72e766dbcaacb515c3e945be5911d5576ed30cb86372033842cf716eb169a94",
+    "size_bytes": 6409,
+    "media_type": "text/csv",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "e72e766dbcaacb515c3e945be5911d5576ed30cb86372033842cf716eb169a94",
+    "size_bytes": 6409
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "e217aefe-1b45-58bb-8ca4-8fdd8d0f0f0d"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/2627/data.zip",
+   "source_revision": "4642878637297968e051a5fa617daf57e89ac2a03b56b60193ab3741f6e56415",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2026-2027/4642878637297968e051a5fa617daf57e89ac2a03b56b60193ab3741f6e56415.zip",
+   "registered_sha256": "de1e497b82226bb507bbbd9aced7ef073846800317abe3f0e7f44f36348ade46",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-10-01T04:27:11.514443+00:00",
+   "created_at": "2026-10-01T04:27:16.199359+00:00",
+   "resources": [
+    {
+     "id": "264bff84-36a5-53bc-98d5-595ba7ed8f64",
+     "provider_path": "mmz4281/2627/data.zip",
+     "sha256": "4642878637297968e051a5fa617daf57e89ac2a03b56b60193ab3741f6e56415",
+     "size_bytes": 189799,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "264bff84-36a5-53bc-98d5-595ba7ed8f64",
+    "provider_path": "mmz4281/2627/data.zip",
+    "sha256": "4642878637297968e051a5fa617daf57e89ac2a03b56b60193ab3741f6e56415",
+    "size_bytes": 189799,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "4642878637297968e051a5fa617daf57e89ac2a03b56b60193ab3741f6e56415",
+    "size_bytes": 189799
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "70a917b8-7e8f-5eff-920f-88c13cb4898e"
+   },
+   "source_identity": "http://www.football-data.co.uk/fixtures.csv",
+   "source_revision": "c8233feb5fce0a5c9e7d791425d0638c7c759b3c24322353503d19796065303d",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/unknown/c8233feb5fce0a5c9e7d791425d0638c7c759b3c24322353503d19796065303d.csv",
+   "registered_sha256": "4020b0670200790ea6b575bdf5ab337bc077e8838e5ff275d1e6a89bd7e4fd25",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-10-03T15:50:31.222875+00:00",
+   "created_at": "2026-10-03T15:50:32.072776+00:00",
+   "resources": [
+    {
+     "id": "832c96e3-e823-521b-b9a6-69212a0a056b",
+     "provider_path": "fixtures.csv",
+     "sha256": "c8233feb5fce0a5c9e7d791425d0638c7c759b3c24322353503d19796065303d",
+     "size_bytes": 13669,
+     "media_type": "text/csv",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "832c96e3-e823-521b-b9a6-69212a0a056b",
+    "provider_path": "fixtures.csv",
+    "sha256": "c8233feb5fce0a5c9e7d791425d0638c7c759b3c24322353503d19796065303d",
+    "size_bytes": 13669,
+    "media_type": "text/csv",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "c8233feb5fce0a5c9e7d791425d0638c7c759b3c24322353503d19796065303d",
+    "size_bytes": 13669
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_SIBLING_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "724842f2-8c0e-5f94-ac38-3b78a4aabcc8"
+   },
+   "source_identity": "https://www.football-data.co.uk/fixtures.csv",
+   "source_revision": "c8233feb5fce0a5c9e7d791425d0638c7c759b3c24322353503d19796065303d",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/unknown/c8233feb5fce0a5c9e7d791425d0638c7c759b3c24322353503d19796065303d.csv",
+   "registered_sha256": "4020b0670200790ea6b575bdf5ab337bc077e8838e5ff275d1e6a89bd7e4fd25",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-10-03T15:50:31.222875+00:00",
+   "created_at": "2026-10-03T15:50:33.084599+00:00",
+   "resources": [],
+   "sibling": {
+    "source_snapshot_id": "70a917b8-7e8f-5eff-920f-88c13cb4898e",
+    "source_identity": "http://www.football-data.co.uk/fixtures.csv",
+    "resources": [
+     {
+      "id": "832c96e3-e823-521b-b9a6-69212a0a056b",
+      "provider_path": "fixtures.csv",
+      "sha256": "c8233feb5fce0a5c9e7d791425d0638c7c759b3c24322353503d19796065303d",
+      "size_bytes": 13669,
+      "media_type": "text/csv",
+      "acquired_raw_path": null
+     }
+    ]
+   },
+   "bound_resource": {
+    "id": "832c96e3-e823-521b-b9a6-69212a0a056b",
+    "provider_path": "fixtures.csv",
+    "sha256": "c8233feb5fce0a5c9e7d791425d0638c7c759b3c24322353503d19796065303d",
+    "size_bytes": 13669,
+    "media_type": "text/csv",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "c8233feb5fce0a5c9e7d791425d0638c7c759b3c24322353503d19796065303d",
+    "size_bytes": 13669
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "cf633414-3f20-59ac-974b-f2fe72b35882"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/2627/Latest_Results.csv",
+   "source_revision": "0c4988505203606c8c6c7e7af46772939aac4cddc397cf9d2fa788c9a2988dd9",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2026-2027/0c4988505203606c8c6c7e7af46772939aac4cddc397cf9d2fa788c9a2988dd9.csv",
+   "registered_sha256": "1e960c49d9c43de59d6a89a73eb8325e2fd4593f979ad598aa291750bde69920",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-10-05T13:54:58.268030+00:00",
+   "created_at": "2026-10-05T13:55:01.493844+00:00",
+   "resources": [
+    {
+     "id": "6bb181dd-44bb-5b4f-aa7b-83aa89a67e97",
+     "provider_path": "mmz4281/2627/Latest_Results.csv",
+     "sha256": "0c4988505203606c8c6c7e7af46772939aac4cddc397cf9d2fa788c9a2988dd9",
+     "size_bytes": 22249,
+     "media_type": "text/csv",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "6bb181dd-44bb-5b4f-aa7b-83aa89a67e97",
+    "provider_path": "mmz4281/2627/Latest_Results.csv",
+    "sha256": "0c4988505203606c8c6c7e7af46772939aac4cddc397cf9d2fa788c9a2988dd9",
+    "size_bytes": 22249,
+    "media_type": "text/csv",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "0c4988505203606c8c6c7e7af46772939aac4cddc397cf9d2fa788c9a2988dd9",
+    "size_bytes": 22249
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "293a308d-a04b-5b0e-b071-b332b2ce7825"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/2627/data.zip",
+   "source_revision": "7ea8dbe29c9586fe15f7939e47a29ffaf65ec1b7bfbdc04ef8dedae1d83d6b75",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2026-2027/7ea8dbe29c9586fe15f7939e47a29ffaf65ec1b7bfbdc04ef8dedae1d83d6b75.zip",
+   "registered_sha256": "844f1a2bf38be8a0e1dba7a7155ba0212820545541d67b18417c606c5941512c",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-10-05T13:54:58.268030+00:00",
+   "created_at": "2026-10-05T13:55:03.367826+00:00",
+   "resources": [
+    {
+     "id": "bda559e7-8d4a-5065-96bb-166f37e66a62",
+     "provider_path": "mmz4281/2627/data.zip",
+     "sha256": "7ea8dbe29c9586fe15f7939e47a29ffaf65ec1b7bfbdc04ef8dedae1d83d6b75",
+     "size_bytes": 195265,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "bda559e7-8d4a-5065-96bb-166f37e66a62",
+    "provider_path": "mmz4281/2627/data.zip",
+    "sha256": "7ea8dbe29c9586fe15f7939e47a29ffaf65ec1b7bfbdc04ef8dedae1d83d6b75",
+    "size_bytes": 195265,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "7ea8dbe29c9586fe15f7939e47a29ffaf65ec1b7bfbdc04ef8dedae1d83d6b75",
+    "size_bytes": 195265
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "98370942-beba-59b6-a9b2-821b22fb3912"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/2627/Latest_Results.csv",
+   "source_revision": "e334d50fe96f9232ca3d4a6566f6cea19c53c2afe2a778abc1db6dadaa63b5e1",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2026-2027/e334d50fe96f9232ca3d4a6566f6cea19c53c2afe2a778abc1db6dadaa63b5e1.csv",
+   "registered_sha256": "9e51ce7fa67d313e3ab45dc239338f7fe80adaa14dd64bb4f3dbb2c797950a9e",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-10-06T10:09:14.979936+00:00",
+   "created_at": "2026-10-06T10:09:18.419936+00:00",
+   "resources": [
+    {
+     "id": "7ccf173c-0536-56b7-a444-8ca39d728e69",
+     "provider_path": "mmz4281/2627/Latest_Results.csv",
+     "sha256": "e334d50fe96f9232ca3d4a6566f6cea19c53c2afe2a778abc1db6dadaa63b5e1",
+     "size_bytes": 22715,
+     "media_type": "text/csv",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "7ccf173c-0536-56b7-a444-8ca39d728e69",
+    "provider_path": "mmz4281/2627/Latest_Results.csv",
+    "sha256": "e334d50fe96f9232ca3d4a6566f6cea19c53c2afe2a778abc1db6dadaa63b5e1",
+    "size_bytes": 22715,
+    "media_type": "text/csv",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "e334d50fe96f9232ca3d4a6566f6cea19c53c2afe2a778abc1db6dadaa63b5e1",
+    "size_bytes": 22715
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "3971abfb-c680-51c6-a462-dfdb8594625e"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/2627/data.zip",
+   "source_revision": "93ca39968ee08c426456bf4cc432d876f4f21de18cf8238d5837c35c1dcd4ce3",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2026-2027/93ca39968ee08c426456bf4cc432d876f4f21de18cf8238d5837c35c1dcd4ce3.zip",
+   "registered_sha256": "0e85f0bd69f72d158170dd1b8f3bee22cd8e0013c18cffcd6a3aa94d8df6d3f9",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-10-06T10:09:14.979936+00:00",
+   "created_at": "2026-10-06T10:09:20.393800+00:00",
+   "resources": [
+    {
+     "id": "286a3381-830d-5dcd-826b-baa06038b342",
+     "provider_path": "mmz4281/2627/data.zip",
+     "sha256": "93ca39968ee08c426456bf4cc432d876f4f21de18cf8238d5837c35c1dcd4ce3",
+     "size_bytes": 195385,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "286a3381-830d-5dcd-826b-baa06038b342",
+    "provider_path": "mmz4281/2627/data.zip",
+    "sha256": "93ca39968ee08c426456bf4cc432d876f4f21de18cf8238d5837c35c1dcd4ce3",
+    "size_bytes": 195385,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "93ca39968ee08c426456bf4cc432d876f4f21de18cf8238d5837c35c1dcd4ce3",
+    "size_bytes": 195385
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "484e4aab-090c-559a-baa8-c565129764b3"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/2627/Latest_Results.csv",
+   "source_revision": "8813b41aaec0b05f0fe5946005aca9535f4602a797b650d864bb9ffb954c7f8f",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2026-2027/8813b41aaec0b05f0fe5946005aca9535f4602a797b650d864bb9ffb954c7f8f.csv",
+   "registered_sha256": "d4f46f51e6806bde1bcb093f1210619bc4c887ef73c1b2d0aaeb0dcc891893bf",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-10-07T15:42:51.812723+00:00",
+   "created_at": "2026-10-07T15:42:55.114922+00:00",
+   "resources": [
+    {
+     "id": "b07bc08b-9240-5d38-8ffe-0ffc8c6d3009",
+     "provider_path": "mmz4281/2627/Latest_Results.csv",
+     "sha256": "8813b41aaec0b05f0fe5946005aca9535f4602a797b650d864bb9ffb954c7f8f",
+     "size_bytes": 22715,
+     "media_type": "text/csv",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "b07bc08b-9240-5d38-8ffe-0ffc8c6d3009",
+    "provider_path": "mmz4281/2627/Latest_Results.csv",
+    "sha256": "8813b41aaec0b05f0fe5946005aca9535f4602a797b650d864bb9ffb954c7f8f",
+    "size_bytes": 22715,
+    "media_type": "text/csv",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "8813b41aaec0b05f0fe5946005aca9535f4602a797b650d864bb9ffb954c7f8f",
+    "size_bytes": 22715
+   }
+  },
+  {
+   "classification": "RAW_FILE_PATH_DIGEST_RESOURCE_BOUND",
+   "table": "source_snapshots",
+   "keys": {
+    "id": "1bc14134-8b46-5e8b-bfed-46599e46fef2"
+   },
+   "source_identity": "https://www.football-data.co.uk/mmz4281/2627/data.zip",
+   "source_revision": "e3e2d1f4b414d350900f9015bfe421d31b87816ff6eebb8f6c4c6c9a22f97e72",
+   "repository": null,
+   "git_sha": null,
+   "path": "football_data_uk/2026-2027/e3e2d1f4b414d350900f9015bfe421d31b87816ff6eebb8f6c4c6c9a22f97e72.zip",
+   "registered_sha256": "1496f4d415fc54ae4d6045294203bf6c41b9fd3834b88f9becfac428f328c959",
+   "path_digest_verified": true,
+   "status": "validated",
+   "source_kind": "REAL_PROVIDER",
+   "acquired_at": "2026-10-07T15:42:51.812723+00:00",
+   "created_at": "2026-10-07T15:42:57.305471+00:00",
+   "resources": [
+    {
+     "id": "b5f680ac-0394-5028-8cd9-34194343f604",
+     "provider_path": "mmz4281/2627/data.zip",
+     "sha256": "e3e2d1f4b414d350900f9015bfe421d31b87816ff6eebb8f6c4c6c9a22f97e72",
+     "size_bytes": 195384,
+     "media_type": "application/zip",
+     "acquired_raw_path": null
+    }
+   ],
+   "sibling": null,
+   "bound_resource": {
+    "id": "b5f680ac-0394-5028-8cd9-34194343f604",
+    "provider_path": "mmz4281/2627/data.zip",
+    "sha256": "e3e2d1f4b414d350900f9015bfe421d31b87816ff6eebb8f6c4c6c9a22f97e72",
+    "size_bytes": 195384,
+    "media_type": "application/zip",
+    "acquired_raw_path": null
+   },
+   "file": {
+    "present": true,
+    "sha256": "e3e2d1f4b414d350900f9015bfe421d31b87816ff6eebb8f6c4c6c9a22f97e72",
+    "size_bytes": 195384
+   }
+  }
+ ]
+}

@@ -55,6 +55,9 @@ def _snapshot(
         (code, code),
     ).fetchone()
     assert provider_id is not None
+    if digest == hashlib.sha256(path.encode()).hexdigest():
+        # Seed a pre-guard legacy row; new path-digest registrations are rejected.
+        connection.execute("SET LOCAL session_replication_role = replica")
     row = connection.execute(
         "INSERT INTO football.source_snapshots(provider_id,source_identity,source_revision,"
         "git_sha,acquired_at,manifest_path,manifest_sha256,status) "
@@ -69,6 +72,7 @@ def _snapshot(
             digest,
         ),
     ).fetchone()
+    connection.execute("SET LOCAL session_replication_role = origin")
     assert row is not None
     return UUID(str(row[0]))
 
