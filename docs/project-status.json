@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-12T06:45:00Z",
+  "updated_at": "2026-11-12T07:10:00Z",
   "unified_architecture_investigation": {
     "status": "PASS_WITH_WARNINGS",
     "scope": "CURRENT_TASK.md revision 3; architecture investigation/planning only",
@@ -85,7 +85,8 @@
     "ALLOW_FLASH_RESEARCH_SOURCE_ELIGIBILITY_EXCEPTION_R03",
     "AUTHORIZE_UNIFIED_P02_DATA_INTEGRITY_IMPLEMENTATION_V1",
     "AUTHORIZE_P02_OPERATING_ROLLOUT_V1",
-    "AUTHORIZE_STORAGE_OPERATING_ROLLOUT_V1"
+    "AUTHORIZE_STORAGE_OPERATING_ROLLOUT_V1",
+    "APPROVE_STORAGE_CANDIDATE_DATABASE_DELETION_V1"
   ],
   "closed_routes": [
     {
@@ -4072,8 +4073,8 @@
     "inventory_observed_at": "2026-11-11T14:33:01.469610+00:00",
     "independent_v4_restore": "PASS",
     "independent_operating_snapshot_restore": "PASS_RECOVERABLE",
-    "existing_resources_removed": 0,
-    "reclaimed_existing_resource_bytes": 0,
+    "existing_resources_removed": 10,
+    "reclaimed_existing_resource_bytes": 43923338390,
     "automatic_backups_implemented": false,
     "destructive_cleanup_enabled": false,
     "later_phases": {
@@ -4099,9 +4100,18 @@
       "preservation": "UNCHANGED",
       "backup": "VERIFIED_LOGICAL_DUMP_RESTORE_CHECK; admin backup FAILED (VERIFICATION_FAILED)",
       "authoritative_database_registered": true,
-      "existing_resources_removed": 0,
-      "candidate_deletions_awaiting_owner_approval": 10
+      "existing_resources_removed": 10,
+      "candidate_deletions_awaiting_owner_approval": 0,
+      "candidate_deletion": {
+        "decision_id": "APPROVE_STORAGE_CANDIDATE_DATABASE_DELETION_V1",
+        "decision_ref": "docs/evidence/owner-decision-approve-storage-candidate-deletion-2026-11-12.json",
+        "evidence_ref": "docs/evidence/storage-candidate-deletion-2026-11-12.json",
+        "status": "APPLIED",
+        "databases_deleted": 10,
+        "reclaimed_bytes_measured": 43923338390,
+        "postgres_volume_freed_bytes": 44405219328
+      }
     },
-    "required_next_action": "Owner resource-specific approval for the 10 revalidated deletion candidates (plan eb5f276f\u2026, 43.9 GB expected). Diagnose the failing admin backup. Recovery-gap remediation needs a governed retirement and correction mechanism for registrations other than forecasts and evaluations."
+    "required_next_action": "Diagnose the failing admin backup. Recovery-gap remediation needs a governed retirement and correction mechanism for registrations other than forecasts and evaluations. The 26 rehearsal databases, football_v4_integration_20261110 and the StatsBomb and P02 databases stay until separately reviewed."
   }
 }
