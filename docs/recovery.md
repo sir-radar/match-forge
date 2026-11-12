@@ -334,6 +334,10 @@ validates the pinned evidence (`docs/evidence/storage-recovery-gaps-2026-11-12.j
 and its shared-owner supplement) and prints the counts. Adding `--apply` writes to
 `DATABASE_URL`, which for the operating database needs its own owner decision. A retry
 with the same decision verifies the existing rows; a different one fails.
+The 161 reviewed dispositions were rehearsed on a restored copy on 12 November 2026
+([evidence](evidence/recovery-disposition-rehearsal-2026-11-12.json)): 0 unavailable and
+159 excluded afterwards, registrations unchanged. They are not applied to the operating
+database until an owner decision authorizes it.
 
 Set `MATCHFORGE_BACKUP_RECOVERABLE_INVENTORY` to the protected inventory path
 inside the service checkout. Use `--recoverable-inventory` for an explicitly
