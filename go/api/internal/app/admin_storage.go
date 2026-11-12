@@ -232,6 +232,7 @@ func (application *App) storageScheduleTick(ctx context.Context, policy storage.
 		return
 	}
 	application.runAutomaticStorageCleanup(ctx)
+	application.runLifecycleCleanup(ctx)
 	for _, kind := range []SyncType{SyncStorageLifecycle, SyncManualBackup} {
 		request, due, err := runner.storageScheduledRequest(ctx, kind, policy)
 		if err == nil && due {
@@ -282,6 +283,24 @@ func storageScheduleID(kind SyncType, slot string) string {
 	b[6] = (b[6] & 15) | 64
 	b[8] = (b[8] & 63) | 128
 	return fmt.Sprintf("%x-%x-%x-%x-%x", b[:4], b[4:6], b[6:8], b[8:10], b[10:])
+}
+
+// runLifecycleCleanup applies the five-hour policy when the storage policy enables
+// it; the manager rate-limits checks to the policy interval and records every
+// decision. Failures are logged as alerts and recorded on the next check.
+func (application *App) runLifecycleCleanup(ctx context.Context) {
+	if application.storage == nil || !application.storageReady(ctx) {
+		return
+	}
+	run, err := application.storage.RunLifecycleCleanup(ctx)
+	switch {
+	case err != nil:
+		application.logger.Error("storage lifecycle cleanup blocked", "error", err)
+	case run.Failed > 0:
+		application.logger.Error("storage lifecycle deletions failed", "failed", run.Failed, "deleted", run.Deleted)
+	case run.Submitted > 0:
+		application.logger.Info("storage lifecycle cleanup", "deleted", run.Deleted, "reclaimed_bytes", run.ReclaimedBytes)
+	}
 }
 
 // runAutomaticStorageCleanup applies only explicitly approved automatic policies.

@@ -48,9 +48,14 @@ type Manager struct {
 	Policy     *Policy
 	Logger     *slog.Logger
 	Now        func() time.Time
-	run        sync.Mutex
+	// OwnerProcess and PRVerifier default to the local ps and GitHub CLI checks.
+	OwnerProcess OwnerProcess
+	PRVerifier   PRVerifier
+	run          sync.Mutex
 	// lastAutomatic is guarded by run.
 	lastAutomatic time.Time
+	// lastLifecycle is guarded by run.
+	lastLifecycle time.Time
 }
 
 type Inventory struct {
@@ -417,6 +422,15 @@ type Batch struct {
 // Submit re-runs the preview, requires the exact same plan and confirmation,
 // records durable operations, then executes them in the background.
 func (m *Manager) Submit(ctx context.Context, req SubmitRequest, actor string) (Batch, error) {
+	batch, err := m.submit(ctx, req, actor)
+	if err == nil {
+		go m.Execute(context.WithoutCancel(ctx), batch.BatchID)
+	}
+	return batch, err
+}
+
+// submit validates and records the batch without executing it.
+func (m *Manager) submit(ctx context.Context, req SubmitRequest, actor string) (Batch, error) {
 	plan, selected, err := m.Preview(ctx, req.Action, req.ResourceIDs)
 	if err != nil {
 		return Batch{}, err
@@ -428,11 +442,8 @@ func (m *Manager) Submit(ctx context.Context, req SubmitRequest, actor string) (
 		return Batch{}, ErrConfirmation
 	}
 	batch := Batch{BatchID: newUUID(), Operations: len(plan.Items)}
-	if err = m.record(ctx, batch, plan, selected, confirmationRecord(req, plan), actor); err != nil {
-		return batch, err
-	}
-	go m.Execute(context.WithoutCancel(ctx), batch.BatchID)
-	return batch, nil
+	err = m.record(ctx, batch, plan, selected, confirmationRecord(req, plan), actor)
+	return batch, err
 }
 
 func (m *Manager) record(ctx context.Context, batch Batch, plan Plan, selected map[string]ManagedResource, confirmation, actor string) error {

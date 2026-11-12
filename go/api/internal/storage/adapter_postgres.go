@@ -29,12 +29,20 @@ type databaseRow struct {
 	created     *time.Time
 	allowConn   bool
 	connections int
+	comment     string
+	// activity digests client-session and row-write statistics; it changes
+	// whenever a client uses the database. Transaction and read counters are
+	// excluded because autovacuum workers advance them on idle databases.
+	activity string
 }
 
 func readDatabases(ctx context.Context, pool *pgxpool.Pool) ([]databaseRow, error) {
 	rows, err := pool.Query(ctx, `SELECT d.datname,d.oid::bigint,pg_database_size(d.oid),d.datallowconn,
- (SELECT count(*) FROM pg_stat_activity a WHERE a.datid=d.oid AND a.pid<>pg_backend_pid())::int
- FROM pg_database d WHERE NOT d.datistemplate ORDER BY pg_database_size(d.oid) DESC`)
+ (SELECT count(*) FROM pg_stat_activity a WHERE a.datid=d.oid AND a.pid<>pg_backend_pid())::int,
+ coalesce(shobj_description(d.oid,'pg_database'),''),
+ concat_ws('|',d.datname,s.sessions,s.session_time,s.tup_inserted,s.tup_updated,s.tup_deleted,s.temp_files,s.stats_reset)
+ FROM pg_database d LEFT JOIN pg_stat_database s ON s.datid=d.oid
+ WHERE NOT d.datistemplate ORDER BY pg_database_size(d.oid) DESC`)
 	if err != nil {
 		return nil, err
 	}
@@ -42,9 +50,11 @@ func readDatabases(ctx context.Context, pool *pgxpool.Pool) ([]databaseRow, erro
 	var result []databaseRow
 	for rows.Next() {
 		var d databaseRow
-		if err = rows.Scan(&d.name, &d.oid, &d.size, &d.allowConn, &d.connections); err != nil {
+		var counters string
+		if err = rows.Scan(&d.name, &d.oid, &d.size, &d.allowConn, &d.connections, &d.comment, &counters); err != nil {
 			return nil, err
 		}
+		d.activity = Fingerprint("pg_stat_database", counters)
 		result = append(result, d)
 	}
 	if err = rows.Err(); err != nil {
@@ -65,6 +75,7 @@ type databaseFacts struct {
 	evidence     map[string]storedEvidence
 	reservations map[int64]string
 	quarantined  map[string]QuarantineInfo
+	lifecycle    map[string]LifecycleRecord
 }
 
 type storedEvidence struct {
@@ -75,7 +86,7 @@ type storedEvidence struct {
 }
 
 func loadDatabaseFacts(ctx context.Context, pool *pgxpool.Pool, system string) (databaseFacts, error) {
-	facts := databaseFacts{evidence: map[string]storedEvidence{}, reservations: map[int64]string{}}
+	facts := databaseFacts{evidence: map[string]storedEvidence{}}
 	var err error
 	if facts.protections, err = Protections(ctx, pool); err != nil {
 		return facts, err
@@ -99,28 +110,36 @@ func loadDatabaseFacts(ctx context.Context, pool *pgxpool.Pool, system string) (
 	if err = rows.Err(); err != nil {
 		return facts, err
 	}
-	// Managed rehearsal reservations whose producing job still holds its lease.
-	rows, err = pool.Query(ctx, `SELECT (r.resource_identity->>'oid')::bigint, r.owner_name FROM football.storage_reservations r
+	if facts.reservations, err = managedReservations(ctx, pool, system); err != nil {
+		return facts, err
+	}
+	if facts.quarantined, err = openQuarantines(ctx, pool, "postgres"); err != nil {
+		return facts, err
+	}
+	facts.lifecycle, err = lifecycleRecords(ctx, pool, `backend='postgres' AND state IN ('ELIGIBLE','DELETING')`)
+	return facts, err
+}
+
+// managedReservations returns managed rehearsal reservations whose producing job
+// still holds its lease, keyed by database OID.
+func managedReservations(ctx context.Context, pool *pgxpool.Pool, system string) (map[int64]string, error) {
+	rows, err := pool.Query(ctx, `SELECT (r.resource_identity->>'oid')::bigint, r.owner_name FROM football.storage_reservations r
  JOIN football.work_items w USING(work_id) WHERE r.released_at IS NULL AND r.resource_identity ? 'oid'
  AND r.resource_identity->>'cluster'=$1`, system)
 	if err != nil {
-		return facts, err
+		return nil, err
 	}
+	defer rows.Close()
+	result := map[int64]string{}
 	for rows.Next() {
 		var oid int64
 		var owner string
 		if err = rows.Scan(&oid, &owner); err != nil {
-			rows.Close()
-			return facts, err
+			return nil, err
 		}
-		facts.reservations[oid] = owner
+		result[oid] = owner
 	}
-	rows.Close()
-	if err = rows.Err(); err != nil {
-		return facts, err
-	}
-	facts.quarantined, err = openQuarantines(ctx, pool, "postgres")
-	return facts, err
+	return result, rows.Err()
 }
 
 // ListDatabases assesses every database in the API's cluster.
@@ -175,8 +194,34 @@ func assessDatabase(d databaseRow, auth Authority, facts databaseFacts, now time
 		r.classify(Eligible, "quarantined: connections disabled; restore or purge")
 		return r
 	}
+	if applyLifecycle(&r, d, facts.lifecycle[key]) {
+		return r
+	}
 	applyEvidence(&r, d, facts, now, maxAge)
 	return r
+}
+
+// applyLifecycle offers deletion of a registered disposable test database only
+// while the five-hour policy holds it ELIGIBLE (or its deletion is running), its
+// marker still matches the creation record and its activity counters have not
+// moved since that decision. Protection was applied first and always wins.
+func applyLifecycle(r *ManagedResource, d databaseRow, lc LifecycleRecord) bool {
+	if lc.Class != ClassTestDatabase || (lc.State != LifecycleEligible && lc.State != LifecycleDeleting) {
+		return false
+	}
+	if lc.Fingerprint != d.activity || !testMarkerMatches(d.comment, lc) || !sameOID(lc.Identity, d.oid) {
+		return false
+	}
+	r.Purpose = "TEST"
+	r.EvidenceSHA256 = Fingerprint(lc.IdentityKey, lc.Fingerprint, lc.EligibleAt)
+	r.Details["lifecycle"] = map[string]any{"state": lc.State, "eligible_at": lc.EligibleAt, "completion": lc.Completion}
+	r.classify(Eligible, "verified disposable test database; the five-hour lifecycle policy is satisfied")
+	return true
+}
+
+func sameOID(identity map[string]any, oid int64) bool {
+	value, err := identityOID(identity)
+	return err == nil && value == oid
 }
 
 // protectDatabase applies every hard protection: unverifiable authority, system
