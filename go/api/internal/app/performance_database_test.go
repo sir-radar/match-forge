@@ -2,7 +2,7 @@ package app
 
 import (
 	"context"
-	"os"
+	"football-forecasting/go/api/internal/testdb"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -22,10 +22,7 @@ func (*performanceQueryCounter) TraceQueryEnd(context.Context, *pgx.Conn, pgx.Tr
 // Invoked by the disposable PostgreSQL regression; never points at production.
 func performanceDatabaseStore(t *testing.T) (*PostgresProductStore, *performanceQueryCounter) {
 	t.Helper()
-	url := os.Getenv("TEST_DATABASE_URL")
-	if url == "" {
-		t.Skip("requires disposable integration database")
-	}
+	url := testdb.URL(t)
 	config, err := pgxpool.ParseConfig(url)
 	if err != nil {
 		t.Fatal(err)
