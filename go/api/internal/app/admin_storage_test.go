@@ -50,3 +50,37 @@ func TestStorageAdminRejectsDestructiveAndArbitraryRequests(t *testing.T) {
 		t.Fatal("invalid body started work")
 	}
 }
+
+func TestStorageManagementDestructiveRoutesRequireOwnerCredential(t *testing.T) {
+	app := newAdminTestApp(&storageStub{})
+	bodies := map[string]string{
+		"/v1/admin/storage/actions":      `{"action":"DELETE","resource_ids":["` + strings.Repeat("a", 64) + `"],"plan_sha256":"` + strings.Repeat("b", 64) + `","confirmation":"DELETE 1","confirmed":true}`,
+		"/v1/admin/storage/dispositions": `{"resource_id":"` + strings.Repeat("a", 64) + `","evidence_sha256":"` + strings.Repeat("b", 64) + `","disposition":"UNIQUE_DATA_NOT_REQUIRED","rationale":"not required at all, really"}`,
+		"/v1/admin/storage/protections":  `{"resource_id":"` + strings.Repeat("a", 64) + `","reason":"keep"}`,
+	}
+	for path, body := range bodies {
+		for _, token := range []string{"", "Bearer wrong"} {
+			r := httptest.NewRequest(http.MethodPost, "http://127.0.0.1:8080"+path, strings.NewReader(body))
+			r.RemoteAddr = "127.0.0.1:12345"
+			r.Header.Set("Origin", "http://127.0.0.1:3000")
+			r.Header.Set("Content-Type", "application/json")
+			if token != "" {
+				r.Header.Set("Authorization", token)
+			}
+			w := httptest.NewRecorder()
+			app.Handler().ServeHTTP(w, r)
+			if w.Code != http.StatusForbidden {
+				t.Fatalf("%s without owner credential: %d", path, w.Code)
+			}
+		}
+	}
+	// Read-only management routes report an undeployed migration instead of guessing.
+	r := httptest.NewRequest(http.MethodGet, "http://127.0.0.1:8080/v1/admin/storage/resources", nil)
+	r.RemoteAddr = "127.0.0.1:12345"
+	r.Header.Set("Origin", "http://127.0.0.1:3000")
+	w := httptest.NewRecorder()
+	app.Handler().ServeHTTP(w, r)
+	if w.Code != http.StatusConflict {
+		t.Fatalf("resources without manager: %d", w.Code)
+	}
+}

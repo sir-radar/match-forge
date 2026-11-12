@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"time"
 )
 
@@ -27,6 +28,34 @@ type Policy struct {
 	IntervalSeconds       int          `json:"interval_seconds"`
 	BackupIntervalSeconds int          `json:"backup_interval_seconds"`
 	QuarantineSeconds     int          `json:"quarantine_seconds"`
+	// Resource management (optional). Only direct children of managed roots are
+	// ever offered for filesystem actions; protected paths always win.
+	ManagedRoots          []ManagedRoot     `json:"managed_roots,omitempty"`
+	ProtectedPaths        []string          `json:"protected_paths,omitempty"`
+	EvidenceMaxAgeSeconds int               `json:"evidence_max_age_seconds,omitempty"`
+	AutomaticCleanup      []AutomaticPolicy `json:"automatic_cleanup,omitempty"`
+}
+
+// ManagedRoot declares a MatchForge-owned directory whose direct children are
+// managed resources. Class "disposable" means the owner reviewed the root as
+// regenerable output (caches, build output); "review" requires a per-resource
+// owner disposition before any child becomes eligible.
+type ManagedRoot struct {
+	Path        string `json:"path"`
+	Class       string `json:"class"`
+	Description string `json:"description"`
+}
+
+// AutomaticPolicy is a narrowly scoped, owner-approved unattended action.
+// Only "PURGE_EXPIRED_QUARANTINE" and "DELETE_DISPOSABLE" on filesystem
+// disposable roots are supported; databases and worktrees are never automatic.
+type AutomaticPolicy struct {
+	Action         string `json:"action"`
+	Root           string `json:"root"`
+	MinAgeSeconds  int    `json:"min_age_seconds"`
+	ApprovedBy     string `json:"approved_by"`
+	ApprovalRecord string `json:"approval_record"`
+	MaxPerRun      int    `json:"max_per_run"`
 }
 
 func LoadPolicy(path string) (Policy, error) {
@@ -50,7 +79,74 @@ func (p Policy) Validate() error {
 	if err := p.validateLimits(); err != nil {
 		return err
 	}
-	return validateRoots(p.Roots)
+	if err := validateRoots(p.Roots); err != nil {
+		return err
+	}
+	return p.validateManagement()
+}
+
+func (p Policy) validateManagement() error {
+	for i, root := range p.ManagedRoots {
+		if err := p.validateManagedRoot(root, p.ManagedRoots[:i]); err != nil {
+			return err
+		}
+	}
+	if slices.ContainsFunc(p.ProtectedPaths, func(path string) bool { return !cleanAbsolute(path) }) {
+		return errors.New("invalid protected path")
+	}
+	if p.EvidenceMaxAgeSeconds < 0 {
+		return errors.New("invalid evidence age")
+	}
+	for _, a := range p.AutomaticCleanup {
+		if err := p.validateAutomatic(a); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (p Policy) validateManagedRoot(root ManagedRoot, earlier []ManagedRoot) error {
+	if !cleanAbsolute(root.Path) || (root.Class != "disposable" && root.Class != "review") {
+		return errors.New("invalid managed resource root")
+	}
+	if slices.ContainsFunc(earlier, func(other ManagedRoot) bool {
+		return within(root.Path, other.Path) || within(other.Path, root.Path)
+	}) {
+		return errors.New("managed resource roots must not overlap")
+	}
+	if slices.ContainsFunc(p.ProtectedPaths, func(protected string) bool { return within(protected, root.Path) }) {
+		return errors.New("a managed resource root lies inside a protected path")
+	}
+	return nil
+}
+
+func (p Policy) validateAutomatic(a AutomaticPolicy) error {
+	if a.Action != "PURGE_EXPIRED_QUARANTINE" && a.Action != "DELETE_DISPOSABLE" {
+		return errors.New("unsupported automatic cleanup action")
+	}
+	if !a.bounded() {
+		return errors.New("automatic cleanup needs an approval record, a bounded batch and at least one day of age")
+	}
+	if !slices.ContainsFunc(p.ManagedRoots, func(root ManagedRoot) bool { return root.Path == a.Root && root.Class == "disposable" }) {
+		return errors.New("automatic cleanup is limited to declared disposable roots")
+	}
+	return nil
+}
+
+func (a AutomaticPolicy) bounded() bool {
+	return a.ApprovedBy != "" && a.ApprovalRecord != "" && a.MaxPerRun > 0 && a.MaxPerRun <= 100 && a.MinAgeSeconds >= 86400
+}
+
+func cleanAbsolute(path string) bool {
+	return filepath.IsAbs(path) && filepath.Clean(path) == path && path != "/"
+}
+
+// EvidenceMaxAge returns the configured comparison lifetime.
+func (p Policy) EvidenceMaxAge() time.Duration {
+	if p.EvidenceMaxAgeSeconds > 0 {
+		return time.Duration(p.EvidenceMaxAgeSeconds) * time.Second
+	}
+	return DefaultEvidenceMaxAge
 }
 func (p Policy) validateLimits() error {
 	if p.ReserveBytes <= 0 || p.WarningFreeBytes < p.ReserveBytes {

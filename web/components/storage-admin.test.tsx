@@ -10,7 +10,7 @@ describe("Storage lifecycle Admin", () => {
   it("shows protected resources and measured bytes without authorizing cleanup", () => {
     render(<StorageAdmin initial={parseStorageView(fixture)} />);
     expect(screen.getByText("0 bytes")).toBeVisible();
-    expect(screen.getByText(/Destructive cleanup, quarantine and backup pruning are disabled/)).toBeVisible();
+    expect(screen.getByText(/protected resources cannot be deleted here/)).toBeVisible();
     fireEvent.click(screen.getByText(/cluster\/football_rehearsal/));
     expect(screen.getByText("Current post-rehearsal recovery is unverified")).toBeVisible();
     expect(screen.queryByRole("button", { name: /Delete/ })).not.toBeInTheDocument();

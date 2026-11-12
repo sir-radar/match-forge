@@ -1,0 +1,781 @@
+{
+ "observed_at": "2026-11-12T03:20:07.478135+00:00",
+ "phase": "Stage B/C database consolidation evidence",
+ "method": "read-only catalog and primary-key fingerprint comparison",
+ "fingerprint": "BLAKE2b-64 of row(primary key)::text",
+ "collision_bound_per_database": "<= 2.680e-06",
+ "row_contents_compared": false,
+ "script": "scripts/storage_database_inventory.py",
+ "script_sha256_as_run": "30a9362d90c42ef989e6e5d72c2ffb54f16933a42456810f559679999c031747",
+ "raw_output_sha256": "e1e5f2bc4482e7ff7a3454e0089277af8b4052983503a4dbda1101ef3b62f99b",
+ "duration_seconds": 1551.7,
+ "operating_writes": 0,
+ "supplementary_checks": {
+  "populated_tables_absent_from_operating": "0 for all 12 DISPOSABLE/DISPOSABLE_PENDING_OWNER databases (catalog reltuples)",
+  "model_governance_and_participation_tables": "0 unique primary keys in 17 further tables for the same 12 databases"
+ },
+ "authoritative": {
+  "database": "football",
+  "oid": 16384,
+  "size_bytes": 15880787647,
+  "cluster_system_identifier": "7679328148388241450",
+  "created_at": "2026-08-29T05:55:18+00:00",
+  "latest_migration": {
+   "version": 202611110100,
+   "applied_at": "2026-11-11T22:05:40.744587"
+  },
+  "active_connections": 11
+ },
+ "databases": [
+  {
+   "database": "football_p02_rehearsal_2",
+   "oid": 116013236,
+   "size_bytes": 11182708415,
+   "created_at": "2026-11-11T14:11:57+00:00",
+   "latest_migration": 202611110100,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 271632,
+   "unique_by_table": {
+    "product_match_history_decisions": 14542,
+    "product_read_reports": 257090
+   },
+   "classification": "REQUIRED",
+   "reason": "Evidence for open PR #191 (P02 remediation); holds rehearsal-only rows. Re-evaluate after P02 closes."
+  },
+  {
+   "database": "football_p02_rehearsal",
+   "oid": 113450652,
+   "size_bytes": 9853572799,
+   "created_at": "2026-11-11T10:18:38+00:00",
+   "latest_migration": 202611110100,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 20950,
+   "unique_by_table": {
+    "product_match_history_decisions": 14797,
+    "product_provider_mapping_decisions": 20,
+    "product_forecasts": 74,
+    "product_read_reports": 6059
+   },
+   "classification": "REQUIRED",
+   "reason": "Evidence for open PR #191 (P02 remediation); holds rehearsal-only rows. Re-evaluate after P02 closes."
+  },
+  {
+   "database": "football_p02_restore_check",
+   "oid": 117111604,
+   "size_bytes": 9664485055,
+   "created_at": "2026-11-11T21:56:22+00:00",
+   "latest_migration": 202611100300,
+   "active_connections": 0,
+   "finding": "NO_UNIQUE_CANONICAL_IDENTITIES",
+   "unique_identity_rows": 0,
+   "unique_by_table": {},
+   "classification": "REQUIRED",
+   "reason": "Verified restore of the pre-rollout operating dump; rollback evidence for the P02 rollout that is running now (ft/p02-remediation runbook)."
+  },
+  {
+   "database": "football_v4_integration_20261110",
+   "oid": 96462594,
+   "size_bytes": 9391486655,
+   "created_at": "2026-11-10T05:15:09+00:00",
+   "latest_migration": 202611100200,
+   "active_connections": 0,
+   "finding": "NO_UNIQUE_CANONICAL_IDENTITIES",
+   "unique_identity_rows": 0,
+   "unique_by_table": {},
+   "classification": "DISPOSABLE_PENDING_OWNER",
+   "reason": "No unique canonical identities, governance rows or populated tables versus operating. Earlier documents say preserve until separately reviewed, so it needs an explicit owner decision."
+  },
+  {
+   "database": "football_fr_teamname_restore_20261110",
+   "oid": 93318648,
+   "size_bytes": 8917423807,
+   "created_at": "2026-11-10T00:12:40+00:00",
+   "latest_migration": 202611100100,
+   "active_connections": 0,
+   "finding": "NO_UNIQUE_CANONICAL_IDENTITIES",
+   "unique_identity_rows": 0,
+   "unique_by_table": {},
+   "classification": "DISPOSABLE",
+   "reason": "No canonical identities, model-governance rows or populated tables absent from operating; no connections. Deletion still needs resource-specific owner approval."
+  },
+  {
+   "database": "football_fr_context_restore_20261109",
+   "oid": 91748077,
+   "size_bytes": 8793233087,
+   "created_at": "2026-11-09T22:53:15+00:00",
+   "latest_migration": 202611100100,
+   "active_connections": 0,
+   "finding": "NO_UNIQUE_CANONICAL_IDENTITIES",
+   "unique_identity_rows": 0,
+   "unique_by_table": {},
+   "classification": "DISPOSABLE",
+   "reason": "No canonical identities, model-governance rows or populated tables absent from operating; no connections. Deletion still needs resource-specific owner approval."
+  },
+  {
+   "database": "football_fr_scope_restore_20261109",
+   "oid": 88809348,
+   "size_bytes": 8720365247,
+   "created_at": "2026-11-09T18:25:25+00:00",
+   "latest_migration": 202611099950,
+   "active_connections": 0,
+   "finding": "NO_UNIQUE_CANONICAL_IDENTITIES",
+   "unique_identity_rows": 0,
+   "unique_by_table": {},
+   "classification": "DISPOSABLE",
+   "reason": "No canonical identities, model-governance rows or populated tables absent from operating; no connections. Deletion still needs resource-specific owner approval."
+  },
+  {
+   "database": "football_fr_native_restore_20261109",
+   "oid": 86831895,
+   "size_bytes": 8638191295,
+   "created_at": "2026-11-09T11:36:55+00:00",
+   "latest_migration": 202611039900,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 438,
+   "unique_by_table": {
+    "product_match_history_decisions": 432,
+    "product_identity_admissions": 4,
+    "product_provider_mapping_decisions": 2
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_fr_native_reference_20261109",
+   "oid": 87002662,
+   "size_bytes": 8637331135,
+   "created_at": "2026-11-09T12:37:40+00:00",
+   "latest_migration": 202611030100,
+   "active_connections": 0,
+   "finding": "NO_UNIQUE_CANONICAL_IDENTITIES",
+   "unique_identity_rows": 0,
+   "unique_by_table": {},
+   "classification": "DISPOSABLE",
+   "reason": "No canonical identities, model-governance rows or populated tables absent from operating; no connections. Deletion still needs resource-specific owner approval."
+  },
+  {
+   "database": "football_fr_native_restore_20261103",
+   "oid": 83780152,
+   "size_bytes": 8296265407,
+   "created_at": "2026-11-03T22:28:38+00:00",
+   "latest_migration": 202611039900,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 449,
+   "unique_by_table": {
+    "product_match_history_decisions": 430,
+    "product_identity_admissions": 4,
+    "product_provider_mapping_decisions": 2,
+    "product_forecasts": 13
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_fr_rollout_restore_20261103",
+   "oid": 82186866,
+   "size_bytes": 8236922559,
+   "created_at": "2026-11-03T17:36:42+00:00",
+   "latest_migration": 202611039901,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 1165,
+   "unique_by_table": {
+    "product_match_history_decisions": 1150,
+    "product_identity_admissions": 15
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_fr_execution_20261103",
+   "oid": 78787967,
+   "size_bytes": 8039462591,
+   "created_at": "2026-11-03T15:43:26+00:00",
+   "latest_migration": 202611030200,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 1165,
+   "unique_by_table": {
+    "product_match_history_decisions": 1150,
+    "product_identity_admissions": 15
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_ds_populated_7bd6703eae2842fcb98c299445d116da",
+   "oid": 61293870,
+   "size_bytes": 7827887807,
+   "created_at": "2026-11-02T12:03:39+00:00",
+   "latest_migration": 202611020100,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 1246,
+   "unique_by_table": {
+    "product_match_history_decisions": 209,
+    "product_provider_mapping_decisions": 741,
+    "fixture_identity_resolutions": 26,
+    "team_provider_mappings": 1,
+    "match_provider_mappings": 269
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_architecture_v2_shadow_20261016",
+   "oid": 5479407,
+   "size_bytes": 6937638591,
+   "created_at": "2026-10-16T11:54:59+00:00",
+   "latest_migration": 202610200100,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 3153523,
+   "unique_by_table": {
+    "resource_observation_artifacts": 3153511,
+    "product_read_reports": 12
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_architecture_v2_phase0_20261016",
+   "oid": 5267901,
+   "size_bytes": 4455790271,
+   "created_at": "2026-10-16T11:00:46+00:00",
+   "latest_migration": 202610160100,
+   "active_connections": 0,
+   "finding": "NO_UNIQUE_CANONICAL_IDENTITIES",
+   "unique_identity_rows": 0,
+   "unique_by_table": {},
+   "classification": "DISPOSABLE",
+   "reason": "No canonical identities, model-governance rows or populated tables absent from operating; no connections. Deletion still needs resource-specific owner approval."
+  },
+  {
+   "database": "football_r3_final_rehearsal_20261015",
+   "oid": 4982649,
+   "size_bytes": 4414944959,
+   "created_at": "2026-10-15T23:39:35+00:00",
+   "latest_migration": 202610160100,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 51414,
+   "unique_by_table": {
+    "product_match_history_decisions": 9574,
+    "product_identity_admissions": 1398,
+    "product_provider_mapping_decisions": 21664,
+    "fixture_identity_resolutions": 6879,
+    "team_provider_mappings": 923,
+    "match_provider_mappings": 10976
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_r3_internet_verified_20261015",
+   "oid": 4599077,
+   "size_bytes": 4385035967,
+   "created_at": "2026-10-15T13:38:34+00:00",
+   "latest_migration": 202610150200,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 94892,
+   "unique_by_table": {
+    "product_match_history_decisions": 21958,
+    "product_identity_admissions": 2011,
+    "product_provider_mapping_decisions": 37102,
+    "fixture_identity_resolutions": 9686,
+    "team_provider_mappings": 960,
+    "match_provider_mappings": 23175
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_r3_final_baseline_20261015",
+   "oid": 5000368,
+   "size_bytes": 4338300607,
+   "created_at": "2026-10-16T00:23:06+00:00",
+   "latest_migration": 202610150300,
+   "active_connections": 0,
+   "finding": "NO_UNIQUE_CANONICAL_IDENTITIES",
+   "unique_identity_rows": 0,
+   "unique_by_table": {},
+   "classification": "DISPOSABLE",
+   "reason": "No canonical identities, model-governance rows or populated tables absent from operating; no connections. Deletion still needs resource-specific owner approval."
+  },
+  {
+   "database": "football_r3_internet_20261015",
+   "oid": 4583990,
+   "size_bytes": 4248540863,
+   "created_at": "2026-10-15T13:04:06+00:00",
+   "latest_migration": 202610150100,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 20055,
+   "unique_by_table": {
+    "matches": 3,
+    "product_team_match_history": 3,
+    "product_match_history_decisions": 8570,
+    "product_identity_admissions": 1227,
+    "product_provider_mapping_decisions": 311,
+    "fixture_identity_resolutions": 159,
+    "team_provider_mappings": 612,
+    "match_provider_mappings": 9170
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_r3_coverage_20261015",
+   "oid": 4446146,
+   "size_bytes": 4213724863,
+   "created_at": "2026-10-15T08:53:33+00:00",
+   "latest_migration": 202610150100,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 7577,
+   "unique_by_table": {
+    "product_match_history_decisions": 6886,
+    "product_identity_admissions": 307,
+    "product_provider_mapping_decisions": 107,
+    "fixture_identity_resolutions": 58,
+    "team_provider_mappings": 143,
+    "match_provider_mappings": 76
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_r3_identity_20261014",
+   "oid": 4052508,
+   "size_bytes": 3938514623,
+   "created_at": "2026-10-14T10:36:52+00:00",
+   "latest_migration": 202610140700,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 17376,
+   "unique_by_table": {
+    "product_match_history_decisions": 15627,
+    "product_identity_admissions": 923,
+    "product_provider_mapping_decisions": 237,
+    "fixture_identity_resolutions": 53,
+    "team_provider_mappings": 340,
+    "match_provider_mappings": 196
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_r3_completion_20261014",
+   "oid": 3704672,
+   "size_bytes": 3863541439,
+   "created_at": "2026-10-14T03:15:32+00:00",
+   "latest_migration": 202610140600,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 241107,
+   "unique_by_table": {
+    "product_match_history_decisions": 230177,
+    "product_identity_admissions": 10708,
+    "team_provider_mappings": 222
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_phase3a_serie_a_20260922",
+   "oid": 851202,
+   "size_bytes": 1730229951,
+   "created_at": "2026-09-22T07:38:56+00:00",
+   "latest_migration": 202609060100,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 1384145,
+   "unique_by_table": {
+    "competitions": 24,
+    "seasons": 80,
+    "teams": 20,
+    "players": 699,
+    "matches": 380,
+    "event_catalog": 1353739,
+    "team_provider_mappings": 20,
+    "match_provider_mappings": 380,
+    "player_provider_mappings": 699,
+    "player_source_facts": 27339,
+    "source_resources": 762,
+    "source_snapshots": 3
+   },
+   "classification": "NEEDS_RECONCILIATION",
+   "reason": "Unique canonical football history absent from operating: 380 matches, 1,353,739 events, 699 players (StatsBomb Serie A, isolated experiment). Owner must decide whether it belongs in operating storage or is reconstructable from retained raw snapshots before removal."
+  },
+  {
+   "database": "football_liga_f_recovery_20260910",
+   "oid": 848116,
+   "size_bytes": 1073051327,
+   "created_at": "2026-09-10T05:26:55+00:00",
+   "latest_migration": 202609060100,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 854091,
+   "unique_by_table": {
+    "competitions": 24,
+    "seasons": 80,
+    "teams": 16,
+    "players": 456,
+    "matches": 240,
+    "event_catalog": 835429,
+    "team_provider_mappings": 16,
+    "match_provider_mappings": 240,
+    "player_provider_mappings": 456,
+    "player_source_facts": 16649,
+    "source_resources": 482,
+    "source_snapshots": 3
+   },
+   "classification": "NEEDS_RECONCILIATION",
+   "reason": "Unique canonical football history absent from operating: 240 matches, 835,429 events, 456 players (StatsBomb Liga F isolated recovery). Same decision as Serie A."
+  },
+  {
+   "database": "football_v4_access_r04_20261102",
+   "oid": 53668853,
+   "size_bytes": 158668479,
+   "created_at": "2026-11-02T00:44:01+00:00",
+   "latest_migration": 202610310800,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 210251,
+   "unique_by_table": {
+    "source_resources": 3265,
+    "source_snapshots": 3265,
+    "resource_observation_artifacts": 203721
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_v4_phase14_shadow_20261101",
+   "oid": 43445843,
+   "size_bytes": 77108927,
+   "created_at": "2026-11-01T04:30:47+00:00",
+   "latest_migration": 202610310800,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 84610,
+   "unique_by_table": {
+    "resource_observation_artifacts": 84610
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_v4_expansion_r03_20261101",
+   "oid": 52291857,
+   "size_bytes": 24467135,
+   "created_at": "2026-11-01T19:34:48+00:00",
+   "latest_migration": 202610310800,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 9848,
+   "unique_by_table": {
+    "source_resources": 72,
+    "source_snapshots": 72,
+    "resource_observation_artifacts": 9704
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_v4_identity_recovery_20261102",
+   "oid": 59220531,
+   "size_bytes": 20985535,
+   "created_at": "2026-11-02T07:26:02+00:00",
+   "latest_migration": 202611020100,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 18,
+   "unique_by_table": {
+    "competitions": 1,
+    "seasons": 1,
+    "teams": 2,
+    "players": 2,
+    "matches": 1,
+    "team_provider_mappings": 2,
+    "match_provider_mappings": 1,
+    "player_provider_mappings": 2,
+    "player_source_facts": 2,
+    "source_resources": 3,
+    "source_snapshots": 1
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_v4_identity_recovery_a_tests_20261102",
+   "oid": 59250647,
+   "size_bytes": 19920575,
+   "created_at": "2026-11-02T07:30:50+00:00",
+   "latest_migration": 202611020100,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 18,
+   "unique_by_table": {
+    "competitions": 1,
+    "seasons": 1,
+    "teams": 2,
+    "players": 2,
+    "matches": 1,
+    "team_provider_mappings": 2,
+    "match_provider_mappings": 1,
+    "player_provider_mappings": 2,
+    "player_source_facts": 2,
+    "source_resources": 3,
+    "source_snapshots": 1
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_v4_identity_recovery_upgrade_20261102",
+   "oid": 59268754,
+   "size_bytes": 18306751,
+   "created_at": "2026-11-02T07:32:22+00:00",
+   "latest_migration": 202611020100,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 22,
+   "unique_by_table": {
+    "competitions": 2,
+    "seasons": 2,
+    "teams": 2,
+    "players": 2,
+    "matches": 1,
+    "team_provider_mappings": 2,
+    "match_provider_mappings": 1,
+    "player_provider_mappings": 2,
+    "player_source_facts": 2,
+    "source_resources": 4,
+    "source_snapshots": 2
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_v4_unblocking_r02_replay_20261102",
+   "oid": 56476102,
+   "size_bytes": 18020031,
+   "created_at": "2026-11-02T05:14:42+00:00",
+   "latest_migration": 202610310800,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 10,
+   "unique_by_table": {
+    "resource_observation_artifacts": 10
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_v4_identity_recovery_projection_20261102",
+   "oid": 59504797,
+   "size_bytes": 17872575,
+   "created_at": "2026-11-02T07:44:11+00:00",
+   "latest_migration": 202611020100,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 10,
+   "unique_by_table": {
+    "resource_observation_artifacts": 10
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_v4_unblocking_r02_20261102",
+   "oid": 56470165,
+   "size_bytes": 17864383,
+   "created_at": "2026-11-02T05:12:07+00:00",
+   "latest_migration": 202610310800,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 10,
+   "unique_by_table": {
+    "resource_observation_artifacts": 10
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_v4_qualification_r02_20261101",
+   "oid": 50918750,
+   "size_bytes": 17618623,
+   "created_at": "2026-11-01T18:58:00+00:00",
+   "latest_migration": 202610310800,
+   "active_connections": 0,
+   "finding": "NO_UNIQUE_CANONICAL_IDENTITIES",
+   "unique_identity_rows": 0,
+   "unique_by_table": {},
+   "classification": "DISPOSABLE",
+   "reason": "No canonical identities, model-governance rows or populated tables absent from operating; no connections. Deletion still needs resource-specific owner approval."
+  },
+  {
+   "database": "football_r3_contract_final_20261014",
+   "oid": 3794524,
+   "size_bytes": 16996031,
+   "created_at": "2026-10-14T03:48:40+00:00",
+   "latest_migration": 202610140300,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 373,
+   "unique_by_table": {
+    "competitions": 1,
+    "seasons": 1,
+    "teams": 24,
+    "matches": 12,
+    "product_competitions": 1,
+    "product_teams": 24,
+    "product_team_aliases": 24,
+    "product_fixtures": 12,
+    "product_provider_mapping_decisions": 28,
+    "team_provider_mappings": 24,
+    "match_provider_mappings": 12,
+    "source_resources": 105,
+    "source_snapshots": 105
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_r3_contract_clean_20261014",
+   "oid": 3767413,
+   "size_bytes": 16930495,
+   "created_at": "2026-10-14T03:40:02+00:00",
+   "latest_migration": 202610140300,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 373,
+   "unique_by_table": {
+    "competitions": 1,
+    "seasons": 1,
+    "teams": 24,
+    "matches": 12,
+    "product_competitions": 1,
+    "product_teams": 24,
+    "product_team_aliases": 24,
+    "product_fixtures": 12,
+    "product_provider_mapping_decisions": 28,
+    "team_provider_mappings": 24,
+    "match_provider_mappings": 12,
+    "source_resources": 105,
+    "source_snapshots": 105
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_r3_contract_20261014",
+   "oid": 3713430,
+   "size_bytes": 16766655,
+   "created_at": "2026-10-14T03:29:13+00:00",
+   "latest_migration": 202610140300,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 240,
+   "unique_by_table": {
+    "product_provider_mapping_decisions": 26,
+    "source_resources": 107,
+    "source_snapshots": 107
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_r3_final_test_20261015",
+   "oid": 4978047,
+   "size_bytes": 16004799,
+   "created_at": "2026-10-15T23:36:17+00:00",
+   "latest_migration": 202610160100,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 28,
+   "unique_by_table": {
+    "product_provider_mapping_decisions": 4,
+    "source_resources": 12,
+    "source_snapshots": 12
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_r3_scoped_history_20261014",
+   "oid": 3848995,
+   "size_bytes": 15808191,
+   "created_at": "2026-10-14T05:44:56+00:00",
+   "latest_migration": 202610140500,
+   "active_connections": 0,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 20,
+   "unique_by_table": {
+    "product_provider_mapping_decisions": 4,
+    "source_resources": 8,
+    "source_snapshots": 8
+   },
+   "classification": "NEEDS_REVIEW",
+   "reason": "Holds canonical identity rows absent from operating (rehearsal or test output: decisions, mappings, observations). Not copied into operating; needs an owner disposition or reconciliation before removal."
+  },
+  {
+   "database": "football_r3_geography_guard_20261014",
+   "oid": 3853672,
+   "size_bytes": 15759039,
+   "created_at": "2026-10-14T06:03:24+00:00",
+   "latest_migration": 202610140600,
+   "active_connections": 0,
+   "finding": "NO_UNIQUE_CANONICAL_IDENTITIES",
+   "unique_identity_rows": 0,
+   "unique_by_table": {},
+   "classification": "DISPOSABLE",
+   "reason": "No canonical identities, model-governance rows or populated tables absent from operating; no connections. Deletion still needs resource-specific owner approval."
+  },
+  {
+   "database": "football_r3_status_test_20261015",
+   "oid": 4741551,
+   "size_bytes": 15505087,
+   "created_at": "2026-10-15T14:57:14+00:00",
+   "latest_migration": 202610150200,
+   "active_connections": 0,
+   "finding": "NO_UNIQUE_CANONICAL_IDENTITIES",
+   "unique_identity_rows": 0,
+   "unique_by_table": {},
+   "classification": "DISPOSABLE",
+   "reason": "No canonical identities, model-governance rows or populated tables absent from operating; no connections. Deletion still needs resource-specific owner approval."
+  },
+  {
+   "database": "football_pretraining_test",
+   "oid": 1619206,
+   "size_bytes": 13620927,
+   "created_at": "2026-10-03T19:29:18+00:00",
+   "latest_migration": 202609300500,
+   "active_connections": 0,
+   "finding": "NO_UNIQUE_CANONICAL_IDENTITIES",
+   "unique_identity_rows": 0,
+   "unique_by_table": {},
+   "classification": "DISPOSABLE",
+   "reason": "No canonical identities, model-governance rows or populated tables absent from operating; no connections. Deletion still needs resource-specific owner approval."
+  },
+  {
+   "database": "postgres",
+   "oid": 5,
+   "size_bytes": 7853759,
+   "created_at": "2026-08-29T05:55:16+00:00",
+   "latest_migration": null,
+   "active_connections": 0,
+   "finding": "NO_UNIQUE_CANONICAL_IDENTITIES",
+   "unique_identity_rows": 0,
+   "unique_by_table": {},
+   "classification": "REQUIRED",
+   "reason": "PostgreSQL maintenance database."
+  }
+ ]
+}

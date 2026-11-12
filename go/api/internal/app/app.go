@@ -7,6 +7,8 @@ import (
 	"log/slog"
 	"net/http"
 	"time"
+
+	"football-forecasting/go/api/internal/storage"
 )
 
 // App owns the operational HTTP surface and lifecycle.
@@ -17,6 +19,7 @@ type App struct {
 	product    ProductStore
 	syncRunner SyncRunner
 	handler    http.Handler
+	storage    *storage.Manager
 }
 
 // New constructs the operational API without starting network listeners.
@@ -41,6 +44,7 @@ func NewWithSyncRunner(
 		config: config, logger: logger, readiness: readiness,
 		product: product, syncRunner: syncRunner,
 	}
+	application.storage = storageManagerFor(syncRunner, logger)
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", application.health)
 	mux.HandleFunc("GET /readyz", application.ready)
@@ -71,6 +75,14 @@ func NewWithSyncRunner(
 	mux.HandleFunc("GET /v1/admin/storage", application.storageView)
 	mux.HandleFunc("POST /v1/admin/storage/reviews", application.startStorageReview)
 	mux.HandleFunc("POST /v1/admin/storage/approvals", application.reviewStorageApproval)
+	mux.HandleFunc("GET /v1/admin/storage/resources", application.storageResources)
+	mux.HandleFunc("POST /v1/admin/storage/actions/preview", application.previewStorageAction)
+	mux.HandleFunc("POST /v1/admin/storage/actions", application.executeStorageAction)
+	mux.HandleFunc("GET /v1/admin/storage/operations", application.storageOperations)
+	mux.HandleFunc("POST /v1/admin/storage/operations/{batch_id}/cancel", application.cancelStorageBatch)
+	mux.HandleFunc("POST /v1/admin/storage/compare", application.compareStorageDatabases)
+	mux.HandleFunc("POST /v1/admin/storage/dispositions", application.recordStorageDisposition)
+	mux.HandleFunc("POST /v1/admin/storage/protections", application.protectStorageResource)
 	mux.HandleFunc("GET /v1/admin/backup", application.backupView(false))
 	mux.HandleFunc("POST /v1/admin/backup/preview", application.backupView(true))
 	mux.HandleFunc("POST /v1/admin/backup", application.startBackup)
@@ -109,6 +121,7 @@ func (application *App) Run(ctx context.Context) error {
 	if _, ok := application.syncRunner.(pendingPublicReportsRunner); ok {
 		go application.runPublicReportSchedule(ctx)
 	}
+	application.recoverStorage(ctx)
 	go application.runStorageSchedule(ctx)
 	stopRecovery := application.startResolutionRecovery(ctx)
 	defer stopRecovery()

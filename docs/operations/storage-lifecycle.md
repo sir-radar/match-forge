@@ -116,23 +116,101 @@ show the verified representation sizes and observation time. Backup storage and
 recovery are an independent server resource,
 so a disconnected drive does not hide storage observations. Existing Data Sync
 and shared-work views show lifecycle attempts and cancellation. Read failures retain
-previous measurements and provide retry. Destructive controls are absent.
+previous measurements and provide retry. Resource actions are described in
+[Resource management](#resource-management) below.
 
 An owner receipt binds an exact immutable manifest, resource IDs and expiration.
 `REVIEWED` and `REJECTED` are audit dispositions, not deletion permissions.
-SQL rejects `QUARANTINED` and `DELETED` transitions. Dry-run plans include blockers,
-recovery coverage, a minimum grace deadline and rollback requirements. Unknown
-physical savings remain null. There is no environment switch or API that turns a
-review receipt into arbitrary filesystem or database deletion.
+SQL rejects `QUARANTINED` and `DELETED` transitions on review records. Dry-run
+plans include blockers, recovery coverage, a minimum grace deadline and rollback
+requirements. Unknown physical savings remain null. A review receipt never turns
+into deletion permission; resource actions use their own approval below.
+
+## Resource management
+
+Migration `202611120100_storage_resource_management` adds append-only
+`storage_protections`, `storage_database_evidence` and `storage_dispositions`,
+and the durable `storage_operations` history. Storage Management lists every
+database in the API's cluster, every Git worktree and, when the policy declares
+`managed_roots`, the direct children of those roots. Each resource has a
+server-computed class:
+
+| Class | Meaning | Actions |
+| --- | --- | --- |
+| Protected | Authoritative or required database, active consumers, managed rehearsal lease, primary or locked worktree, protected path, owner protection, or an unverifiable authoritative identity | None. Not selectable. No override exists. |
+| Review required | Not yet compared, stale evidence, unique rows, uncommitted or unpushed work, unknown ignored files, incomplete measurement, symlink | None until remediated or resolved by an owner disposition |
+| Eligible | Database with current evidence of no unique canonical identities; worktree that is clean, pushed and holds only regenerable ignored output; child of an owner-declared disposable root | Delete; Quarantine (databases and files) |
+
+Identity is immutable: databases by cluster system identifier and OID (renaming
+keeps protection), files by device and inode, worktrees by their Git directory.
+The API registers the database it is connected to as the authoritative
+operating database on first use. If the connected database later differs, all
+database actions are disabled until the identity is verified again. Changing
+the authoritative database needs a separately governed forward migration.
+
+Workflow for an existing resource:
+
+1. **Compare** a database with the operating database. The read-only comparison
+   records which canonical identities exist only in the candidate.
+2. **Resolve review.** Reconcile valid unique data through the normal admission
+   controls, or record an owner disposition (`UNIQUE_DATA_NOT_REQUIRED` or
+   `PRESERVE`) bound to that exact evidence digest. New evidence voids it.
+3. **Preview** the action. The plan lists exact resources, blocked resources
+   with reasons, unique expected savings and consequences. Blocked resources do
+   not stop independent eligible ones.
+4. **Approve and execute** with the owner credential (the `MATCHFORGE_ADMIN_CLI_TOKEN`
+   Bearer value) and, for Delete and Permanently delete, the typed phrase
+   `DELETE <n>`. The server recomputes the plan and rejects any change.
+5. **Execution** runs one resource at a time. Each operation is re-assessed just
+   before it runs; a database trigger rejects any protected identity. Databases
+   are fenced with `ALLOW_CONNECTIONS false` and dropped without `FORCE`; files
+   are removed through an `os.Root` handle bound to the managed root; worktrees
+   are removed with `git worktree remove` without `--force`, keeping the branch.
+6. **Measurement.** A deletion is recorded as succeeded only after the resource
+   is verified absent, with its measured size and the host free space before
+   and after. Database bytes are released inside the PostgreSQL volume; the
+   host gains space only when the Docker VM returns freed blocks.
+
+Quarantine renames a database to `matchforge_quarantine_<oid>` with connections
+disabled, or moves a file tree into the root's `.matchforge-quarantine`
+directory on the same device. Restore reverses it when the original name or
+path is free. Quarantine frees no space; Permanently delete does. A restart
+cancels pending operations and marks interrupted ones failed unless the exact
+resource is verifiably absent.
+
+### Policy-managed automation
+
+Scheduled work stays read-only unless the policy file declares an
+`automatic_cleanup` rule. Two rule kinds exist, and both apply only to direct
+children of a `managed_roots` entry with class `disposable`:
+
+```json
+"managed_roots": [{ "path": "/abs/cache-root", "class": "disposable", "description": "regenerable build cache" }],
+"protected_paths": ["/abs/cache-root/keep"],
+"automatic_cleanup": [{ "action": "DELETE_DISPOSABLE", "root": "/abs/cache-root",
+  "min_age_seconds": 604800, "max_per_run": 20,
+  "approved_by": "owner", "approval_record": "docs/governance/decision-events/<file>" }]
+```
+
+`PURGE_EXPIRED_QUARANTINE` permanently deletes quarantined items from that root
+after the quarantine retention. Validation refuses rules without an approval
+record, with more than 100 items per run, with less than one day of age, or on a
+root that is not disposable. Databases, worktrees, review roots and protected
+paths are never selected. Each run is limited to the policy's
+`interval_seconds`, goes through the same preview, revalidation, database
+protection trigger and measurement as a manual action, and is recorded with the
+actor `policy:<approval_record>:<approved_by>`.
+
+Deploying these controls authorizes nothing. Each existing-resource deletion
+still needs the owner's resource-specific approval through this workflow.
 
 ## Recovery and approval
 
 For each existing resource, record its exact identity, dependencies, active use,
 verified independent recovery, expected unique physical savings, retention and
-rollback. Obtain resource-specific approval before considering a destructive
-action. A review receipt records an audit disposition. This release does not
-execute quarantine, remove existing resources, prune backups or perform physical
-database maintenance.
+rollback. Obtain resource-specific approval before a destructive action. A review
+receipt records an audit disposition only. Backups are not pruned and no
+physical database maintenance runs.
 
 Recover archived evidence into a new directory and verify the manifest and all
 original hashes before changing readers. Preserve original registrations for
