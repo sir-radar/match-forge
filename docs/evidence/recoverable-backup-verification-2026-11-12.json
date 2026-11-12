@@ -69,5 +69,25 @@
   "bytes_approx": "9.3 GB",
   "verification": "PASS_RECOVERABLE",
   "removed": "after verification, on owner instruction 'Yes, remove it'"
+ },
+ "rehearsal_databases_removed": {
+  "instruction": "owner answer 'Delete those two' after VERIFIED_RECOVERABLE snapshot bb97d6fd",
+  "databases": [
+   {
+    "name": "football_disposition_rehearsal_20261112",
+    "oid": 130681765,
+    "purpose": "disposition rehearsal copy of football",
+    "size_mb": 10712
+   },
+   {
+    "name": "football_disposition_backup_check_20261112",
+    "oid": 133179006,
+    "purpose": "restore check of operating-before-dispositions.dump",
+    "size_mb": 10719
+   }
+  ],
+  "method": "dropdb without --force after confirming zero connections",
+  "operating_database_untouched": true,
+  "retained": ".local/storage-rollout/operating-before-dispositions.dump"
  }
 }
