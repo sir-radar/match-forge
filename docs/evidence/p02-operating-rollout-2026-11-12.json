@@ -1,0 +1,449 @@
+{
+ "contract": "P02OperatingRolloutEvidenceV1",
+ "recorded_at": "2026-11-12T03:57:32Z",
+ "decision_id": "AUTHORIZE_P02_OPERATING_ROLLOUT_V1",
+ "decision_ref": "docs/evidence/owner-decision-authorize-p02-operating-rollout-2026-11-11.json",
+ "environment": "Operating database (football). Every figure here was measured on it unless stated.",
+ "code": {
+  "branch": "ft/p02-remediation",
+  "api_build_git_sha": "fe0ebc8a9f5959ff5aea802c0c8fc028a256fc48",
+  "worktree": "clean"
+ },
+ "prior_unauthorized_write": {
+  "finding": "On 2026-11-11 10:28:57-10:35:07Z the API started from the main build ran the branch Python code from this checkout; its scheduled maintain_history wrote 1,181 history decisions (1,163 eligible) from fixtures-* responses acquired 8-11 Nov. Append-only, stamped with the real decision time; included in the pre-rollout dump and preservation baseline.",
+  "side_effect": "Scheduled context-report refreshes failed from the branch checkout until the migration, because public_context_source_v2 was missing; 1,694 refreshes waited over an hour."
+ },
+ "backup": {
+  "admin_backup": {
+   "run_id": "364d1c77-92f5-4ef8-a7d9-34c3304fbcd8",
+   "status": "FAILED",
+   "state": "SNAPSHOT_FAILED",
+   "note": "Cause not logged by the script; the restic repository then reported a lock. Owner chose the verified logical dump instead."
+  },
+  "logical_dump": {
+   "file": ".local/p02/rollout/operating-before.dump",
+   "sha256": "494a3debec693811934950e995ffe90a5e41b54062eb419e4851ce698203826a",
+   "bytes": 2411772696,
+   "seconds": 165,
+   "taken_with_writers_stopped": true
+  },
+  "restore_check": {
+   "database": "football_p02_restore_check",
+   "seconds": 506,
+   "errors": 0,
+   "preservation_identical": true,
+   "mutable_tables_identical": true,
+   "mutable_tables": {
+    "context_refresh_work": {
+     "rows": 257808,
+     "md5": "9aaf80804859b39a0a6274c6537e96a7"
+    },
+    "match_provider_mappings": {
+     "rows": 549078,
+     "md5": "b52df5e64f73c15a0f921576e41ac408"
+    },
+    "product_fixtures": {
+     "rows": 288888,
+     "md5": "ebbf16547a7b3066691dbad33b77dae9"
+    },
+    "team_match_history": {
+     "rows": 505408,
+     "md5": "3243892d1e8ebead02c214e3e82620b5"
+    }
+   }
+  }
+ },
+ "writers_paused": {
+  "api_stopped_at": "2026-11-11T21:53:04Z",
+  "api_restarted_at": "2026-11-12T00:24:15Z",
+  "method": "SIGTERM to the API process that hosts the scheduler; restarted on the branch build with the same settings"
+ },
+ "run_start": "2026-11-11 21:53:17.419213+00",
+ "migration": {
+  "version": "202611110100_form_policy_source",
+  "result": "OK",
+  "ms": 70.92
+ },
+ "timings_seconds": {
+  "dump_seconds": 165,
+  "restore_seconds": 506,
+  "migrate_seconds": 0,
+  "dry_seconds": 4186,
+  "apply_seconds": 4053,
+  "backfill_seconds": 9151
+ },
+ "dry_run": {
+  "complete": true,
+  "finished_rows": 140566,
+  "identity_conflicts": 1277,
+  "missing_files": [],
+  "non_fixture_snapshots": 66,
+  "qualified": 14542,
+  "qualified_by_snapshot_kind": {
+   "diagnostic": 22,
+   "fixture": 3,
+   "fixtures": 13595,
+   "history": 0,
+   "recovery": 921,
+   "stale": 1
+  },
+  "reconciliation": {
+   "applied_by_provider_status": {
+    "AET": 1,
+    "AWD": 21,
+    "FT": 920,
+    "PEN": 2,
+    "PST": 1,
+    "WO": 4
+   },
+   "applied_by_snapshot_kind": {
+    "fixtures": 23,
+    "recovery": 926
+   },
+   "applied_fixture_ids_sha256": "5d75bd1dda7612bdb3bad34e3b3329e90530fdd6863e2975404fe883696b7495",
+   "errors": [],
+   "missing_files": [],
+   "outcome": {
+    "APPLIED_FROM_RETAINED_TERMINAL_RESPONSE": 949,
+    "NO_RETAINED_OBSERVATION_AFTER_KICKOFF": 396,
+    "PROVIDER_NOT_TERMINAL_AT_LAST_RETAINED_OBSERVATION": 405,
+    "STORED_ROW_NEWER_THAN_RETAINED_EVIDENCE": 7
+   },
+   "overdue_api_football": 1757
+  },
+  "snapshots": 614,
+  "version": "p02-history-requalification-v2"
+ },
+ "apply": {
+  "complete": true,
+  "finished_rows": 140566,
+  "identity_conflicts": 1277,
+  "missing_files": [],
+  "non_fixture_snapshots": 66,
+  "qualified": 14542,
+  "qualified_by_snapshot_kind": {
+   "diagnostic": 22,
+   "fixture": 3,
+   "fixtures": 13595,
+   "history": 0,
+   "recovery": 921,
+   "stale": 1
+  },
+  "reconciliation": {
+   "applied_by_provider_status": {
+    "AET": 1,
+    "AWD": 21,
+    "FT": 920,
+    "PEN": 2,
+    "PST": 1,
+    "WO": 4
+   },
+   "applied_by_snapshot_kind": {
+    "fixtures": 23,
+    "recovery": 926
+   },
+   "applied_fixture_ids_sha256": "5d75bd1dda7612bdb3bad34e3b3329e90530fdd6863e2975404fe883696b7495",
+   "errors": [],
+   "missing_files": [],
+   "outcome": {
+    "APPLIED_FROM_RETAINED_TERMINAL_RESPONSE": 949,
+    "NO_RETAINED_OBSERVATION_AFTER_KICKOFF": 417,
+    "PROVIDER_NOT_TERMINAL_AT_LAST_RETAINED_OBSERVATION": 405,
+    "STORED_ROW_NEWER_THAN_RETAINED_EVIDENCE": 7
+   },
+   "overdue_api_football": 1778
+  },
+  "snapshots": 614,
+  "version": "p02-history-requalification-v2"
+ },
+ "dry_equals_apply": true,
+ "matches_rehearsal_2": true,
+ "preservation": {
+  "script": "scripts/p02/preservation.sql",
+  "before": {
+   "forecast_artifacts": {
+    "rows": 9990,
+    "md5": "317463b5f4d1c244cfb838f6ef278008"
+   },
+   "forecasts": {
+    "rows": 18750,
+    "md5": "c563fc0667251e53ea43c31bdf63e55a"
+   },
+   "history_decisions": {
+    "rows": 875109,
+    "md5": "25ada547f195cca70437c5267c898f66"
+   },
+   "identity_conflicts_other_stages": {
+    "rows": 2038,
+    "md5": "ee36da3d5039cb802c667e5af1fc00ca"
+   },
+   "model_forecasts": {
+    "rows": 0,
+    "md5": null
+   },
+   "read_reports": {
+    "rows": 310547,
+    "md5": "58d5356a1c287b48773fb5cd2a090844"
+   },
+   "source_snapshots": {
+    "rows": 84683,
+    "md5": "2ca668a9c4c099609c6948968adb49be"
+   }
+  },
+  "after_migration": true,
+  "after_dry_run": true,
+  "after_apply": true,
+  "after_backfill": true
+ },
+ "gaps_after_apply": {
+  "remaining_gaps": {
+   "api_football_regulation_90_without_history": {
+    "DUPLICATE_IDENTITY_RESULT_ALREADY_IN_HISTORY": 483,
+    "DUPLICATE_IDENTITY_SCORE_DISAGREES": 4
+   },
+   "result_overdue_by_provider": [
+    {
+     "providers": "api_football",
+     "scheduled_recovery_path": false,
+     "fixtures": 835
+    },
+    {
+     "providers": "api_football+fotmob",
+     "scheduled_recovery_path": false,
+     "fixtures": 1
+    },
+    {
+     "providers": "api_football+fotmob",
+     "scheduled_recovery_path": true,
+     "fixtures": 2
+    },
+    {
+     "providers": "football_data_org",
+     "scheduled_recovery_path": false,
+     "fixtures": 18
+    },
+    {
+     "providers": "fotmob",
+     "scheduled_recovery_path": false,
+     "fixtures": 385
+    },
+    {
+     "providers": "fotmob",
+     "scheduled_recovery_path": true,
+     "fixtures": 26
+    },
+    {
+     "providers": "fotmob+pitchapi",
+     "scheduled_recovery_path": false,
+     "fixtures": 20
+    },
+    {
+     "providers": "(none)",
+     "scheduled_recovery_path": false,
+     "fixtures": 93
+    },
+    {
+     "providers": "pitchapi",
+     "scheduled_recovery_path": false,
+     "fixtures": 27
+    }
+   ]
+  },
+  "incremental": {
+   "finished_without_history": 487,
+   "result_overdue": 1407,
+   "history_score_mismatch": 7,
+   "context_refresh_older_than_1h": 8060,
+   "overdue_api_football": 838,
+   "overdue_without_scheduled_recovery": 1186
+  }
+ },
+ "report_rebuild": {
+  "upcoming_queued": 559,
+  "backfill_batches": [
+   {
+    "pre_policy_after": 226696,
+    "pre_policy_before": 246696,
+    "queued": 20000,
+    "published": 29977,
+    "failed": 0
+   },
+   {
+    "pre_policy_after": 206696,
+    "pre_policy_before": 226696,
+    "queued": 20000,
+    "published": 19857,
+    "failed": 0
+   },
+   {
+    "pre_policy_after": 186696,
+    "pre_policy_before": 206696,
+    "queued": 20000,
+    "published": 19857,
+    "failed": 0
+   },
+   {
+    "pre_policy_after": 166696,
+    "pre_policy_before": 186696,
+    "queued": 20000,
+    "published": 19875,
+    "failed": 0
+   },
+   {
+    "pre_policy_after": 146696,
+    "pre_policy_before": 166696,
+    "queued": 20000,
+    "published": 19829,
+    "failed": 0
+   },
+   {
+    "pre_policy_after": 126696,
+    "pre_policy_before": 146696,
+    "queued": 20000,
+    "published": 19864,
+    "failed": 0
+   },
+   {
+    "pre_policy_after": 106696,
+    "pre_policy_before": 126696,
+    "queued": 20000,
+    "published": 19877,
+    "failed": 0
+   },
+   {
+    "pre_policy_after": 86696,
+    "pre_policy_before": 106696,
+    "queued": 20000,
+    "published": 19862,
+    "failed": 0
+   },
+   {
+    "pre_policy_after": 66696,
+    "pre_policy_before": 86696,
+    "queued": 20000,
+    "published": 19865,
+    "failed": 0
+   },
+   {
+    "pre_policy_after": 46696,
+    "pre_policy_before": 66696,
+    "queued": 20000,
+    "published": 19826,
+    "failed": 0
+   },
+   {
+    "pre_policy_after": 26696,
+    "pre_policy_before": 46696,
+    "queued": 20000,
+    "published": 19814,
+    "failed": 0
+   },
+   {
+    "pre_policy_after": 6696,
+    "pre_policy_before": 26696,
+    "queued": 20000,
+    "published": 19835,
+    "failed": 0
+   },
+   {
+    "pre_policy_after": 0,
+    "pre_policy_before": 6696,
+    "queued": 6696,
+    "published": 6642,
+    "failed": 0
+   }
+  ],
+  "reports_published_by_backfill_runs": 254980,
+  "failures": 0,
+  "seconds": 9151,
+  "after": {
+   "latest_context_reports": 257823,
+   "latest_without_form_object": 1,
+   "queue_pending": 0,
+   "queue_failing": 0
+  },
+  "note": "The scheduled worker shared the queue during the backfill, so it published the remainder of each batch. The one report without form belongs to a fixture no longer in product_fixtures."
+ },
+ "affected_forecasts": {
+  "method": "integrity_audit.affected_forecasts(decided_from=run_start)",
+  "forecasts": 10887,
+  "fixtures": 3799,
+  "missing_within_120_days": 6383,
+  "inventory_path": ".local/p02/rollout/affected_forecasts.json",
+  "inventory_sha256": "e094fbd412f3548c5fc045f9404827a30a7ddbd6dac7dbc525b5d208766dd106",
+  "action": "None. No forecast changed. Option B needs its own decision."
+ },
+ "global_audit": {
+  "audit_version": "p02-integrity-audit-v4",
+  "audited_fixtures": 257823,
+  "complete": true,
+  "coverage_fraction": 1.0,
+  "findings_sha256": "ed6ef877e60b8af9400d748be9334764fe39010a148480e2e534e1ab599e649f",
+  "findings_records": 257823,
+  "form_sides": {
+   "DIVERGENT_POLICY_OR_UNQUALIFIED": 26,
+   "MATCHING": 515618,
+   "coverage_COMPLETE": 21051,
+   "coverage_EMPTY": 476234,
+   "coverage_PARTIAL": 18359,
+   "fixture_missing": 2,
+   "fixtures": 257823,
+   "report_current": 257822,
+   "report_source_v1": 732,
+   "report_source_v2": 257090,
+   "served_older_than_stale_limit": 11519,
+   "served_untraceable": 0,
+   "sides": 515644
+  },
+  "default_window_flags": {
+   "AWARDED_INCLUDED": 73,
+   "ORDER_AMBIGUOUS": 947,
+   "RESULT_PENDING": 7914,
+   "SCORE_CONFLICT": 10,
+   "STALE": 11520,
+   "UNKNOWN_SCORE_BASIS": 22806,
+   "UNQUALIFIED_RESULT": 33164
+  },
+  "watermark": "2026-11-12T03:00:55.162160+00:00",
+  "population": {
+   "context_fixtures": 257823,
+   "scope_id_md5": "ea65a50707b4c2bfd9e139241fc7a75e"
+  },
+  "domains": {
+   "forecast_correctness": {
+    "content_md5": "5c786269b4339c8c259fb6fdf62ca16f",
+    "fixture_settled": 3161,
+    "note": "Published forecasts are counted and hashed, never recomputed or changed. Forecasts affected by late qualification come from affected_forecasts.",
+    "published": 20768
+   },
+   "reconciliation_correctness": {
+    "api_football_regulation_90_without_history_by_cause": {
+     "DUPLICATE_IDENTITY_RESULT_ALREADY_IN_HISTORY": 483,
+     "DUPLICATE_IDENTITY_SCORE_DISAGREES": 4
+    },
+    "finished_without_history": 2254,
+    "fixture_identity_ingestion_conflicts": 3320,
+    "history_on_unfinished": 5,
+    "history_score_mismatch": 7,
+    "provider_result_conflicts": 1845
+   },
+   "report_freshness": {
+    "context_refresh_pending": 0,
+    "context_reports_audited": 257823,
+    "context_reports_current": 257822,
+    "served_form_untraceable": 0,
+    "served_from_form_policy_source_v2": 257090,
+    "served_from_pre_policy_source_v1": 732
+   },
+   "source_data_completeness": {
+    "candidate_missing_matches": 3923,
+    "finished_with_unknown_score_basis": 93387,
+    "league_seasons_partial_coverage": 721,
+    "league_seasons_with_candidate_missing_matches": 178,
+    "result_overdue_with_scheduled_recovery": 28,
+    "result_overdue_without_scheduled_recovery": 1385
+   }
+  }
+ },
+ "new_forecasts_after_restart": "Upcoming SCHEDULED fixtures whose history window changed get new append-only revisions through the existing refresh (proposal rule 2); earlier records are unchanged."
+}
