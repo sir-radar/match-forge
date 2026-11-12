@@ -1,0 +1,33 @@
+name: Set up locked Python environment
+description: Install MatchForge's pinned uv, Python and dependencies
+inputs:
+  save-cache:
+    description: Save uv caches after the job
+    default: 'true'
+runs:
+  using: composite
+  steps:
+    - name: Install uv 0.12.1
+      uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+      with:
+        save-cache: ${{ inputs.save-cache }}
+        version: 0.12.1
+        enable-cache: true
+        cache-python: true
+        # Keep this aligned with scripts/toolchain.sh / Makefile.
+        cache-local-path: ${{ github.workspace }}/.local/uv-cache
+        cache-dependency-glob: |
+          pyproject.toml
+          uv.lock
+
+    - name: Install locked Python dependencies
+      shell: bash
+      run: |
+        set -euo pipefail
+        # Background workers use the same repository-local path as bootstrap.
+        uv_binary="$(command -v uv)"
+        mkdir -p .tools/bin
+        ln -s "$uv_binary" .tools/bin/uv
+        .tools/bin/uv --version
+        uv python install 3.13.14
+        uv sync --locked
