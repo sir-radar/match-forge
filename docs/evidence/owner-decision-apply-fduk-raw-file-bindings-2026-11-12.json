@@ -1,0 +1,70 @@
+{
+ "contract": "OwnerDecisionRecordV1",
+ "decision_id": "APPLY_FDUK_RAW_FILE_BINDINGS_V1",
+ "recorded_at": "2026-11-12T15:10:00Z",
+ "title": "Insert the 47 verified Football-Data.co.uk raw-file bindings on the operating database",
+ "status": "APPROVED",
+ "owner": "repository owner / sir-radar",
+ "map": "storage-lifecycle",
+ "ticket": "Football-Data.co.uk manifest path digests (PR 206) and recovery reference follow-up (PR 213)",
+ "source": {
+  "execution_instruction": "Owner answer 'Approve 47 bindings' in this session to the question whether to insert the 47 verified bindings into the operating database, after migration 202611120300 was applied under APPLY_SOURCE_MANIFEST_BINDING_MIGRATION_V1.",
+  "approved_evidence": {
+   "path": "docs/evidence/fduk-manifest-path-digests-2026-11-12.json",
+   "sha256": "e912287d773cdad3ff2098a3fdd88a68d1184db5395a5cdc6c3ac1085f197da2"
+  },
+  "code_commit_sha": "6ed7cf71c66ef7d61e4d75be043a4665ad4eb262",
+  "code_note": "scripts/source_manifest_bindings.py, the evidence and the migrations are identical on main at this commit and in the PR 213 worktree that ran them",
+  "rehearsal_ref": "docs/evidence/fduk-binding-rehearsal-2026-11-12.json"
+ },
+ "authorizes": [
+  "inserting the 47 source_manifest_raw_file_bindings rows pinned by the approved evidence into the operating football database"
+ ],
+ "explicitly_not_authorized": [
+  "applying migration 202611120400_source_snapshot_path_digest_guard or running `make migrate`/`goose up`",
+  "changing, deleting or re-registering any source snapshot, source resource or dependent row",
+  "deleting any database, dump or file, including the rehearsal copy",
+  "claiming FULL_RECOVERY"
+ ],
+ "pre_checks": {
+  "goose_version": 202611120300,
+  "binding_rows": 0,
+  "operating_state_unchanged_since_migration": true,
+  "source_files_matching_bound_resource": "47 of 47 (45 distinct files)"
+ },
+ "application": {
+  "command": "python -m scripts.source_manifest_bindings --decision-reference APPLY_FDUK_RAW_FILE_BINDINGS_V1 --code-commit-sha 6ed7cf71c66ef7d61e4d75be043a4665ad4eb262 --apply",
+  "started_at": "2026-11-12T15:06:09Z",
+  "result": {"bindings": 47, "inserted": 47, "verified_existing": 0},
+  "rows_recorded_at": "2026-11-12T15:06:12.610878Z",
+  "retry": {"started_at": "2026-11-12T15:06:36Z", "result": {"bindings": 47, "inserted": 0, "verified_existing": 47}}
+ },
+ "verification": {
+  "method": "read-only queries with default_transaction_read_only=on",
+  "binding_rows": 47,
+  "snapshots_match_evidence": true,
+  "resources_match_evidence": true,
+  "resource_checksum_and_size_match": 47,
+  "registration_matches": 47,
+  "distinct_resources": 45,
+  "sibling_bound": 2,
+  "unchanged": {
+   "snapshots_47": {"rows": 47, "md5": "c13936d2cf8dd3b4f1de80f9c3acf9af"},
+   "resources_of_47": {"rows": 45, "md5": "95f0dea3ae4d6391a7627237f4b32e47"},
+   "source_manifest_corrections": {"rows": 1, "md5": "7838e7ecad6e2b1ed02fd5b28d94e6d6"},
+   "recovery_scope_retirements": {"rows": 160, "md5": "c82b94367d4958d695ad7dc992b0dc44"},
+   "dependent_rows_of_the_47": 721931
+  },
+  "recovery_reference": {
+   "code": "PR 213 scripts/recovery_files.py",
+   "snapshot_checksum_kinds": {"BOUND_RESOURCE": 47},
+   "distinct_files": 45,
+   "files_verified": 45,
+   "unresolved_for_the_47": 0,
+   "unresolved_elsewhere": 33,
+   "unresolved_elsewhere_note": "the 33 synthetic source snapshots retired under APPLY_RECOVERY_SCOPE_DISPOSITIONS_V1; unrelated to these bindings"
+  }
+ },
+ "backup": "No new backup before the insert. The rows are append-only, change no existing row and are protected from update, delete and truncate.",
+ "notes": "Migration 202611120400 needs its own owner decision. Recovery reads the bindings only once PR 213 is merged and deployed."
+}
