@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import tarfile
 import time
+from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -290,16 +291,27 @@ def artifact_reader_results(
     return results
 
 
-def restore_application(archive: Path, repository: Path) -> None:
-    """Restore regular tracked files only; never follow archive links or replace evidence."""
+RELOCATED_EVIDENCE = ".recovered-evidence"
+
+
+def restore_application(archive: Path, repository: Path) -> dict[str, str]:
+    """Restore regular tracked files only; never follow archive links or lose evidence.
+
+    A record may register an older version of a tracked file. When the current
+    application file has the same path, the retained bytes move unchanged to a
+    content-addressed path and the returned locations map their checksum to it.
+    """
     from football.contracts.source import validate_relative_posix_path
 
+    relocated: dict[str, str] = {}
     with tarfile.open(archive / "application.tar") as application:
         for member in application.getmembers():
             name = member.name.rstrip("/")
             validate_relative_posix_path(name)
             if not (member.isfile() or member.isdir()):
                 raise ValueError("application archive contains a link or special file")
+            if name == RELOCATED_EVIDENCE or name.startswith(RELOCATED_EVIDENCE + "/"):
+                raise ValueError("application archive uses the relocated evidence path")
         for member in application.getmembers():
             target = repository / member.name
             if member.isdir():
@@ -308,18 +320,27 @@ def restore_application(archive: Path, repository: Path) -> None:
             source = application.extractfile(member)
             assert source is not None
             with source:
-                if target.exists():
-                    existing = regular_file(repository, member.name)
-                    digest = hashlib.sha256()
-                    while chunk := source.read(1024 * 1024):
-                        digest.update(chunk)
-                    if digest.hexdigest() != digest_file(existing):
-                        raise ValueError("application archive conflicts with retained evidence")
+                payload = source.read()
+            if target.exists():
+                existing = regular_file(repository, member.name)
+                retained = digest_file(existing)
+                if hashlib.sha256(payload).hexdigest() == retained:
+                    continue
+                location = f"{RELOCATED_EVIDENCE}/{retained}"
+                kept = repository / location
+                kept.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+                if kept.exists():
+                    if digest_file(regular_file(repository, location)) != retained:
+                        raise ValueError("relocated evidence conflicts with retained evidence")
+                    existing.unlink()
                 else:
-                    target.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-                    with target.open("xb") as output:
-                        shutil.copyfileobj(source, output, 1024 * 1024)
-                    target.chmod(member.mode & 0o777)
+                    existing.rename(kept)
+                relocated[retained] = location
+            target.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+            with target.open("xb") as output:
+                output.write(payload)
+            target.chmod(member.mode & 0o777)
+    return relocated
 
 
 def verify_artifact_readers(connection: psycopg.Connection[Any], data_root: Path) -> dict[str, int]:
@@ -343,9 +364,7 @@ def verify_restore(
     require_restore_storage(report, root, destination)
     destination.mkdir(parents=True, exist_ok=False, mode=0o700)
     restore_files(root, {"data": destination / "data", "repository": destination / "repository"})
-    # Retained evidence keeps the bytes a record registered, which may be an older
-    # version of a tracked file; the current application gets its own root.
-    restore_application(root, destination / "application")
+    relocated = restore_application(root, destination / "repository")
     database = "football_restore_test_" + uuid4().hex
     started = time.monotonic()
     with psycopg.connect(os.environ["DATABASE_URL"], autocommit=True) as control:
@@ -391,7 +410,9 @@ def verify_restore(
                     or [list(row) for row in extensions] != report["extensions"]
                 ):
                     raise ValueError("restored database verification failed")
-                artifact_readers = verify_restored_dependencies(restored, destination, report)
+                artifact_readers = verify_restored_dependencies(
+                    restored, destination, report, relocated
+                )
         finally:
             if not re.fullmatch(r"football_restore_test_[0-9a-f]{32}", database):
                 raise ValueError("unsafe restore database")
@@ -572,20 +593,31 @@ def verify_cluster_catalog(command: list[str], admin: str, report: dict[str, Any
 
 
 def verify_restored_dependencies(
-    connection: psycopg.Connection[Any], destination: Path, report: dict[str, Any]
+    connection: psycopg.Connection[Any],
+    destination: Path,
+    report: dict[str, Any],
+    relocated: dict[str, str] | None = None,
 ) -> dict[str, Any]:
+    locations = relocated or {}
     scope = report.get("recovery_scope")
     if scope is not None:
-        selected = inventory(connection, destination / "data", destination / "repository", {})
+        selected = inventory(
+            connection, destination / "data", destination / "repository", locations
+        )
         if selected["unavailable_sha256"] != scope["unavailable_sha256"]:
             raise ValueError("restored unavailable dependencies differ from the captured inventory")
         readers = artifact_reader_results(connection, destination / "data")
         if readers != report["artifact_reader_results"]:
             raise ValueError("restored artifact reader results differ from the captured results")
         return {"results": readers, "full_recovery": False}
-    refs = registered_files(
-        connection, destination / "data", repository_root=destination / "repository"
-    )
+    refs = [
+        replace(ref, source_path=locations[ref.sha256])
+        if ref.root == "repository" and ref.sha256 in locations
+        else ref
+        for ref in registered_files(
+            connection, destination / "data", repository_root=destination / "repository"
+        )
+    ]
     verified = capture_files(
         refs,
         {"data": destination / "data", "repository": destination / "repository"},
