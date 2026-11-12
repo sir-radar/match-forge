@@ -63,6 +63,7 @@ Every file marked *proposed* under `docs/` is a proposal, not an approval. A sta
 - [Storage consolidation and Admin-controlled cleanup, 12 November 2026](operations/storage-consolidation-2026-11-12.md)
 - [Football-Data.co.uk manifest path digests, 12 November 2026](operations/fduk-manifest-path-digests-2026-11-12.md): 47 legacy snapshots, [evidence](evidence/fduk-manifest-path-digests-2026-11-12.json), proposed raw-file bindings and guard
 - Storage operating rollout, 12 November 2026: [owner decision](evidence/owner-decision-authorize-storage-operating-rollout-2026-11-12.json), [evidence](evidence/storage-operating-rollout-2026-11-12.json); candidate database deletion: [owner decision](evidence/owner-decision-approve-storage-candidate-deletion-2026-11-12.json), [evidence](evidence/storage-candidate-deletion-2026-11-12.json); recovery-scope migration `202611120200` ratified as applied: [owner decision](evidence/owner-decision-ratify-recovery-scope-migration-2026-11-12.json)
+- Recovery-scope disposition rehearsal on a restored copy, 12 November 2026 (not an owner decision): [evidence](evidence/recovery-disposition-rehearsal-2026-11-12.json)
 
 ## Engineering standards
 

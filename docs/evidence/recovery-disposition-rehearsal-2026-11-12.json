@@ -1,0 +1,203 @@
+{
+ "contract": "RecoveryDispositionRehearsalV1",
+ "recorded_at": "2026-11-12T12:05:00Z",
+ "purpose": "Rehearse the 161 reviewed recovery-scope dispositions on an isolated restored copy of the operating database before asking for authorization. Not an owner decision and not operating verification.",
+ "operating_database": {
+  "name": "football",
+  "oid": 16384,
+  "goose_version": 202611120200,
+  "recovery_scope_retirements_rows": 0,
+  "source_manifest_corrections_rows": 0,
+  "checked_after_rehearsal": true
+ },
+ "restored_copy": {
+  "name": "football_disposition_rehearsal_20261112",
+  "oid": 130681765,
+  "method": "pg_dump -Fc of football piped to pg_restore --exit-on-error in the same cluster",
+  "dump_started_at": "2026-11-12T11:21:46Z",
+  "restore_finished_at": "2026-11-12T11:45:53Z"
+ },
+ "code_commit_sha": "95e1b59d466781f1f280c39778e7b90aa8e819f7",
+ "rehearsal_decision_reference": "REHEARSAL_ONLY_NOT_AN_OWNER_DECISION",
+ "approved_evidence": [
+  {
+   "path": "docs/evidence/storage-recovery-gaps-2026-11-12.json",
+   "sha256": "4c4a9d18d297c1276b64cd2b8cee508ff2e0ad6cbb947184d60c17097ecb23d1"
+  },
+  {
+   "path": "docs/evidence/storage-recovery-gap-shared-owners-2026-11-12.json",
+   "sha256": "55918c7c023029c93046386d8393ea8f754176f2a70f62d130d4fd2ef5b7ffcb"
+  }
+ ],
+ "inventory_before": {
+  "unavailable": 159,
+  "unavailable_sha256": "5043306f0e0c58ce609018f8de300b9d1002615228c82cd3ba987db7dea6b92d",
+  "excluded": 0,
+  "excluded_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "available_files": 119048,
+  "registered_references": 119207,
+  "full_recovery": false
+ },
+ "steps": [
+  {
+   "step": "validate",
+   "result": {
+    "retirements": 160,
+    "corrections": 1,
+    "applied": false
+   }
+  },
+  {
+   "step": "apply",
+   "result": {
+    "inserted": 161,
+    "verified_existing": 0
+   }
+  },
+  {
+   "step": "retry with same decision",
+   "result": {
+    "inserted": 0,
+    "verified_existing": 161
+   }
+  },
+  {
+   "step": "retry with a different decision reference",
+   "result": "RecoveryDispositionError: recovery disposition conflicts with immutable history; no row written"
+  }
+ ],
+ "recorded_rows": {
+  "recovery_scope_retirements": 160,
+  "source_manifest_corrections": 1,
+  "by_table": {
+   "source_snapshots": 33,
+   "source_resources": 33,
+   "dataset_versions": 22,
+   "dataset_files": 3,
+   "model_artifacts": 26,
+   "model_artifact_files": 26,
+   "baseline_forecasts": 13,
+   "sprint2_evaluation_runs": 4
+  }
+ },
+ "inventory_after": {
+  "unavailable": 0,
+  "unavailable_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "excluded": 159,
+  "excluded_sha256": "5043306f0e0c58ce609018f8de300b9d1002615228c82cd3ba987db7dea6b92d",
+  "excluded_identical_on_second_run": true,
+  "excluded_equal_previous_unavailable": true,
+  "shared_path_with_three_owner_dispositions": 1,
+  "full_recovery": false
+ },
+ "registration_hashes": {
+  "before": {
+   "source_snapshots": {
+    "rows": 85623,
+    "md5": "9cf41f64fe6f79e45dbef5ae61db2079"
+   },
+   "source_resources": {
+    "rows": 369,
+    "md5": "ee6c28a67261bff7b78f62c09e1b5b5b"
+   },
+   "dataset_versions": {
+    "rows": 24,
+    "md5": "61516cb822bd5b2bd120fb0d04f8e6d6"
+   },
+   "dataset_files": {
+    "rows": 763,
+    "md5": "f3fdbccb33f95a6ec20f4847626136ec"
+   },
+   "model_artifacts": {
+    "rows": 5230,
+    "md5": "31ddeb7de99697626336039a61ee9c58"
+   },
+   "model_artifact_files": {
+    "rows": 5230,
+    "md5": "abbe8c6dfb2a3167ef46a80874fd9ac1"
+   },
+   "baseline_forecasts": {
+    "rows": 9985,
+    "md5": "9c6c50aee85c67e45e9c9193bcc9935f"
+   },
+   "sprint2_evaluation_runs": {
+    "rows": 23,
+    "md5": "afeadc556a11b8b27971b32aafdcd654"
+   },
+   "artifact_retirement_events": {
+    "rows": 17,
+    "md5": "20f7d26a54a3205f12a4a75a0c4d677b"
+   }
+  },
+  "after": {
+   "source_snapshots": {
+    "rows": 85623,
+    "md5": "9cf41f64fe6f79e45dbef5ae61db2079"
+   },
+   "source_resources": {
+    "rows": 369,
+    "md5": "ee6c28a67261bff7b78f62c09e1b5b5b"
+   },
+   "dataset_versions": {
+    "rows": 24,
+    "md5": "61516cb822bd5b2bd120fb0d04f8e6d6"
+   },
+   "dataset_files": {
+    "rows": 763,
+    "md5": "f3fdbccb33f95a6ec20f4847626136ec"
+   },
+   "model_artifacts": {
+    "rows": 5230,
+    "md5": "31ddeb7de99697626336039a61ee9c58"
+   },
+   "model_artifact_files": {
+    "rows": 5230,
+    "md5": "abbe8c6dfb2a3167ef46a80874fd9ac1"
+   },
+   "baseline_forecasts": {
+    "rows": 9985,
+    "md5": "9c6c50aee85c67e45e9c9193bcc9935f"
+   },
+   "sprint2_evaluation_runs": {
+    "rows": 23,
+    "md5": "afeadc556a11b8b27971b32aafdcd654"
+   },
+   "artifact_retirement_events": {
+    "rows": 17,
+    "md5": "20f7d26a54a3205f12a4a75a0c4d677b"
+   }
+  },
+  "unchanged": true
+ },
+ "rejection_probes_rolled_back": [
+  {
+   "probe": "real football_data_uk snapshot as synthetic retirement",
+   "result": "recovery-scope retirement target lacks synthetic test lineage"
+  },
+  {
+   "probe": "real fotmob snapshot as synthetic retirement",
+   "result": "recovery-scope retirement target lacks synthetic test lineage"
+  },
+  {
+   "probe": "real model artifact as synthetic retirement",
+   "result": "recovery-scope retirement target lacks synthetic test lineage"
+  },
+  {
+   "probe": "synthetic snapshot with a different checksum",
+   "result": "recovery-scope retirement differs from the registration"
+  },
+  {
+   "probe": "delete a recorded retirement",
+   "result": "dependency lineage is append-only"
+  },
+  {
+   "probe": "football_data_uk path-hashed snapshot as MANIFEST_NEVER_WRITTEN_PATH_DIGEST correction",
+   "result": "ACCEPTED by the database (rolled back)",
+   "note": "The guard checks the path digest and revision prefix only, so it cannot tell a never-written manifest from a manifest path that names the source file. The 161-row application is unaffected because it applies only the pinned evidence; football_data_uk corrections need their own mechanism and decision."
+  }
+ ],
+ "not_verified": [
+  "backup capture and isolated restore after application on the operating database",
+  "FULL_RECOVERY"
+ ]
+}
