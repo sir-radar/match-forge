@@ -1,0 +1,56 @@
+{
+  "fabricated_values": 0,
+  "findings": [
+    {
+      "classification": "SYNTHETIC_TEST_REGISTRATION_PLACEHOLDER_CHECKSUM",
+      "impossible_checksum_length_pair": true,
+      "keys": {
+        "id": "01a04db8-2445-733b-9656-06be47a77de3"
+      },
+      "lineage": {
+        "dataset_version_id": "55607513-725b-4a4f-86a8-6460248c62f5",
+        "manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "registered_at": "2026-08-29T13:31:48.677217+00:00",
+        "source_identity": "example/open-data/1f735332c8eb40c5baca64964f5604c1",
+        "source_revision": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "source_snapshot_id": "01a04db8-2441-7dea-9789-8b8d5c59cd28"
+      },
+      "original_found": false,
+      "path": "normalized/second.parquet",
+      "registered_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+      "registered_size": 1,
+      "table": "dataset_files"
+    },
+    {
+      "classification": "SYNTHETIC_TEST_REGISTRATION_PLACEHOLDER_CHECKSUM",
+      "impossible_checksum_length_pair": true,
+      "keys": {
+        "id": "01a06fc4-d7e7-76fe-8498-02fea40aed2e"
+      },
+      "lineage": {
+        "dataset_version_id": "258ebad5-e836-43b8-aa56-fc5d2fa16adc",
+        "manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "registered_at": "2026-09-05T04:12:46.439446+00:00",
+        "source_identity": "example/open-data/d8abdad398f040bbb4a28afb315d8644",
+        "source_revision": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "source_snapshot_id": "01a06fc4-d7e5-7e2a-b469-e05a06717951"
+      },
+      "original_found": false,
+      "path": "normalized/second.parquet",
+      "registered_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+      "registered_size": 1,
+      "table": "dataset_files"
+    }
+  ],
+  "full_recovery": false,
+  "observed_at": "2026-11-12",
+  "phase": "Stage F recovery-gap investigation, shared-owner supplement",
+  "reason": "The gap for normalized/second.parquet is one path owned by three dataset_files registrations. The supplemented evidence lists only the first owner (01a04db4-fb6f-7f0d-9140-fec0f2472d6d). A gap leaves the recovery scope only when every owning registration has a disposition, so these two owners need their own evidence. Both share the first owner's placeholder checksum, one-byte size and example/open-data lineage.",
+  "registrations": 2,
+  "registrations_modified": 0,
+  "scope": "read-only; no registration, file or backup changed",
+  "source_inventory": "<repo>/.local/storage-protection/2026-11-11/reconciled-recovery-inventory.json",
+  "source_inventory_sha256": "fff1e1aa121563291cb083fd6756d4a75afdcfbc1056f3a8cd24353a56fd0452",
+  "supplements": "docs/evidence/storage-recovery-gaps-2026-11-12.json",
+  "supplements_sha256": "4c4a9d18d297c1276b64cd2b8cee508ff2e0ad6cbb947184d60c17097ecb23d1"
+}
