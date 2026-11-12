@@ -4,8 +4,8 @@ After the verified `RECOVERABLE_ONLY` backup of `football` (snapshot `bb97d6fd`)
 Management compared 12 older rehearsal and restore databases with the operating database.
 One was eligible and was deleted. The other 11 (about 66 GB) hold rows absent from
 `football` by primary key, so Storage Management requires an owner disposition before
-deleting them. This review explains those rows. It changed nothing: every query ran with
-`default_transaction_read_only=on`, and no disposition was recorded.
+deleting them. This review explains those rows. Every review query ran with
+`default_transaction_read_only=on`.
 
 Evidence: [rehearsal-database-unique-rows-2026-11-12.json](../evidence/rehearsal-database-unique-rows-2026-11-12.json).
 
@@ -57,3 +57,11 @@ The running API (`cefc805`) predates the PR 200 digest change, so a disposition 
 when PostgreSQL changes a database's physical size. Record each disposition and delete
 promptly, or deploy a release that includes PR 200 first. Recording dispositions and
 deleting are separate owner approvals.
+
+## Outcome
+
+On owner instruction, the 11 `UNIQUE_DATA_NOT_REQUIRED` dispositions were recorded at
+15:22 UTC, bound to the evidence digests above. Storage Management batch `83af97f3`
+deleted all 11 between 15:30 and 15:39 UTC (11 operations `SUCCEEDED`, about 66.1 GB
+reclaimed). That batch was submitted outside this review session; a preview afterwards
+found every resource already absent, and the PostgreSQL catalog confirms it.

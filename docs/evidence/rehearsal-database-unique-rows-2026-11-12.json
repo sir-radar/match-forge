@@ -433,8 +433,24 @@
   }
  },
  "proposal": "OWNER_DISPOSITION_THEN_DELETE for all 11",
- "not_done": [
-  "no disposition recorded",
-  "nothing deleted"
- ]
+ "not_done": [],
+ "outcome": {
+  "instruction": "owner answer 'Dispose and delete'",
+  "dispositions": {
+   "disposition": "UNIQUE_DATA_NOT_REQUIRED",
+   "recorded": 11,
+   "recorded_at_last": "2026-11-12T15:22:25Z",
+   "bound_to": "the evidence_sha256 listed per database"
+  },
+  "deletion": {
+   "batch_id": "83af97f3-047f-4dbf-869c-67affdada7eb",
+   "mechanism": "Storage Management, owner credential (actor owner:e1ff84c2db014370)",
+   "started": "2026-11-12T15:30:54Z",
+   "finished": "2026-11-12T15:39:19Z",
+   "operations": 11,
+   "state": "SUCCEEDED",
+   "reclaimed_bytes": 66103032373,
+   "note": "Submitted outside this session after the dispositions were recorded; a later preview from this session found all 11 resources already absent. The pg_database catalog confirms none of the 11 remains."
+  }
+ }
 }
