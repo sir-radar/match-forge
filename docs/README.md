@@ -60,6 +60,7 @@ Every file marked *proposed* under `docs/` is a proposal, not an approval. A sta
 - [Capabilities and enablement](operations/capability-registry.md), [rollback](operations/rollback-policy.md), [monitoring](operations/forecast-monitoring.md)
 - [P0 storage protection and recovery evidence](operations/storage-protection-2026-11-11.md)
 - [Storage lifecycle operations, capacity policy and approval-only resource manifest](operations/storage-lifecycle.md)
+- [Remaining non-operating databases: review, 12 November 2026](operations/remaining-database-review-2026-11-12.md): 23 compared, 18 reviewed, [evidence](evidence/remaining-database-unique-rows-2026-11-12.json)
 - [Storage consolidation and Admin-controlled cleanup, 12 November 2026](operations/storage-consolidation-2026-11-12.md)
 - [Rehearsal databases with unique rows: review, 12 November 2026](operations/rehearsal-database-review-2026-11-12.md)
 - [Football-Data.co.uk manifest path digests, 12 November 2026](operations/fduk-manifest-path-digests-2026-11-12.md): 47 legacy snapshots, [evidence](evidence/fduk-manifest-path-digests-2026-11-12.json), proposed raw-file bindings and guard
