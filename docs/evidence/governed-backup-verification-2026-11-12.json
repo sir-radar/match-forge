@@ -1,0 +1,134 @@
+{
+ "contract": "GovernedBackupVerificationV1",
+ "recorded_at": "2026-11-12T20:35:00Z",
+ "decision_id": "AUTHORIZE_GOVERNED_SCOPE_ACTIVATION_V1",
+ "decision_ref": "docs/evidence/owner-decision-authorize-governed-scope-activation-2026-11-12.json",
+ "database": {"name": "football", "oid": 16384, "goose_version": 202611120400, "pending_migrations": 0},
+ "merge": {
+  "pull_request": 213,
+  "head": "4026f6bda424ade194e197f52ee2b7c9c9ccdb93",
+  "merge_commit": "1fa6c6c82e71729cdd71b76fcc9159c069ba79d8",
+  "ci": "7 of 7 checks SUCCESS, including Integration (storage) and Integration (browser)",
+  "review_rule": "ruleset 'Protect main' requires one approval; merged with the owner-authorized admin bypass"
+ },
+ "deployment": {
+  "release_git_sha": "1fa6c6c82e71729cdd71b76fcc9159c069ba79d8",
+  "previous_release_git_sha": "cefc8059abc20ab69c4780da8b159082aed13917",
+  "dependency_lock_sha256": "98b25207581a4beb9155aa49f0f14ac57e9e98d7dddc59ffaccb690805aed8cb",
+  "dependency_changes_since_previous": "none (uv.lock, web lockfile, go.mod unchanged; migrations 202611120200-0400 already applied)",
+  "api_binary_sha256": "5bd069003abfbca2995e02cbbfe2fe126e9ec89861c32d6d82d410b3e76f2053",
+  "storage_cli_sha256": "818369213c6cae4133a8536f8040bec94934f858d63f4f7c51e91b9ddfcfe66b",
+  "previous_api_binary_sha256": "5b6aa07a9684a762d65bef7044fa63e670f063b8556b3590f39877890f0a2e5f",
+  "web_release_copy": ".local/releases/web-1fa6c6c",
+  "rollback": ".local/rollback/20261112-pre-governed holds the previous API and storage binaries and .env; the previous web release stays at .local/releases/web-cefc805",
+  "restart": {
+   "waited_for_idle_sync_runs": true,
+   "stopped_at": "2026-11-12T19:16:22Z",
+   "ready_at": "2026-11-12T19:16:25Z",
+   "version_endpoint": {"code_commit_sha": "1fa6c6c82e71729cdd71b76fcc9159c069ba79d8", "worktree_state": "clean"},
+   "readyz": 200,
+   "web_http": 200
+  }
+ },
+ "inventory": {
+  "path": ".local/foundation/admin-backup-status/activation/governed-inventory-1fa6c6c.json",
+  "generated_by": "python -m scripts.recovery_scope at 1fa6c6c, read-only repeatable-read snapshot",
+  "observed_at": "2026-11-12T19:14:04.711399Z",
+  "locations": 65,
+  "locations_note": "the 65 owner-reviewed retained locations of the configured inventory; an earlier 64-entry file lacked the recovered domain.py original and reported it as a false gap",
+  "unavailable": 0,
+  "unavailable_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "excluded": 159,
+  "excluded_sha256": "5043306f0e0c58ce609018f8de300b9d1002615228c82cd3ba987db7dea6b92d",
+  "excluded_matches_approved_dispositions": true,
+  "disposition_owners": 161,
+  "disposition_kinds": {"SYNTHETIC_TEST_LINEAGE": 160, "MANIFEST_NEVER_WRITTEN_PATH_DIGEST": 1},
+  "governed_sha256": "11fac889b5e3eb830138f52b359c2a0dd3123986df5f065dfa01fb8d93884a42",
+  "validate_governed": "PASS"
+ },
+ "preflights": {
+  "recoverable_only_read_only": {"result": "READY", "referenced_files": 120115, "referenced_bytes": 8690177829},
+  "governed_admin": {"result": "READY", "referenced_files": 120397, "estimated_staging_bytes": 24790000000}
+ },
+ "configuration_change": {
+  "MATCHFORGE_BACKUP_SCOPE": {"before": "RECOVERABLE_ONLY", "after": "GOVERNED_SCOPE"},
+  "MATCHFORGE_BACKUP_RECOVERABLE_INVENTORY": {
+   "before": ".local/foundation/admin-backup-status/activation/observed-inventory.json",
+   "after": ".local/foundation/admin-backup-status/activation/governed-inventory-1fa6c6c.json"
+  },
+  "other_settings_changed": 0
+ },
+ "run": {
+  "run_id": "d0bafc86-3643-45e4-975c-c0bb012a8ef2",
+  "sync_type": "MANUAL_BACKUP",
+  "started_from": "Admin -> Backup & Recovery -> Back Up Now -> Confirm governed-scope backup",
+  "parameters": {
+   "scope": "GOVERNED_SCOPE",
+   "unavailable_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "governed_sha256": "11fac889b5e3eb830138f52b359c2a0dd3123986df5f065dfa01fb8d93884a42"
+  },
+  "requested_at": "2026-11-12T19:17:52Z",
+  "finished_at": "2026-11-12T20:24:07Z",
+  "status": "SUCCEEDED"
+ },
+ "result": {
+  "status": "VERIFIED_GOVERNED_SCOPE",
+  "scope": "GOVERNED_SCOPE",
+  "verified": true,
+  "full_recovery": false,
+  "snapshot_id": "02376823fb7e10ece806430361a68274473c6933340ef307646735e51e0ed400",
+  "repository_id": "44aa85e3bbbf737d5852d9b7666ca84d8260b8027e318b32067d278878d4c0b8",
+  "volume_uuid": "988F99A7-D7C1-329C-9AFF-941D5D8B934C",
+  "captured_at": "2026-11-12T19:18:53.033170Z",
+  "verified_at": "2026-11-12T20:23:16.579Z",
+  "capture_seconds": 831.1,
+  "unavailable_dependencies": 0,
+  "excluded_dependencies": 159,
+  "governed_sha256": "11fac889b5e3eb830138f52b359c2a0dd3123986df5f065dfa01fb8d93884a42",
+  "logical_bytes": 31797827596,
+  "referenced_bytes": 8715215474,
+  "data_added_bytes": 1787163212,
+  "data_added_packed_bytes": 499682608,
+  "repository_file_bytes": 9021437323,
+  "volume_free_space_change_bytes": 513540096
+ },
+ "restore_drill": {
+  "status": "PASS_GOVERNED_SCOPE",
+  "database_isolated": true,
+  "full_recovery": false,
+  "unavailable_dependencies": 0,
+  "excluded_dependencies": 159,
+  "governed_sha256": "11fac889b5e3eb830138f52b359c2a0dd3123986df5f065dfa01fb8d93884a42",
+  "duration_seconds": 1647.9,
+  "verified_at": "2026-11-12T20:12:29.170604Z",
+  "global_role_restore": {
+   "status": "PASS",
+   "network": "none",
+   "globals_applied": true,
+   "original_ownership_restored": true,
+   "duration_seconds": 642.2
+  },
+  "restore_database_removed_after_drill": true
+ },
+ "admin_display": {
+  "policy": "Governed scope (approved exclusions)",
+  "history_row": "12 Nov 2026 20:17 local, Governed scope (approved exclusions), Isolated restore verified, 159 excluded under approvals, 02376823..., 0.5 GB",
+  "last_verified": "12 Nov 2026 21:23 local",
+  "recommended_next_backup": "12 Dec 2026 21:23 local",
+  "monthly_backup_due_banner": "cleared",
+  "full_recovery_line": "Full recovery has yet to pass isolated verification."
+ },
+ "preservation_after_backup": {
+  "method": "read-only queries, compared with the state after migration 202611120400",
+  "unchanged": true,
+  "snapshots_47_md5": "c13936d2cf8dd3b4f1de80f9c3acf9af",
+  "resources_of_47_md5": "95f0dea3ae4d6391a7627237f4b32e47",
+  "source_manifest_corrections_md5": "7838e7ecad6e2b1ed02fd5b28d94e6d6",
+  "recovery_scope_retirements_md5": "c82b94367d4958d695ad7dc992b0dc44",
+  "binding_rows": 47,
+  "dependent_rows_of_the_47": 721931
+ },
+ "classification": "VERIFIED_GOVERNED_SCOPE: every present original captured, read back and restored; 159 missing synthetic dependencies excluded under recorded owner approvals and not recovered",
+ "full_recovery_verified": false,
+ "full_recovery_blocker": "FULL_RECOVERY stays strict: its capture enumerates every registration, including the 159 approved exclusions (145 missing files and 33 retired legacy source resources without a physical locator), so it cannot pass. A read-only FULL_RECOVERY preflight on 12 November stopped on those retired resources."
+}
