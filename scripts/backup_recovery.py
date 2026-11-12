@@ -39,6 +39,7 @@ from scripts.recovery_files import (
     verify_files,
 )
 from scripts.recovery_scope import (
+    EMPTY_SHA256,
     inventory,
     load_plan,
     require_inventory_database,
@@ -219,6 +220,8 @@ def capture_recovery(
                         "full_recovery": False,
                         "unavailable": selected["unavailable"],
                         "unavailable_sha256": selected["unavailable_sha256"],
+                        "excluded": selected["excluded"],
+                        "excluded_sha256": selected["excluded_sha256"],
                     }
                 report["files"] = capture_files(
                     refs, {"data": data_root, "repository": ROOT}, output
@@ -604,7 +607,9 @@ def verify_restored_dependencies(
         selected = inventory(
             connection, destination / "data", destination / "repository", locations
         )
-        if selected["unavailable_sha256"] != scope["unavailable_sha256"]:
+        if selected["unavailable_sha256"] != scope["unavailable_sha256"] or selected[
+            "excluded_sha256"
+        ] != scope.get("excluded_sha256", EMPTY_SHA256):
             raise ValueError("restored unavailable dependencies differ from the captured inventory")
         readers = artifact_reader_results(connection, destination / "data")
         if readers != report["artifact_reader_results"]:
