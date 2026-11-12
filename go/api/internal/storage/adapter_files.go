@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -191,7 +192,9 @@ func inspectFile(r *ManagedResource, path string) (os.FileInfo, bool) {
 	}
 	dev, ino, err := fileIdentity(info)
 	r.IdentityKey = FilesystemIdentityKey(dev, ino)
-	r.Identity = map[string]any{"device": dev, "inode": ino, "path": path}
+	// Inode numbers are reused after deletion (ext4 does so immediately), so the
+	// modification time is bound too. Kept as a string: JSON numbers lose nanoseconds.
+	r.Identity = map[string]any{"device": dev, "inode": ino, "path": path, "modified_ns": modifiedNS(info)}
 	switch {
 	case err != nil:
 		r.classify(ReviewRequired, err.Error())
@@ -289,8 +292,15 @@ func (x fileExecutor) verify(r ManagedResource, handle *os.Root, name string) (o
 	if FilesystemIdentityKey(dev, ino) != r.IdentityKey {
 		return nil, errors.New("target identity changed since approval")
 	}
+	// A rename into or out of quarantine may update a directory's times; the
+	// quarantine record binds those moves instead.
+	if expected, ok := r.Identity["modified_ns"].(string); ok && r.Quarantine == nil && expected != modifiedNS(info) {
+		return nil, errors.New("target identity changed since approval (replaced or modified)")
+	}
 	return info, nil
 }
+
+func modifiedNS(info os.FileInfo) string { return strconv.FormatInt(info.ModTime().UnixNano(), 10) }
 
 func (x fileExecutor) Delete(ctx context.Context, r ManagedResource) (Measurement, error) {
 	m := Measurement{Method: "allocated bytes of the exact tree, then verified absence and host free space"}

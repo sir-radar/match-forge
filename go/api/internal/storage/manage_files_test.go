@@ -92,6 +92,9 @@ func TestFilesystemExecutorRefusesTraversalNestedAndSwappedTargets(t *testing.T)
 		}
 	}
 	write(t, filepath.Join(root, "cache", "a"), 10)
+	// Pin the original's time so the replacement differs even within one clock tick.
+	past := time.Now().Add(-time.Hour)
+	must(t, os.Chtimes(filepath.Join(root, "cache"), past, past))
 	InvalidateMeasurements()
 	r := byName(ListFilesystem(context.Background(), p, map[string][]string{}, nil, nil, time.Now()), "cache")
 	// Replace the directory with a different inode between approval and execution.
