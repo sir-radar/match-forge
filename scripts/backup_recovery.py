@@ -343,7 +343,9 @@ def verify_restore(
     require_restore_storage(report, root, destination)
     destination.mkdir(parents=True, exist_ok=False, mode=0o700)
     restore_files(root, {"data": destination / "data", "repository": destination / "repository"})
-    restore_application(root, destination / "repository")
+    # Retained evidence keeps the bytes a record registered, which may be an older
+    # version of a tracked file; the current application gets its own root.
+    restore_application(root, destination / "application")
     database = "football_restore_test_" + uuid4().hex
     started = time.monotonic()
     with psycopg.connect(os.environ["DATABASE_URL"], autocommit=True) as control:
