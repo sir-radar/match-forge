@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"football-forecasting/go/api/internal/testdb"
 	"io"
 	"log/slog"
 	"net/http"
@@ -107,7 +108,7 @@ func TestScheduledPublicReportsDatabase(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Setenv("DATABASE_URL", os.Getenv("TEST_DATABASE_URL"))
-	t.Setenv("PYTHONPATH", filepath.Join(root, "python", "football", "src"))
+	t.Setenv("PYTHONPATH", testdb.PythonPath(filepath.Join(root, "python", "football", "src")))
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))

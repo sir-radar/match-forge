@@ -19,6 +19,24 @@ from football.product.sync import HISTORY_JOB_LEASE, ProductSync
 DATABASE_URL = os.environ["TEST_DATABASE_URL"]
 
 
+def _expire_lease(connection: psycopg.Connection[Any], claim: Any) -> None:
+    """Move a granted lease's deadline into the past instead of waiting for it.
+
+    A wall-clock lease short enough to wait out (30 ms) can expire inside the claim
+    itself under load, because ``claim_history_work`` re-checks the lease in
+    ``lock_work`` after locking the queue detail. Expiring the lease explicitly keeps
+    the expiry paths deterministic; they still compare ``lease_until`` with
+    ``clock_timestamp()`` exactly as in production.
+    """
+    expired = connection.execute(
+        """UPDATE football.work_items SET lease_until=clock_timestamp()-interval '1 millisecond'
+        WHERE work_id=%s AND state='RUNNING' AND lease_token=%s AND generation=%s
+        RETURNING lease_until<clock_timestamp()""",
+        (claim.work_id, claim.lease_token, claim.generation),
+    ).fetchone()
+    assert expired == (True,)
+
+
 def test_history_queue_deduplicates_recovers_and_claims_once(tmp_path: Path) -> None:
     first = 990_001
     second = 990_002
@@ -975,14 +993,10 @@ def test_expired_history_worker_cannot_complete_or_fail_its_replacement() -> Non
         first = None
         try:
             first = claim_history_request(
-                connection, job, "expired", batch, lease_duration=timedelta(milliseconds=30)
+                connection, job, "expired", batch, lease_duration=timedelta(minutes=30)
             )
             assert first is not None
-            connection.execute(
-                "SELECT pg_sleep(GREATEST(0,extract(epoch FROM "
-                "(%s::timestamptz-clock_timestamp())))+0.005)",
-                (first.lease_until,),
-            )
+            _expire_lease(connection, first)
             next_batch = connection.execute("SELECT clock_timestamp()").fetchone()[0]
             replacement = claim_history_request(
                 connection, job, "replacement", next_batch, lease_duration=timedelta(minutes=30)
@@ -1149,14 +1163,10 @@ def test_shared_history_reaps_its_last_expired_attempt_into_failed_detail() -> N
         claim = None
         try:
             claim = claim_history_request(
-                connection, job, "last-worker", batch, lease_duration=timedelta(milliseconds=30)
+                connection, job, "last-worker", batch, lease_duration=timedelta(minutes=30)
             )
             assert claim is not None
-            connection.execute(
-                "SELECT pg_sleep(GREATEST(0,extract(epoch FROM "
-                "(%s::timestamptz-clock_timestamp())))+0.005)",
-                (claim.lease_until,),
-            )
+            _expire_lease(connection, claim)
             next_batch = connection.execute("SELECT clock_timestamp()").fetchone()[0]
             assert (
                 claim_history_request(
@@ -1257,15 +1267,11 @@ def test_history_expired_attempt_cleanup_skips_busy_detail_without_publishing_fa
         ).fetchone()[0]
         batch = owner.execute("SELECT clock_timestamp()").fetchone()[0]
         claim = claim_history_request(
-            worker, job, "expired", batch, lease_duration=timedelta(milliseconds=30)
+            worker, job, "expired", batch, lease_duration=timedelta(minutes=30)
         )
         assert claim is not None
         try:
-            worker.execute(
-                "SELECT pg_sleep(GREATEST(0,extract(epoch FROM "
-                "(%s::timestamptz-clock_timestamp())))+0.005)",
-                (claim.lease_until,),
-            )
+            _expire_lease(worker, claim)
             worker.execute("SET statement_timeout='200ms'")
             next_batch = worker.execute("SELECT clock_timestamp()").fetchone()[0]
             with owner.transaction():
