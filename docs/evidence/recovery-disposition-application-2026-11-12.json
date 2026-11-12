@@ -1,0 +1,156 @@
+{
+ "contract": "RecoveryDispositionApplicationV1",
+ "recorded_at": "2026-11-12T12:35:00Z",
+ "decision_id": "APPLY_RECOVERY_SCOPE_DISPOSITIONS_V1",
+ "decision_ref": "docs/evidence/owner-decision-apply-recovery-scope-dispositions-2026-11-12.json",
+ "rehearsal_ref": "docs/evidence/recovery-disposition-rehearsal-2026-11-12.json",
+ "database": {
+  "name": "football",
+  "oid": 16384,
+  "goose_version": 202611120200
+ },
+ "code_commit_sha": "95e1b59d466781f1f280c39778e7b90aa8e819f7",
+ "backup": {
+  "logical_dump": {
+   "file": ".local/storage-rollout/operating-before-dispositions.dump",
+   "sha256": "831f4b4354e7a70a570a8351a81559f63eb946e0dfd6826d1d6c3d9c38bd7aa2",
+   "bytes": 2520760377,
+   "started_at": "2026-11-12T11:57:34Z",
+   "finished_at": "2026-11-12T12:07:06Z",
+   "taken_with_writers_stopped": false,
+   "consistency": "pg_dump single snapshot"
+  },
+  "restore_check": {
+   "database": "football_disposition_backup_check_20261112",
+   "seconds": 907,
+   "errors": 0,
+   "goose_version": 202611120200,
+   "registration_hashes_identical_to_operating": true,
+   "preservation_identical_to_operating": true,
+   "cutoff": "2026-11-12T11:57:34Z"
+  }
+ },
+ "inventory_before": {
+  "observed_at": "2026-11-12T12:23:16.866821+00:00",
+  "unavailable": 159,
+  "unavailable_sha256": "5043306f0e0c58ce609018f8de300b9d1002615228c82cd3ba987db7dea6b92d",
+  "excluded": 0
+ },
+ "apply": {
+  "started_at": "2026-11-12T12:24:55Z",
+  "finished_at": "2026-11-12T12:25:01Z",
+  "first": {
+   "applied": true,
+   "corrections": 1,
+   "full_recovery": false,
+   "inserted": 161,
+   "retirements": 160,
+   "verified_existing": 0
+  },
+  "retry": {
+   "applied": true,
+   "corrections": 1,
+   "full_recovery": false,
+   "inserted": 0,
+   "retirements": 160,
+   "verified_existing": 161
+  },
+  "rows_after": {
+   "recovery_scope_retirements": 160,
+   "source_manifest_corrections": 1,
+   "decision_references": 1
+  }
+ },
+ "inventory_after": {
+  "observed_at": "2026-11-12T12:25:31.825732+00:00",
+  "unavailable": 0,
+  "excluded": 159,
+  "excluded_sha256": "5043306f0e0c58ce609018f8de300b9d1002615228c82cd3ba987db7dea6b92d",
+  "excluded_identical_on_second_run": true,
+  "available_files": 119124,
+  "registered_references": 119283,
+  "full_recovery": false
+ },
+ "preservation": {
+  "cutoff": "2026-11-12T11:57:34Z",
+  "registration_hashes_before": {
+   "source_snapshots": {
+    "rows": 85684,
+    "md5": "16e486933cd7d778723080bd505e1b65"
+   },
+   "source_resources": {
+    "rows": 369,
+    "md5": "ee6c28a67261bff7b78f62c09e1b5b5b"
+   },
+   "dataset_versions": {
+    "rows": 24,
+    "md5": "61516cb822bd5b2bd120fb0d04f8e6d6"
+   },
+   "dataset_files": {
+    "rows": 763,
+    "md5": "f3fdbccb33f95a6ec20f4847626136ec"
+   },
+   "model_artifacts": {
+    "rows": 5230,
+    "md5": "31ddeb7de99697626336039a61ee9c58"
+   },
+   "model_artifact_files": {
+    "rows": 5230,
+    "md5": "abbe8c6dfb2a3167ef46a80874fd9ac1"
+   },
+   "baseline_forecasts": {
+    "rows": 9985,
+    "md5": "9c6c50aee85c67e45e9c9193bcc9935f"
+   },
+   "sprint2_evaluation_runs": {
+    "rows": 23,
+    "md5": "afeadc556a11b8b27971b32aafdcd654"
+   },
+   "artifact_retirement_events": {
+    "rows": 17,
+    "md5": "20f7d26a54a3205f12a4a75a0c4d677b"
+   }
+  },
+  "registration_hashes_unchanged": true,
+  "preservation_hashes_before": {
+   "forecast_artifacts": {
+    "rows": 9990,
+    "md5": "317463b5f4d1c244cfb838f6ef278008"
+   },
+   "forecasts": {
+    "rows": 20789,
+    "md5": "37ba6e452ecc0f961508b987d5b02a8f"
+   },
+   "history_decisions": {
+    "rows": 901324,
+    "md5": "49091bd80ec745fe1e1f5a193b4c27a8"
+   },
+   "identity_conflicts_other_stages": {
+    "rows": 2038,
+    "md5": "ee36da3d5039cb802c667e5af1fc00ca"
+   },
+   "model_forecasts": {
+    "rows": 0,
+    "md5": ""
+   },
+   "read_reports": {
+    "rows": 575006,
+    "md5": "f57d04e2dd0666dbcd7d635df80d9694"
+   },
+   "source_snapshots": {
+    "rows": 85684,
+    "md5": "92d671fb770f042414660c156b5638bd"
+   }
+  },
+  "preservation_unchanged": true
+ },
+ "retained_for_review": [
+  "football_disposition_rehearsal_20261112",
+  "football_disposition_backup_check_20261112",
+  ".local/storage-rollout/operating-before-dispositions.dump"
+ ],
+ "not_done": [
+  "new Admin backup and isolated restore after application",
+  "FULL_RECOVERY verification"
+ ]
+}

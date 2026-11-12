@@ -1,0 +1,34 @@
+{
+ "contract": "OwnerDecisionRecordV1",
+ "decision_id": "APPLY_RECOVERY_SCOPE_DISPOSITIONS_V1",
+ "recorded_at": "2026-11-12T12:20:00Z",
+ "title": "Apply the 161 reviewed recovery-scope dispositions to the operating database after a verified backup",
+ "status": "APPROVED",
+ "owner": "repository owner / sir-radar",
+ "map": "storage-lifecycle",
+ "ticket": "Governed recovery-scope retirements and manifest correction (PR 202); rehearsal (PR 207)",
+ "source": {
+  "execution_instruction": "Owner answer 'Authorize, backup first' in this session to the question whether to apply the 161 dispositions to the operating database, after the rehearsal on football_disposition_rehearsal_20261112 recorded in docs/evidence/recovery-disposition-rehearsal-2026-11-12.json.",
+  "code_commit_sha": "95e1b59d466781f1f280c39778e7b90aa8e819f7",
+  "command": "python -m scripts.recovery_dispositions --decision-reference APPLY_RECOVERY_SCOPE_DISPOSITIONS_V1 --code-commit-sha 95e1b59d466781f1f280c39778e7b90aa8e819f7 --apply",
+  "approved_evidence": [
+   {"path": "docs/evidence/storage-recovery-gaps-2026-11-12.json", "sha256": "4c4a9d18d297c1276b64cd2b8cee508ff2e0ad6cbb947184d60c17097ecb23d1"},
+   {"path": "docs/evidence/storage-recovery-gap-shared-owners-2026-11-12.json", "sha256": "55918c7c023029c93046386d8393ea8f754176f2a70f62d130d4fd2ef5b7ffcb"}
+  ]
+ },
+ "authorizes": [
+  "a logical dump of the operating database with an isolated restore check and preservation comparison before any write",
+  "one application of 160 SYNTHETIC_TEST_LINEAGE recovery-scope retirements and one MANIFEST_NEVER_WRITTEN_PATH_DIGEST manifest correction to football (OID 16384), and an idempotent retry of the same set"
+ ],
+ "requires": [
+  "the backup restore check passes before the application",
+  "a read-only inventory immediately before the application still shows the 159 reviewed unavailable paths with digest 5043306f0e0c58ce609018f8de300b9d1002615228c82cd3ba987db7dea6b92d",
+  "afterwards: 0 unavailable, 159 excluded with excluded digest 5043306f0e0c58ce609018f8de300b9d1002615228c82cd3ba987db7dea6b92d, and unchanged registration and preservation hashes"
+ ],
+ "explicitly_not_authorized": [
+  "any disposition outside the two pinned evidence files, including the 47 football-data.co.uk path-hashed manifests",
+  "deleting, editing or replacing any registration or file",
+  "deleting the rehearsal or backup-check databases or the dump",
+  "claiming FULL_RECOVERY or changing the Admin backup recovery policy"
+ ]
+}
