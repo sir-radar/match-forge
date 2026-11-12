@@ -69,3 +69,38 @@ test("resource management protects the operating database and gates deletion", a
   await page.setViewportSize({ width: 320, height: 850 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
+
+test("five-hour cleanup and maintenance views are accessible and reflow", async ({ page }) => {
+  const cors = { "Access-Control-Allow-Origin": "http://127.0.0.1:3009" };
+  await page.route("**/v1/admin/storage", (route) => route.fulfill({ json: fixture, headers: cors }));
+  await page.route("**/v1/admin/storage/resources**", (route) => route.fulfill({ json: managementInventory, headers: cors }));
+  await page.route("**/v1/admin/storage/operations", (route) => route.fulfill({ json: { operations: [] }, headers: cors }));
+  await page.route("**/v1/admin/storage/lifecycle", (route) => route.fulfill({ headers: cors, json: {
+    observed_at: "2026-11-13T09:00:00Z", deployed: true, reclaimed_bytes: 2e9,
+    policy: { inactivity_seconds: 18000, check_interval_seconds: 900, max_per_run: 10, test_databases: true,
+      worktrees: { target_ref: "refs/remotes/origin/main", roots: ["/repo/.claude/worktrees"] }, approved_by: "owner", approval_record: "docs/evidence/policy.json" },
+    resources: [{ identity_key: "git:/repo/.git/worktrees/storage-lifecycle-with-a-long-name", resource_class: "WORKTREE", backend: "git",
+      location: "/repo/.claude/worktrees/storage-lifecycle-with-a-long-name", owner_kind: "WORKTREE_DISCOVERY", identity: {}, owner_ref: { branch: "ft/storage" },
+      created_at: "2026-11-13T01:00:00Z", last_activity_at: "2026-11-13T06:00:00Z", completed_at: "2026-11-13T06:00:00Z", completion: "PR_MERGED",
+      state: "WAITING", eligible_at: "2099-01-01T00:00:00Z", blockers: [], checked_at: "2026-11-13T08:45:00Z", operation_id: null, reclaimed_bytes: null }],
+    events: [{ identity_key: "git:/repo/.git/worktrees/storage-lifecycle-with-a-long-name", event: "COMPLETED", detail: {}, recorded_at: "2026-11-13T06:00:00Z" }],
+    unregistered_test_databases: [{ name: "football_api_test_7", oid: 7, bytes: 1e8 }] } }));
+  await page.route("**/v1/admin/storage/maintenance", (route) => route.fulfill({ headers: cors, json: {
+    policy: { growth_warning_bytes_per_day: 5e9, max_non_operating_databases: 4, stale_after_days: 30 },
+    reports: [{ run_id: "r1", cadence: "DAILY", slot: "2026-11-13", state: "SUCCEEDED", alerts: 1, error: null, started_at: "2026-11-13T00:01:00Z",
+      finished_at: "2026-11-13T00:02:00Z", findings: [{ task: "backup", severity: "WARNING", message: "latest verified backup is older than the backup interval" }] }] } }));
+  await page.goto("/admin/storage");
+  const tab = page.getByRole("tab", { name: "Five-hour cleanup" });
+  await tab.focus(); await page.keyboard.press("Enter");
+  await expect(page.getByText("Waiting")).toBeVisible();
+  await expect(page.getByText(/football_api_test_7/)).toBeVisible();
+  const axe = () => new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]).analyze();
+  expect((await axe()).violations).toEqual([]);
+  await page.getByRole("tab", { name: "Maintenance" }).click();
+  await expect(page.getByText(/WARNING: backup/)).toBeVisible();
+  expect((await axe()).violations).toEqual([]);
+  await page.setViewportSize({ width: 320, height: 850 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.getByRole("tab", { name: "Five-hour cleanup" }).click();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});

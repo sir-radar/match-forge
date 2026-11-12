@@ -96,7 +96,61 @@ async function request<T>(path: string, parse: (value: unknown) => T, init: { me
   return parse(payload);
 }
 
+export type LifecycleState = "ACTIVE" | "WAITING" | "ELIGIBLE" | "BLOCKED" | "DELETING" | "DELETED" | "ABSENT";
+export type LifecycleRecord = {
+  identity_key: string; resource_class: "TEST_DATABASE" | "WORKTREE"; backend: string; location: string; owner_kind: string;
+  identity: Record<string, unknown>; owner_ref: Record<string, unknown>; created_at: string; last_activity_at: string;
+  completed_at: string | null; completion: string | null; state: LifecycleState; eligible_at: string | null; blockers: string[];
+  checked_at: string | null; operation_id: string | null; reclaimed_bytes: number | null;
+};
+export type LifecycleStatus = {
+  observed_at: string; deployed: boolean; reclaimed_bytes: number;
+  policy: { inactivity_seconds: number; check_interval_seconds: number; max_per_run: number; test_databases: boolean;
+    worktrees?: { target_ref: string; roots: string[] }; approved_by: string; approval_record: string } | null;
+  resources: LifecycleRecord[]; events: { identity_key: string; event: string; detail: Record<string, unknown>; recorded_at: string }[];
+  unregistered_test_databases: { name: string; oid: number; bytes: number }[];
+};
+export type MaintenanceFinding = { task: string; severity: "INFO" | "WARNING" | "CRITICAL"; message: string; count?: number; bytes?: number; items?: string[] };
+export type MaintenanceReport = {
+  run_id: string; cadence: "DAILY" | "WEEKLY" | "MONTHLY"; slot: string; state: "RUNNING" | "SUCCEEDED" | "FAILED";
+  findings: MaintenanceFinding[]; alerts: number; error: string | null; started_at: string; finished_at: string | null;
+};
+export type MaintenanceStatus = {
+  policy: { growth_warning_bytes_per_day: number; max_non_operating_databases: number; stale_after_days: number } | null;
+  reports: MaintenanceReport[];
+};
+
+const lifecycleStates: LifecycleState[] = ["ACTIVE", "WAITING", "ELIGIBLE", "BLOCKED", "DELETING", "DELETED", "ABSENT"];
+
+export function parseLifecycle(value: unknown): LifecycleStatus {
+  const r = object(value);
+  const resources = list(r.resources).map((item) => {
+    const record = object(item);
+    if (!lifecycleStates.includes(record.state as LifecycleState)) throw new Error("Invalid lifecycle state");
+    if (record.resource_class !== "TEST_DATABASE" && record.resource_class !== "WORKTREE") throw new Error("Invalid lifecycle class");
+    return { ...(record as unknown as LifecycleRecord), blockers: list(record.blockers ?? []).map(text), reclaimed_bytes: bytes(record.reclaimed_bytes) };
+  });
+  return { ...(r as unknown as LifecycleStatus), resources, events: list(r.events) as LifecycleStatus["events"],
+    unregistered_test_databases: list(r.unregistered_test_databases) as LifecycleStatus["unregistered_test_databases"] };
+}
+
+export function parseMaintenance(value: unknown): MaintenanceStatus {
+  const r = object(value);
+  const reports = list(r.reports).map((item) => {
+    const report = object(item);
+    const findings = list(report.findings).map((f) => {
+      const finding = object(f);
+      if (!["INFO", "WARNING", "CRITICAL"].includes(finding.severity as string)) throw new Error("Invalid maintenance severity");
+      return finding as unknown as MaintenanceFinding;
+    });
+    return { ...(report as unknown as MaintenanceReport), findings };
+  });
+  return { policy: (r.policy ?? null) as MaintenanceStatus["policy"], reports };
+}
+
 export const storageManagement = {
+  lifecycle: () => request("lifecycle", parseLifecycle),
+  maintenance: () => request("maintenance", parseMaintenance),
   inventory: (refresh = false, signal?: AbortSignal) => request(`resources${refresh ? "?refresh=1" : ""}`, parseInventory, { signal }),
   preview: (action: StorageActionName, ids: string[]) => request("actions/preview", (v) => object(v) as unknown as StoragePlan, { body: { action, resource_ids: ids } }),
   execute: (plan: StoragePlan, confirmation: string, token: string) => request("actions", (v) => object(v) as { batch_id: string; operations: number }, {
