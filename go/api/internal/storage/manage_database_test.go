@@ -202,42 +202,73 @@ func TestDatabaseQuarantineRestoreAndMixedBatch(t *testing.T) {
 	expect(t, !(restored.Name != name || restored.Quarantine != nil), "restore did not return the original name: %+v", restored)
 }
 
+// waitDisconnected waits until no backend is connected to the database. A
+// backend leaves pg_stat_activity only after it has flushed its statistics, so
+// the comparison then sees every earlier write.
+func waitDisconnected(t *testing.T, pool *pgxpool.Pool, name string) {
+	t.Helper()
+	deadline := time.Now().Add(10 * time.Second)
+	for time.Now().Before(deadline) {
+		var connected int
+		must(t, pool.QueryRow(context.Background(), `SELECT count(*) FROM pg_stat_activity WHERE datname=$1`, name).Scan(&connected))
+		if connected == 0 {
+			return
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	t.Fatalf("database %s still has connections", name)
+}
+
+// execIn runs SQL in the candidate database through its own connection and
+// waits until that connection is gone.
+func execIn(t *testing.T, pool *pgxpool.Pool, name, sql string) {
+	t.Helper()
+	ctx := context.Background()
+	config := pool.Config().ConnConfig.Copy()
+	config.Database = name
+	conn, err := pgx.ConnectConfig(ctx, config)
+	must(t, err)
+	_, err = conn.Exec(ctx, sql)
+	_ = conn.Close(ctx)
+	must(t, err)
+	waitDisconnected(t, pool, name)
+}
+
 func TestDatabaseUniqueRowsNeedOwnerDispositionBoundToEvidence(t *testing.T) {
 	pool := databasePool(t)
 	ctx := context.Background()
 	m := &Manager{Pool: pool}
 	name, oid := disposableDatabase(t, pool)
-	config := pool.Config().ConnConfig.Copy()
-	config.Database = name
-	conn, err := pgx.ConnectConfig(ctx, config)
-	must(t, err)
-	_, err = conn.Exec(ctx, `CREATE SCHEMA football; CREATE TABLE football.teams(id uuid PRIMARY KEY); INSERT INTO football.teams VALUES (gen_random_uuid())`)
-	_ = conn.Close(ctx)
-	must(t, err)
-	time.Sleep(200 * time.Millisecond)
+	execIn(t, pool, name, `CREATE SCHEMA football; CREATE TABLE football.teams(id uuid PRIMARY KEY); INSERT INTO football.teams VALUES (gen_random_uuid());
+ CREATE TABLE public.notes(id bigserial PRIMARY KEY, body text)`)
 	r := managedDatabase(t, m, oid)
 	must(t, m.compareOne(ctx, r.ResourceID))
 	r = managedDatabase(t, m, oid)
 	expect(t, !(r.Classification != ReviewRequired || r.Evidence == nil || r.Evidence.Finding != "UNIQUE_CANONICAL_IDENTITIES_PRESENT"), "unique row must require review: %+v", r)
-	err = m.Dispose(ctx, r.ResourceID, strings.Repeat("d", 64), "UNIQUE_DATA_NOT_REQUIRED", "synthetic test row created by this test", "test")
+	err := m.Dispose(ctx, r.ResourceID, strings.Repeat("d", 64), "UNIQUE_DATA_NOT_REQUIRED", "synthetic test row created by this test", "test")
 	expect(t, err == ErrStalePlan, "disposition for other evidence accepted: %v", err)
 	must(t, m.Dispose(ctx, r.ResourceID, r.EvidenceSHA256, "UNIQUE_DATA_NOT_REQUIRED", "synthetic test row created by this test", "test"))
 	{
 		r = managedDatabase(t, m, oid)
 		expect(t, !(r.Classification != Eligible), "disposition did not resolve the review: %+v", r)
 	}
-	// Unchanged evidence keeps the binding; changed content invalidates it.
+	// Unchanged content keeps the binding, whatever happens to physical size.
+	bound := r.EvidenceSHA256
+	for range 3 {
+		must(t, m.compareOne(ctx, r.ResourceID))
+		r = managedDatabase(t, m, oid)
+		expect(t, !(r.Classification != Eligible || r.EvidenceSHA256 != bound), "identical evidence lost its disposition: %+v", r)
+	}
+	// A write outside the canonical tables changes the evidence and voids it.
+	execIn(t, pool, name, `INSERT INTO public.notes(body) VALUES ('not canonical')`)
 	must(t, m.compareOne(ctx, r.ResourceID))
 	{
 		r = managedDatabase(t, m, oid)
-		expect(t, !(r.Classification != Eligible), "identical evidence lost its disposition: %+v", r)
+		expect(t, !(r.Classification != ReviewRequired || r.EvidenceSHA256 == bound), "disposition survived a non-canonical write: %+v", r)
 	}
-	conn, err = pgx.ConnectConfig(ctx, config)
-	must(t, err)
-	_, err = conn.Exec(ctx, `INSERT INTO football.teams VALUES (gen_random_uuid())`)
-	_ = conn.Close(ctx)
-	must(t, err)
-	time.Sleep(200 * time.Millisecond)
+	// A new canonical row changes the evidence too.
+	must(t, m.Dispose(ctx, r.ResourceID, r.EvidenceSHA256, "UNIQUE_DATA_NOT_REQUIRED", "synthetic test rows created by this test", "test"))
+	execIn(t, pool, name, `INSERT INTO football.teams VALUES (gen_random_uuid())`)
 	must(t, m.compareOne(ctx, r.ResourceID))
 	{
 		r = managedDatabase(t, m, oid)

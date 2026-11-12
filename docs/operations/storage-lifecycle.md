@@ -155,6 +155,13 @@ Workflow for an existing resource:
 2. **Resolve review.** Reconcile valid unique data through the normal admission
    controls, or record an owner disposition (`UNIQUE_DATA_NOT_REQUIRED` or
    `PRESERVE`) bound to that exact evidence digest. New evidence voids it.
+   The digest covers the comparison result and a content fingerprint of the
+   candidate: schemas, relations and their storage files, column definitions,
+   cumulative row-write counters, sequence positions, functions and large
+   objects. It excludes physical size, which PostgreSQL changes without any
+   content change; large size drift still makes the evidence stale. A
+   statistics reset or crash recovery changes the fingerprint, so a disposition
+   lapses and must be recorded again.
 3. **Preview** the action. The plan lists exact resources, blocked resources
    with reasons, unique expected savings and consequences. Blocked resources do
    not stop independent eligible ones.

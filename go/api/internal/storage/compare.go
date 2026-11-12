@@ -283,14 +283,61 @@ func (m *Manager) compareOne(ctx context.Context, resourceID string) error {
 	if err != nil {
 		return err
 	}
+	content, err := contentFingerprint(ctx, conn)
+	if err != nil {
+		return err
+	}
 	payload, _ := json.Marshal(tables)
 	key := PostgresIdentityKey(auth.SystemIdentifier, target.oid)
-	digest := Fingerprint("matchforge-database-comparison-v1", key, target.created, target.size, auth.IdentityKey(), finding, tables)
+	// Physical size stays out of the digest: pg_database_size changes without any
+	// content change (relcache init file, free-space and visibility maps), which
+	// would void owner dispositions spontaneously. Large size drift still makes
+	// evidence stale (staleReason); content outside the canonical tables is bound
+	// through contentFingerprint instead.
+	digest := Fingerprint("matchforge-database-comparison-v2", key, target.created, auth.IdentityKey(), finding, tables, content)
 	_, err = m.Pool.Exec(ctx, `INSERT INTO football.storage_database_evidence(identity_key,system_identifier,database_oid,
  database_name,database_created_at,size_bytes,authoritative_identity_key,finding,unique_identity_rows,tables,evidence_sha256,source)
  VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'ADMIN_COMPARE')`, key, auth.SystemIdentifier, target.oid, target.name, target.created,
 		target.size, auth.IdentityKey(), finding, unique, payload, digest)
 	return err
+}
+
+// contentFingerprint summarises everything in the candidate database that the
+// canonical-table comparison does not cover, using only values that change when
+// a client changes the database: user schemas, relations and their storage
+// files (TRUNCATE, VACUUM FULL and rewrites replace them), column definitions,
+// cumulative row-write counters, sequence positions, function bodies and large
+// objects. It deliberately excludes physical sizes and planner statistics,
+// which autovacuum and relation-cache maintenance change on their own. A
+// statistics reset or crash recovery clears the write counters, so the digest
+// changes and any disposition bound to it lapses (fail closed).
+func contentFingerprint(ctx context.Context, conn *pgx.Conn) (string, error) {
+	var summary string
+	err := conn.QueryRow(ctx, `WITH user_ns AS (
+ SELECT oid, nspname FROM pg_namespace
+ WHERE nspname NOT IN ('pg_catalog','information_schema','pg_toast') AND nspname !~ '^pg_(toast_)?temp_'),
+rels AS (
+ SELECT string_agg(concat_ws('|',n.nspname,c.relname,c.relkind,c.relpersistence,c.relfilenode,
+   coalesce(s.n_tup_ins,0),coalesce(s.n_tup_upd,0),coalesce(s.n_tup_del,0)), E'\n' ORDER BY n.nspname,c.relname) AS v
+ FROM pg_class c JOIN user_ns n ON n.oid=c.relnamespace LEFT JOIN pg_stat_user_tables s ON s.relid=c.oid
+ WHERE c.relpersistence<>'t'),
+cols AS (
+ SELECT string_agg(concat_ws('|',n.nspname,c.relname,a.attnum,a.attname,format_type(a.atttypid,a.atttypmod),a.attnotnull),
+   E'\n' ORDER BY n.nspname,c.relname,a.attnum) AS v
+ FROM pg_attribute a JOIN pg_class c ON c.oid=a.attrelid JOIN user_ns n ON n.oid=c.relnamespace
+ WHERE a.attnum>0 AND NOT a.attisdropped AND c.relpersistence<>'t'),
+seqs AS (
+ SELECT string_agg(concat_ws('|',schemaname,sequencename,last_value), E'\n' ORDER BY schemaname,sequencename) AS v
+ FROM pg_sequences WHERE schemaname IN (SELECT nspname FROM user_ns)),
+procs AS (
+ SELECT string_agg(concat_ws('|',n.nspname,p.proname,pg_get_function_identity_arguments(p.oid),md5(p.prosrc)),
+   E'\n' ORDER BY n.nspname,p.proname,pg_get_function_identity_arguments(p.oid)) AS v
+ FROM pg_proc p JOIN user_ns n ON n.oid=p.pronamespace)
+SELECT encode(sha256(convert_to(concat_ws(E'\n--\n',
+ (SELECT string_agg(nspname, ',' ORDER BY nspname) FROM user_ns),
+ (SELECT v FROM rels),(SELECT v FROM cols),(SELECT v FROM seqs),(SELECT v FROM procs),
+ (SELECT count(*)::text FROM pg_largeobject_metadata)),'UTF8')),'hex')`).Scan(&summary)
+	return summary, err
 }
 
 func compareTables(ctx context.Context, conn *pgx.Conn, ref *reference) (map[string]TableComparison, string, int64, error) {
