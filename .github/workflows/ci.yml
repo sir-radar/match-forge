@@ -294,7 +294,8 @@ jobs:
         run: make build web-build
 
       - name: Install Playwright system packages
-        timeout-minutes: 6
+        # Keep slow but progressing downloads within the observed success range.
+        timeout-minutes: 15
         working-directory: web
         run: |
           # Fail on incomplete indexes instead of waiting on stale mirrors.

@@ -30,9 +30,10 @@ its test volumes after the integration step.
 
 The locked Playwright version supplies Chromium Headless Shell and WebKit for
 the existing desktop, mobile, and accessibility tests. System package and
-browser installation have separate timings and deadlines. Ubuntu mirror errors
-fail the package step; incomplete package indexes are not accepted. The small
-dependency advisory artifact still retains both audits for seven days.
+browser installation have separate timings and deadlines. The package deadline
+allows slow downloads like the two successful Nov 10 runs. DNS and stalled
+connections are bounded separately; incomplete package indexes fail the step.
+The small dependency advisory artifact still retains both audits for seven days.
 
 The uv package and Python caches, Go module/build/lint caches, pinned Go tool
 binaries, Rust build cache and pnpm store remain in use. Both jobs can restore
@@ -109,6 +110,36 @@ and final check. Extra runner time is the duplicate Python setup and final
 check; runner size and paid infrastructure do not change. The historical
 median includes many runs well below #194, so a 30% reduction across that
 whole cohort is not implied by the #194 estimate.
+
+## Hosted comparison
+
+The [starting main commit](https://github.com/sir-radar/match-forge/actions/runs/43146651604)
+and [first #195 run](https://github.com/sir-radar/match-forge/actions/runs/43149075566)
+used Ubuntu 24.04 image 20261101.360.1, the same application and lockfiles,
+and the same test commands. Both passed. The starting main run was still
+in progress at the baseline snapshot and later finished in 22m 08s.
+
+| Metric | Starting main | First #195 run |
+| --- | ---: | ---: |
+| Workflow wall time | 22m 08s | 10m 53s |
+| Longest job queue | 2s | 2s |
+| Main job dependency setup and audits, excluding Playwright and upload | 42s | 38s |
+| Separate Python setup | — | 7s |
+| Python unit test time from pytest | 6m 56s | 3m 08s |
+| Database integration and live browser checks | 10m 06s | 7m 19s |
+| Playwright setup (system packages and binaries) | 39s | 36s |
+| Standalone browser checks | 1m 46s | 58s |
+| Build validation | Bundled | 19s |
+| Total job execution | 22m 03s | 14m 10s |
+
+The first result was 50.8% below the starting main run and 53.1% below the
+#194 PR run. The split removes serial waiting on the Python suite. The
+same tests also ran faster on the candidate runners; that difference is
+not credited to the split. Both runs reported 2,235 Python tests at 68%
+branch coverage and 50 standalone browser tests with the same 26 skips.
+The new timings show that storage and serving integration are still the
+longest job. Its slowest tests exercise query cancellation, identity
+qualification at scale, and a full recovery into an isolated database.
 
 ## Monitor and investigate
 

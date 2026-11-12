@@ -54,7 +54,7 @@ STEP_BUDGETS = {
 
 def github(path: str) -> dict[str, object]:
     result = subprocess.run(
-        ["gh", "api", path], check=True, capture_output=True, text=True, timeout=30
+        ["gh", "api", path], check=True, stdout=subprocess.PIPE, text=True, timeout=30
     )
     return cast(dict[str, object], json.loads(result.stdout))
 
