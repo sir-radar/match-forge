@@ -1,0 +1,483 @@
+{
+ "contract": "StorageAuditV1",
+ "observed_at": "2026-11-12T21:55:00Z",
+ "method": "Read-only: PostgreSQL catalog and storage registry queries with default_transaction_read_only=on, du/find/df on the host, docker system df, SHA-256 of retained source files. Nothing was recorded, compared, moved or deleted by this audit.",
+ "cluster": {
+  "container": "football-forecasting-postgres-1",
+  "system_identifier": "7679328148388241450",
+  "authoritative": {
+   "database": "football",
+   "oid": 16384
+  }
+ },
+ "storage_management_deletions_2026_11_12": {
+  "operations_succeeded": 45,
+  "reclaimed_bytes_measured": 179949870725,
+  "batches": [
+   {
+    "started_at": "2026-11-12T06:51Z..07:05Z",
+    "resources": 10,
+    "reclaimed_bytes": 43923338390,
+    "record": "docs/evidence/storage-candidate-deletion-2026-11-12.json",
+    "decision": "APPROVE_STORAGE_CANDIDATE_DATABASE_DELETION_V1"
+   },
+   {
+    "started_at": "2026-11-12T15:12Z..15:30Z",
+    "resources": 12,
+    "reclaimed_bytes": 77283356916,
+    "record": "docs/operations/rehearsal-database-review-2026-11-12.md"
+   },
+   {
+    "started_at": "2026-11-12T15:42Z",
+    "resources": 3,
+    "reclaimed_bytes": 138768911,
+    "note": "two worktrees (.claude/worktrees/storage-audit, .local/worktrees/parallel-ci-checks) and mf_rollout_probe_20261112"
+   },
+   {
+    "started_at": "2026-11-12T19:40Z",
+    "resources": 3,
+    "reclaimed_bytes": 30315258941,
+    "previously_unrecorded": true
+   },
+   {
+    "started_at": "2026-11-12T20:29Z",
+    "resources": 17,
+    "reclaimed_bytes": 28289147567,
+    "previously_unrecorded": true
+   }
+  ]
+ },
+ "deleted_after_pr_215": [
+  {
+   "database": "football_v4_integration_20261110",
+   "oid": 96462594,
+   "batch_started_at": "2026-11-12T19:40:17.922311+00:00",
+   "finished_at": "2026-11-12T19:40:20.889554+00:00",
+   "reclaimed_bytes": 9391486655,
+   "approved_by": "owner:e1ff84c2db014370",
+   "evidence_sha256": "01c9e83039e4cefd8b1cdca0c6ea897c74ef9e35a52ce55fc98f968f9e1c1dee",
+   "disposition": null,
+   "finding": "NO_UNIQUE_CANONICAL_IDENTITIES"
+  },
+  {
+   "database": "football_p02_restore_check",
+   "oid": 117111604,
+   "batch_started_at": "2026-11-12T19:40:17.927008+00:00",
+   "finished_at": "2026-11-12T19:41:38.710916+00:00",
+   "reclaimed_bytes": 9664485055,
+   "approved_by": "owner:e1ff84c2db014370",
+   "evidence_sha256": "56af8f157b8016d39251a442ec00d9f66d13fa91b8af3b3c46a010c3092fa80f",
+   "disposition": null,
+   "finding": "NO_UNIQUE_CANONICAL_IDENTITIES"
+  },
+  {
+   "database": "football_fduk_binding_rehearsal_20261112",
+   "oid": 135704921,
+   "batch_started_at": "2026-11-12T19:40:17.927417+00:00",
+   "finished_at": "2026-11-12T19:42:37.289261+00:00",
+   "reclaimed_bytes": 11259287231,
+   "approved_by": "owner:e1ff84c2db014370",
+   "evidence_sha256": "58d38c4f4a3a3489f8ee1769edfe616a002cc1f4171d1ae606df6b67bdc534d0",
+   "disposition": null,
+   "finding": "NO_UNIQUE_CANONICAL_IDENTITIES"
+  },
+  {
+   "database": "football_r3_contract_20261014",
+   "oid": 3713430,
+   "batch_started_at": "2026-11-12T20:29:12.177793+00:00",
+   "finished_at": "2026-11-12T20:29:19.906524+00:00",
+   "reclaimed_bytes": 16766655,
+   "approved_by": "owner:e1ff84c2db014370",
+   "evidence_sha256": "f59544c4747c911880aab2bb2e1db624aace028a25577c27e842efc57c27691e",
+   "disposition": "UNIQUE_DATA_NOT_REQUIRED",
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT"
+  },
+  {
+   "database": "football_r3_scoped_history_20261014",
+   "oid": 3848995,
+   "batch_started_at": "2026-11-12T20:29:12.180333+00:00",
+   "finished_at": "2026-11-12T20:30:16.946685+00:00",
+   "reclaimed_bytes": 15808191,
+   "approved_by": "owner:e1ff84c2db014370",
+   "evidence_sha256": "05f95db6ccff021491039ec92f00d7474784cf0afdeee58732c5a3b8ee38980f",
+   "disposition": "UNIQUE_DATA_NOT_REQUIRED",
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT"
+  },
+  {
+   "database": "football_v4_identity_recovery_upgrade_20261102",
+   "oid": 59268754,
+   "batch_started_at": "2026-11-12T20:29:12.180678+00:00",
+   "finished_at": "2026-11-12T20:30:54.916461+00:00",
+   "reclaimed_bytes": 18306751,
+   "approved_by": "owner:e1ff84c2db014370",
+   "evidence_sha256": "22cb51479a676bfb3b51eda276cc80f6269158144215cdf515c741696ac5b78c",
+   "disposition": "UNIQUE_DATA_NOT_REQUIRED",
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT"
+  },
+  {
+   "database": "football_p02_rehearsal_2",
+   "oid": 116013236,
+   "batch_started_at": "2026-11-12T20:29:12.180994+00:00",
+   "finished_at": "2026-11-12T20:31:43.713131+00:00",
+   "reclaimed_bytes": 11182708415,
+   "approved_by": "owner:e1ff84c2db014370",
+   "evidence_sha256": "2a0ef0650644579fea7626e3c842477f8b5e02cd97aa34b64f71d46523395c47",
+   "disposition": "UNIQUE_DATA_NOT_REQUIRED",
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT"
+  },
+  {
+   "database": "football_v4_identity_recovery_20261102",
+   "oid": 59220531,
+   "batch_started_at": "2026-11-12T20:29:12.18129+00:00",
+   "finished_at": "2026-11-12T20:32:20.298889+00:00",
+   "reclaimed_bytes": 20985535,
+   "approved_by": "owner:e1ff84c2db014370",
+   "evidence_sha256": "a330f596b0abc0c9831be09ebf3520ec188e6cb79195a605e19371e223407fb1",
+   "disposition": "UNIQUE_DATA_NOT_REQUIRED",
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT"
+  },
+  {
+   "database": "football_restore_test_3f302f20623f44e3b9dd4b726e879b87",
+   "oid": 123022109,
+   "batch_started_at": "2026-11-12T20:29:12.181574+00:00",
+   "finished_at": "2026-11-12T20:33:13.668324+00:00",
+   "reclaimed_bytes": 18175679,
+   "approved_by": "owner:e1ff84c2db014370",
+   "evidence_sha256": "8a3b44cef9ce487dd6a59589ccac9b5b8e921e011f8b4fee1628f130fdd6dd41",
+   "disposition": "UNIQUE_DATA_NOT_REQUIRED",
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT"
+  },
+  {
+   "database": "football_v4_identity_recovery_projection_20261102",
+   "oid": 59504797,
+   "batch_started_at": "2026-11-12T20:29:12.181853+00:00",
+   "finished_at": "2026-11-12T20:34:19.544059+00:00",
+   "reclaimed_bytes": 17872575,
+   "approved_by": "owner:e1ff84c2db014370",
+   "evidence_sha256": "3c678ac96d9fe068be22d3b90793cd76531fc6f38bacfbd62890fd5f4f522635",
+   "disposition": "UNIQUE_DATA_NOT_REQUIRED",
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT"
+  },
+  {
+   "database": "football_r3_contract_clean_20261014",
+   "oid": 3767413,
+   "batch_started_at": "2026-11-12T20:29:12.182068+00:00",
+   "finished_at": "2026-11-12T20:35:28.475523+00:00",
+   "reclaimed_bytes": 16930495,
+   "approved_by": "owner:e1ff84c2db014370",
+   "evidence_sha256": "1a535bc299daeccc4454f73e0e2d051cdb21382bf434a029068c6673506a46ba",
+   "disposition": "UNIQUE_DATA_NOT_REQUIRED",
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT"
+  },
+  {
+   "database": "football_v4_expansion_r03_20261101",
+   "oid": 52291857,
+   "batch_started_at": "2026-11-12T20:29:12.182324+00:00",
+   "finished_at": "2026-11-12T20:35:59.573544+00:00",
+   "reclaimed_bytes": 24467135,
+   "approved_by": "owner:e1ff84c2db014370",
+   "evidence_sha256": "207f6a9c62128eae0976327791e917a0c3edecbf330a63945000ad7741628195",
+   "disposition": "UNIQUE_DATA_NOT_REQUIRED",
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT"
+  },
+  {
+   "database": "football_v4_unblocking_r02_replay_20261102",
+   "oid": 56476102,
+   "batch_started_at": "2026-11-12T20:29:12.182601+00:00",
+   "finished_at": "2026-11-12T20:36:33.913226+00:00",
+   "reclaimed_bytes": 18020031,
+   "approved_by": "owner:e1ff84c2db014370",
+   "evidence_sha256": "20430a1b515652ec2ac7d7fb5693a5a2399aaf28dfdbdc5e0091e5fce225db4c",
+   "disposition": "UNIQUE_DATA_NOT_REQUIRED",
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT"
+  },
+  {
+   "database": "football_v4_unblocking_r02_20261102",
+   "oid": 56470165,
+   "batch_started_at": "2026-11-12T20:29:12.182836+00:00",
+   "finished_at": "2026-11-12T20:37:15.210854+00:00",
+   "reclaimed_bytes": 17864383,
+   "approved_by": "owner:e1ff84c2db014370",
+   "evidence_sha256": "2f325ca4c04666069c681e5349a2e23ca4edb5261882ba92378caaf7fa1f5628",
+   "disposition": "UNIQUE_DATA_NOT_REQUIRED",
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT"
+  },
+  {
+   "database": "football_r3_contract_final_20261014",
+   "oid": 3794524,
+   "batch_started_at": "2026-11-12T20:29:12.183074+00:00",
+   "finished_at": "2026-11-12T20:37:50.955851+00:00",
+   "reclaimed_bytes": 16996031,
+   "approved_by": "owner:e1ff84c2db014370",
+   "evidence_sha256": "48449d90504c199f635559c3500895d77433be7104d9c99e7691b4ed02e3b212",
+   "disposition": "UNIQUE_DATA_NOT_REQUIRED",
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT"
+  },
+  {
+   "database": "football_v4_phase14_shadow_20261101",
+   "oid": 43445843,
+   "batch_started_at": "2026-11-12T20:29:12.18332+00:00",
+   "finished_at": "2026-11-12T20:38:19.963872+00:00",
+   "reclaimed_bytes": 77108927,
+   "approved_by": "owner:e1ff84c2db014370",
+   "evidence_sha256": "77783cae2569394048701f1fb7aab602937437c99a532d2f90041b376229a3cb",
+   "disposition": "UNIQUE_DATA_NOT_REQUIRED",
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT"
+  },
+  {
+   "database": "football_architecture_v2_shadow_20261016",
+   "oid": 5479407,
+   "batch_started_at": "2026-11-12T20:29:12.183636+00:00",
+   "finished_at": "2026-11-12T20:39:11.975125+00:00",
+   "reclaimed_bytes": 6937638591,
+   "approved_by": "owner:e1ff84c2db014370",
+   "evidence_sha256": "5cf792f99125f80990f6104bb36b858847e53967a391f604ca72c974a150ed8e",
+   "disposition": "UNIQUE_DATA_NOT_REQUIRED",
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT"
+  },
+  {
+   "database": "football_v4_identity_recovery_a_tests_20261102",
+   "oid": 59250647,
+   "batch_started_at": "2026-11-12T20:29:12.183882+00:00",
+   "finished_at": "2026-11-12T20:40:19.81517+00:00",
+   "reclaimed_bytes": 19920575,
+   "approved_by": "owner:e1ff84c2db014370",
+   "evidence_sha256": "2f4afd348d9c772863b4a963f7ff7ee698131e19a068debf612197c8c135757e",
+   "disposition": "UNIQUE_DATA_NOT_REQUIRED",
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT"
+  },
+  {
+   "database": "football_p02_rehearsal",
+   "oid": 113450652,
+   "batch_started_at": "2026-11-12T20:29:12.184119+00:00",
+   "finished_at": "2026-11-12T20:40:54.355414+00:00",
+   "reclaimed_bytes": 9853572799,
+   "approved_by": "owner:e1ff84c2db014370",
+   "evidence_sha256": "d8ad7953f160a2340836a63ed1ba2091859cda9a947f9c15f1b260f4d3eda9cc",
+   "disposition": "UNIQUE_DATA_NOT_REQUIRED",
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT"
+  },
+  {
+   "database": "football_r3_final_test_20261015",
+   "oid": 4978047,
+   "batch_started_at": "2026-11-12T20:29:12.184357+00:00",
+   "finished_at": "2026-11-12T20:41:27.785887+00:00",
+   "reclaimed_bytes": 16004799,
+   "approved_by": "owner:e1ff84c2db014370",
+   "evidence_sha256": "463488e42113c8e0bcb2cf0b1e7e3fffdbcde094dad787e2cd5937d452333e9e",
+   "disposition": "UNIQUE_DATA_NOT_REQUIRED",
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT"
+  }
+ ],
+ "remaining_databases": [
+  {
+   "database": "football",
+   "oid": 16384,
+   "size_bytes": 16121255615,
+   "finding": null,
+   "unique_identity_rows": null,
+   "evidence_sha256": null,
+   "comparison_observed_at": null,
+   "active_connections": 8
+  },
+  {
+   "database": "football_phase3a_serie_a_20260922",
+   "oid": 851202,
+   "size_bytes": 1730229951,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 1384145,
+   "evidence_sha256": "9057a7b59ed7fa44635af3926a8b5281dd4d1e9daa8ab1ee47278357c785e788",
+   "comparison_observed_at": "2026-11-12T19:36:05.410485+00:00",
+   "active_connections": 0
+  },
+  {
+   "database": "football_liga_f_recovery_20260910",
+   "oid": 848116,
+   "size_bytes": 1073051327,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 854091,
+   "evidence_sha256": "507a3aa5025e0361449055f76aa66681d36b23b72c5fc42e4fda1a14ec4e6349",
+   "comparison_observed_at": "2026-11-12T19:36:06.513216+00:00",
+   "active_connections": 0
+  },
+  {
+   "database": "football_v4_access_r04_20261102",
+   "oid": 53668853,
+   "size_bytes": 158668479,
+   "finding": "UNIQUE_CANONICAL_IDENTITIES_PRESENT",
+   "unique_identity_rows": 210251,
+   "evidence_sha256": "c24a3d9b18afb4e0a601054135bd2310d77e0745c9f930db14b242cabcdc3f28",
+   "comparison_observed_at": "2026-11-12T19:36:07.981073+00:00",
+   "active_connections": 0
+  },
+  {
+   "database": "postgres",
+   "oid": 5,
+   "size_bytes": 7853759,
+   "finding": null,
+   "unique_identity_rows": null,
+   "evidence_sha256": null,
+   "comparison_observed_at": null,
+   "active_connections": 0
+  }
+ ],
+ "statsbomb_retained_files": {
+  "verification": [
+   {
+    "root": "phase3a-serie-a-qualification-20260922",
+    "manifests": 4,
+    "files": 1142,
+    "ok": 1142,
+    "missing": 0,
+    "mismatch": 0,
+    "keys": [
+     "logical_sha256",
+     "media_type",
+     "path",
+     "physical_sha256",
+     "raw_path",
+     "relative_path",
+     "row_count",
+     "sha256",
+     "size_bytes",
+     "status"
+    ]
+   },
+   {
+    "root": "football-data-liga-f-recovery-2026-09-10",
+    "manifests": 4,
+    "files": 722,
+    "ok": 722,
+    "missing": 0,
+    "mismatch": 0,
+    "keys": [
+     "logical_sha256",
+     "media_type",
+     "path",
+     "physical_sha256",
+     "raw_path",
+     "relative_path",
+     "row_count",
+     "sha256",
+     "size_bytes",
+     "status"
+    ]
+   }
+  ],
+  "note": "Every file listed in the four manifests of each tree (source manifests by raw_path, dataset manifests by relative_path) exists and matches its SHA-256."
+ },
+ "governed_backup_coverage": {
+  "snapshot_id": "02376823fb7e10ece806430361a68274473c6933340ef307646735e51e0ed400",
+  "retained_locations": 65,
+  "covers": ".local/football-data/football_data_uk (Football-Data.co.uk originals), .local/reports/sprint2, .local/storage-protection recovered originals",
+  "does_not_cover": [
+   "football_phase3a_serie_a_20260922",
+   "football_liga_f_recovery_20260910",
+   "football_v4_access_r04_20261102",
+   ".local/phase3a-serie-a-qualification-20260922",
+   ".local/football-data-liga-f-recovery-2026-09-10",
+   ".local/shadow-v4"
+  ]
+ },
+ "host": {
+  "filesystem": "/System/Volumes/Data",
+  "total_bytes": 994662584320,
+  "free_bytes": 372864040960,
+  "note": "df at 21:52 UTC, after this task built web dependencies in its own worktree"
+ },
+ "docker": {
+  "runtime": "OrbStack 2.2.5",
+  "vm_filesystem_used_bytes": 22635610112,
+  "vm_filesystem_size_bytes": 376816271360,
+  "volumes": {
+   "football-forecasting_postgres-data": 20220000000,
+   "crypto-analyser_postgres_data (unattached, not MatchForge)": 923400000,
+   "football-gate-a_prototype-postgres": 70000000,
+   "anonymous volume of matchforge-global-audit-pg": 75530000,
+   "football-forecasting_redis-data": 280
+  },
+  "images_reclaimable_bytes": 429900000,
+  "unused_images": [
+   "public.ecr.aws/sam/emulation-nodejs14.x:rapid-1.51.0-x86_64 (415 MB, 4 years old)",
+   "alpine:3 (14.6 MB)"
+  ],
+  "build_cache_bytes": 0,
+  "stale_docker_desktop_disk": {
+   "path": "~/Library/Containers/com.docker.docker/Data/vms/0/data/Docker.raw",
+   "apparent_bytes": 63999836160,
+   "allocated_bytes": 4818436096,
+   "last_modified": "2026-07-30",
+   "note": "Docker Desktop is not the running runtime; outside MatchForge"
+  }
+ },
+ "repository_local": {
+  "measured_by": "du -sk per top-level entry",
+  "bytes": {
+   ".local/remediation": 77187743744,
+   ".local/data-status-remediation": 11751071744,
+   ".local/football-data": 11416510464,
+   ".local/foundation": 10095992832,
+   ".local/forecast-readiness-execution": 9905455104,
+   ".local/shadow-v4": 8767426560,
+   ".local/storage-rollout": 5026521088,
+   ".local/p02": 4818640896,
+   ".local/backups": 3535183872,
+   ".local/storage-protection": 2761080832,
+   ".local/provider-wide-acquisition": 1915408384,
+   ".local/data-recovery-current": 1816596480,
+   ".local/phase3a-serie-a-qualification-20260922": 1330991104,
+   ".local/reports": 1303101440,
+   ".local/go-cache": 1277673472,
+   ".local/go-mod-cache": 1227657216,
+   "target": 1189445632,
+   ".local/issue04": 1161228288,
+   ".tools": 1093058560,
+   ".local/uv-cache": 992387072,
+   ".venv": 878276608,
+   ".local/football-data-liga-f-recovery-2026-09-10": 841797632,
+   ".local/p02-audit": 718053376,
+   "web/node_modules": 552910848,
+   ".local/codex-code-intelligence-benchmark": 459067392,
+   ".local/storage-lifecycle": 353632256,
+   ".local/rollback": 344530944,
+   "web/.next": 295591936,
+   ".local/releases": 264142848,
+   "dist": 257802240,
+   ".local/data-recovery-followup": 209977344
+  }
+ },
+ "large_files": {
+  "operating_dumps": {
+   "count": 14,
+   "bytes": 24460318060,
+   "paths": [
+    ".local/backups/pre-bulk-reconcile-20260930.sql",
+    ".local/backups/football_crosswalk_preapply_20261004.dump",
+    ".local/backups/football_crosswalk_preapply_20261004_postsync.dump",
+    ".local/storage-rollout/operating-before.dump",
+    ".local/storage-rollout/operating-before-dispositions.dump",
+    ".local/p02/rollout/operating-before.dump",
+    ".local/p02/rehearsal-2/operating.dump",
+    ".local/data-status-remediation/populated/database.dump",
+    ".local/forecast-readiness-execution/operating-backup-before-phase-a/database.dump",
+    ".local/forecast-readiness-execution/operating-backup-before-native-correction/database.dump",
+    ".local/forecast-readiness-execution/resume-20261109/operating-backup-before-team-name-refresh/database.dump",
+    ".local/forecast-readiness-execution/resume-20261109/operating-backup-before-scope-holds/database.dump",
+    ".local/forecast-readiness-execution/resume-20261109/operating-backup-before-native-correction/database.dump",
+    ".local/forecast-readiness-execution/resume-20261109/operating-backup-before-context-indexes/database.dump"
+   ],
+   "note": "Pre-change rollback dumps from 30 September to 12 November. Superseded as recovery points by the VERIFIED_GOVERNED_SCOPE snapshot, but each is cited as rollback evidence by its own record."
+  },
+  "r3_identity_review_rounds": {
+   "path": ".local/remediation/matchforge-audit/phases/R3",
+   "tree_bytes": 52108054528,
+   "identity_review_files": 40,
+   "identity_review_bytes": 42937768102,
+   "note": "Repeated JSON rounds of RETAINED_SEASON_TEAM_IDENTITY_REVIEW.json and TEAM_IDENTITY_REVIEW.json (0.9-1.8 GB each) from 14-16 October."
+  }
+ },
+ "idle_activity_counters": {
+  "observation": "Between 21:22:55 and 21:38:48 UTC each idle non-operating database gained 32 xact_commit and about 26,000 tup_returned with no client session (autovacuum visits). sessions, session_time, tup_inserted/updated/deleted and temp_files stayed unchanged.",
+  "consequence": "The five-hour policy measures activity from client sessions and row writes, not transaction or read counters."
+ }
+}
