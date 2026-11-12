@@ -87,10 +87,8 @@ def record_run(run: Run, jobs: list[Job], metrics: dict[str, list[Timings]]) -> 
 
 
 def record_full_run(run: Run, jobs: list[Job], metrics: dict[str, list[Timings]]) -> None:
-    full = next(
-        (job for job in jobs if job["name"] == "Build, integration and browser checks"), None
-    )
-    if not full or full["conclusion"] != "success":
+    build_jobs = {"Build, integration and browser checks", "Build and static checks"}
+    if not any(job["name"] in build_jobs and job["conclusion"] == "success" for job in jobs):
         return
     # Exclude selective and full reruns from latency budgets; track reruns separately.
     if run["run_attempt"] != 1:
