@@ -1,3 +1,4 @@
+import json
 import os
 import pwd
 import shlex
@@ -155,3 +156,23 @@ def test_enrollment_checks_complete_scope_and_capacity_before_creating_directory
     with pytest.raises((BackupError, RecoveryReferenceError), match="Insufficient|unresolved"):
         backup_destination.main()
     assert list(tmp_path.iterdir()) == []
+
+
+def test_failed_restic_command_records_private_cause(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    binary = tmp_path / "restic"
+    binary.write_text(
+        "#!/bin/sh\necho 'unable to create lock: repository is already locked' >&2\nexit 1\n"
+    )
+    binary.chmod(0o700)
+    runner = Restic(tmp_path, {}, device_id=None)
+    runner.binary = str(binary)
+    with pytest.raises(BackupError) as error:
+        runner.run("backup", "--json")
+    assert error.value.code == "VERIFICATION_FAILED"
+    diagnostic = json.loads(capsys.readouterr().err)
+    assert diagnostic["status"] == "RECOVERY_DIAGNOSTIC"
+    assert diagnostic["private_restic_command"] == "backup"
+    assert diagnostic["private_restic_exit_code"] == 1
+    assert "already locked" in diagnostic["private_restic_stderr"]

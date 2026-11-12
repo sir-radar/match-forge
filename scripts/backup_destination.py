@@ -201,6 +201,18 @@ class Restic:
         finally:
             os.close(descriptor)
         if result.returncode:
+            # Restic never prints the password; the protected run log keeps the cause.
+            print(
+                json.dumps(
+                    {
+                        "status": "RECOVERY_DIAGNOSTIC",
+                        "private_restic_command": arguments[0] if arguments else None,
+                        "private_restic_exit_code": result.returncode,
+                        "private_restic_stderr": result.stderr[-2000:],
+                    }
+                ),
+                file=sys.stderr,
+            )
             code = (
                 "CREDENTIALS"
                 if "wrong password" in result.stderr.lower()
