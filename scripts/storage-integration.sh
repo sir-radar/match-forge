@@ -7,6 +7,24 @@ export FOOTBALL_PROJECT_ROOT
 . "$FOOTBALL_PROJECT_ROOT/scripts/toolchain.sh"
 cd "$FOOTBALL_PROJECT_ROOT"
 
+shard=${INTEGRATION_SHARD:-all}
+case "$shard" in
+	all|storage|browser) ;;
+	*) printf 'Unknown integration shard: %s\n' "$shard" >&2; exit 8 ;;
+esac
+
+set --
+while read -r group test_file; do
+	case "$group" in
+		storage|browser) ;;
+		*) printf 'Unknown integration test group: %s\n' "$group" >&2; exit 8 ;;
+	esac
+	if [ "$shard" = all ] || [ "$shard" = "$group" ]; then
+		set -- "$@" "$test_file"
+	fi
+done < scripts/storage-integration-tests.txt
+[ "$#" -gt 0 ] || { printf 'Integration shard is empty: %s\n' "$shard" >&2; exit 8; }
+
 [ -f .env ] || { printf 'Missing .env\n' >&2; exit 8; }
 set -a
 . ./.env
@@ -58,77 +76,11 @@ export DATABASE_URL
 goose -dir infrastructure/migrations postgres "$TEST_DATABASE_URL" up
 goose -dir infrastructure/migrations postgres "$TEST_DATABASE_URL" up
 DATABASE_URL="$TEST_DATABASE_URL" FOOTBALL_DATA_ROOT="$TEST_DATA_ROOT" \
-uv run pytest -q tests/integration/test_database_isolation.py \
-	tests/integration/test_canonical_storage.py \
-	tests/integration/test_recovery_dispositions.py \
-	tests/integration/test_source_manifest_bindings.py \
-	tests/integration/test_fixture_lane_history.py \
-	tests/integration/test_form_policy_source.py \
-	tests/integration/test_market_capability_report.py \
-	tests/integration/test_identity_history.py \
-	tests/integration/test_canonical_resource_resolutions.py \
-	tests/integration/test_provider_resource_capabilities.py \
-	tests/integration/test_provider_data_audit_storage.py \
-	tests/integration/test_provider_resource_authority.py \
-	tests/integration/test_resource_coverage_storage.py \
-	tests/integration/test_fixture_read_model.py \
-	tests/integration/test_work_orchestration.py \
-	tests/integration/test_work_metrics.py \
-	tests/integration/test_lock_order.py \
-	tests/integration/test_resource_observation_artifacts.py \
-	tests/integration/test_rich_observation_artifacts.py \
-	tests/integration/test_understat_pipeline.py \
-	tests/integration/test_v4_development_isolation.py \
-	tests/integration/test_experimental_database_storage.py \
-	tests/integration/test_artifact_retirement.py \
-	tests/integration/test_integrity_verification.py \
-	tests/integration/test_provider_observability.py \
-	tests/integration/test_canonical_ingestion.py \
-	tests/integration/test_dependency_storage.py \
-	tests/integration/test_f3_fixture_persistence.py \
-	tests/integration/test_sprint1_fixtures.py \
-	tests/integration/test_cli.py \
-	tests/integration/test_postgres_recovery.py \
-	tests/integration/test_complete_recovery.py \
-	tests/integration/test_restic_backup.py \
-	tests/integration/test_manual_backup_work.py \
-	tests/integration/test_storage_lifecycle.py \
-	tests/integration/test_team_elo.py \
-	tests/integration/test_product_historical_backfill.py \
-	tests/integration/test_product_history_queue.py \
-	tests/integration/test_product_history_provider_work.py \
-	tests/integration/test_domain_work_adapters.py \
-	tests/integration/test_concurrency_boundaries.py \
-	tests/integration/test_concurrency_stress.py \
-	tests/integration/test_fixture_features.py tests/integration/test_runtime_model_registry.py \
-	tests/integration/test_postmatch.py tests/integration/test_domain_metrics.py \
-	tests/integration/test_admin_operations.py \
-	tests/integration/test_resolution_identity_database.py \
-	tests/integration/test_resolution_views.py tests/integration/test_resolution_decisions.py tests/integration/test_resolution_batches.py tests/integration/test_resolution_recovery.py \
-	tests/integration/test_resolution_files.py tests/integration/test_resolution_parity.py \
-	tests/integration/test_resolution_stages.py tests/integration/test_resolution_retirement.py \
-	tests/integration/test_live_context.py \
-	tests/integration/test_operational_provider_sync.py \
-	tests/integration/test_worker_publication_fencing.py \
-	tests/integration/test_product_fixture_reconciliation.py \
-	tests/integration/test_product_identity_admission.py \
-	tests/integration/test_product_identity_upgrade.py \
-	tests/integration/test_provider_native_upgrade.py \
-	tests/integration/test_team_identity_correction.py \
-	tests/integration/test_history_acquisition.py \
-	tests/integration/test_history_diagnostics_api.py \
-    tests/integration/test_api_football_budget.py \
-    tests/integration/test_operational_recovery.py \
-    tests/integration/test_operational_refresh.py \
-    tests/integration/test_product_forecast_worklist.py \
-    tests/integration/test_product_score_bucket_upgrade.py \
-    tests/integration/test_product_analytics.py \
-    tests/integration/test_public_reports.py \
-    tests/integration/test_external_prediction_recovery.py \
-    tests/integration/test_remediation_browser.py \
-    tests/integration/test_serving_limits.py
+uv run pytest -q "$@"
 
 uv run python -m tests.integration.database_isolation verify
-(cd go/api && go test ./internal/storage ./internal/app -run "TestDatabase|TestStorageDatabase|TestStorageAdmin")
+if [ "$shard" != browser ]; then
+	(cd go/api && go test ./internal/storage ./internal/app -run "TestDatabase|TestStorageDatabase|TestStorageAdmin")
+fi
 
 printf 'Fresh-database migration and canonical storage invariants passed\n'

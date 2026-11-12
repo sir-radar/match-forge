@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import re
 from pathlib import Path
 
 import pytest
@@ -87,8 +86,17 @@ def test_marker_does_not_reveal_token() -> None:
 
 def test_every_integration_test_runs_under_the_harness() -> None:
     """An integration test missing from the harness silently never runs in CI."""
-    harness = (ROOT / "scripts" / "storage-integration.sh").read_text()
-    listed = set(re.findall(r"tests/integration/(test_\w+\.py)", harness))
-    present = {path.name for path in (ROOT / "tests" / "integration").glob("test_*.py")}
-    assert present - listed == set()
-    assert listed - present == set()
+    manifest = ROOT / "scripts" / "storage-integration-tests.txt"
+    listed = {}
+    for line in manifest.read_text().splitlines():
+        shard, path = line.split()
+        assert shard in {"storage", "browser"}, line
+        assert path not in listed, path
+        listed[path] = shard
+
+    present = {
+        path.relative_to(ROOT).as_posix()
+        for path in (ROOT / "tests" / "integration").glob("test_*.py")
+    }
+    assert listed.keys() == present
+    assert set(listed.values()) == {"storage", "browser"}

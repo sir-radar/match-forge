@@ -75,10 +75,10 @@ jobs:
           PYTEST_ADDOPTS: --durations=10
         run: make test-coverage
 
-  full:
+  build:
     needs: changes
     if: needs.changes.outputs.code_changed == 'true'
-    name: Build, integration and browser checks
+    name: Build and static checks
     runs-on: ubuntu-24.04
     timeout-minutes: 45
 
@@ -206,20 +206,8 @@ jobs:
           jq -r '.vulnerabilities[] | "::warning title=Dependency advisory::\(.id): \(.dependency.name) \(.dependency.version); see retained audit artifact and reviewed operational disposition."' .local/dependency-audit/python.json
           jq -c '.summary' .local/dependency-audit/python.json
 
-      - name: Install pnpm 10.19.0
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-        with:
-          version: 10.19.0
-
-      - name: Install Node.js 24
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: '24'
-          cache: pnpm
-          cache-dependency-path: web/pnpm-lock.yaml
-
-      - name: Install locked frontend dependencies
-        run: cd web && pnpm install --frozen-lockfile
+      - name: Set up locked frontend environment
+        uses: ./.github/actions/setup-frontend
 
       - name: Record locked dependency advisory inventory
         shell: bash
@@ -262,24 +250,108 @@ jobs:
       - name: Build Python, Rust, Go and frontend
         run: make build web-build
 
+      - name: Package integration and frontend builds
+        run: |
+          tar -czf .local/ci-integration.tar.gz \
+            .local/bin/football-api .local/bin/matchforge-storage .tools/bin/goose .tools/bin/restic
+          tar --exclude=web/.next/cache -czf .local/ci-frontend.tar.gz web/.next
+
+      - name: Upload integration build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ci-integration
+          path: .local/ci-integration.tar.gz
+          if-no-files-found: error
+          include-hidden-files: true
+          compression-level: 0
+          overwrite: true
+          retention-days: 7
+
+      - name: Upload frontend build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ci-frontend
+          path: .local/ci-frontend.tar.gz
+          if-no-files-found: error
+          include-hidden-files: true
+          compression-level: 0
+          overwrite: true
+          retention-days: 7
+
+  integration:
+    needs: build
+    name: Integration (${{ matrix.shard }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [storage, browser]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Install Go 1.27.3
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version: '1.27.3'
+          cache: false
+
+      - name: Restore project Go caches
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            .local/go-cache
+            .local/go-mod-cache
+            .local/golangci-lint-cache
+          key: project-go-${{ runner.os }}-${{ runner.arch }}-1.27.3-${{ hashFiles('go/api/go.mod', 'go/api/go.sum') }}-${{ github.sha }}
+          restore-keys: |
+            project-go-${{ runner.os }}-${{ runner.arch }}-1.27.3-${{ hashFiles('go/api/go.mod', 'go/api/go.sum') }}-
+            project-go-${{ runner.os }}-${{ runner.arch }}-1.27.3-
+
+      - name: Set up locked Python environment
+        uses: ./.github/actions/setup-python
+        with:
+          save-cache: 'false'
+
+      - name: Download integration build
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ci-integration
+          path: .local
+
+      - name: Unpack integration build
+        run: tar -xzf .local/ci-integration.tar.gz
+
+      - name: Set up locked frontend environment
+        if: matrix.shard == 'browser'
+        uses: ./.github/actions/setup-frontend
+
+      - name: Download frontend build
+        if: matrix.shard == 'browser'
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ci-frontend
+          path: .local
+
+      - name: Unpack frontend build
+        if: matrix.shard == 'browser'
+        run: tar -xzf .local/ci-frontend.tar.gz
+
       - name: Install Playwright system packages
-        # Keep slow but progressing downloads within the observed success range.
+        if: matrix.shard == 'browser'
         timeout-minutes: 15
         working-directory: web
-        run: |
-          # Fail on incomplete indexes instead of waiting on stale mirrors.
-          sudo tee /etc/apt/apt.conf.d/99-matchforge-ci >/dev/null <<'APT'
-          Acquire::Retries "1";
-          Acquire::http::Timeout "20";
-          Acquire::https::Timeout "20";
-          APT::Update::Error-Mode "any";
-          APT
-          pnpm exec playwright install-deps chromium webkit
+        run: bash ../.github/scripts/install-playwright-deps.sh chromium
 
       - name: Install Playwright browsers
+        if: matrix.shard == 'browser'
         timeout-minutes: 4
         working-directory: web
-        run: pnpm exec playwright install --only-shell chromium webkit
+        run: pnpm exec playwright install --only-shell chromium
 
       - name: Create ephemeral CI environment
         id: integration-env
@@ -301,14 +373,49 @@ jobs:
             printf 'REDIS_ADDR=127.0.0.1:56379\n'
           } > .env
 
-      - name: Run isolated database integration and live browser checks
+      - name: Run isolated database integration shard
         env:
-          PYTEST_ADDOPTS: --durations=10
+          INTEGRATION_SHARD: ${{ matrix.shard }}
+          PYTEST_ADDOPTS: --durations=0 --durations-min=1.0
         run: make integration-check
 
       - name: Tear down integration services
         if: always() && steps.integration-env.outcome == 'success'
         run: docker compose down --volumes
+
+  browser:
+    needs: build
+    name: Standalone browser and accessibility checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up locked frontend environment
+        uses: ./.github/actions/setup-frontend
+
+      - name: Download frontend build
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ci-frontend
+          path: .local
+
+      - name: Unpack frontend build
+        run: tar -xzf .local/ci-frontend.tar.gz
+
+      - name: Install Playwright system packages
+        timeout-minutes: 15
+        working-directory: web
+        run: bash ../.github/scripts/install-playwright-deps.sh chromium webkit
+
+      - name: Install Playwright browsers
+        timeout-minutes: 4
+        working-directory: web
+        run: pnpm exec playwright install --only-shell chromium webkit
 
       - name: Run standalone browser and accessibility checks
         working-directory: web
@@ -316,7 +423,7 @@ jobs:
 
   check:
     name: Deterministic checks
-    needs: [changes, python-unit, full]
+    needs: [changes, python-unit, build, integration, browser]
     if: always()
     runs-on: ubuntu-24.04
     timeout-minutes: 2
@@ -327,13 +434,18 @@ jobs:
           CLASSIFICATION: ${{ needs.changes.result }}
           CODE_CHANGED: ${{ needs.changes.outputs.code_changed }}
           PYTHON_RESULT: ${{ needs.python-unit.result }}
-          FULL_RESULT: ${{ needs.full.result }}
+          BUILD_RESULT: ${{ needs.build.result }}
+          INTEGRATION_RESULT: ${{ needs.integration.result }}
+          BROWSER_RESULT: ${{ needs.browser.result }}
         run: |
           if [[ "$CLASSIFICATION" != success ]]; then
             exit 1
           fi
           case "$CODE_CHANGED" in
-            true)  [[ "$PYTHON_RESULT" == success && "$FULL_RESULT" == success ]] ;;
-            false) [[ "$PYTHON_RESULT" == skipped && "$FULL_RESULT" == skipped ]] ;;
+            true) expected=success ;;
+            false) expected=skipped ;;
             *)     exit 1 ;;
           esac
+          for result in "$PYTHON_RESULT" "$BUILD_RESULT" "$INTEGRATION_RESULT" "$BROWSER_RESULT"; do
+            [[ "$result" == "$expected" ]] || exit 1
+          done
