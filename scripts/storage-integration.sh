@@ -66,7 +66,7 @@ export TEST_DATABASE_URL
 
 # Mark the new database disposable for this run and record the cluster's protected
 # identities. Every test connection is then checked by stable identity, not by name.
-isolation_exports=$(uv run python -m tests.integration.database_isolation prepare "$TEST_DATABASE_URL" "${DATABASE_URL:-}")
+isolation_exports=$(MATCHFORGE_TEST_OWNER_PID=$$ uv run python -m tests.integration.database_isolation prepare "$TEST_DATABASE_URL" "${DATABASE_URL:-}")
 set -a
 eval "$isolation_exports"
 set +a

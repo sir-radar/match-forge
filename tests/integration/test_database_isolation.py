@@ -222,3 +222,48 @@ def test_sweep_drops_only_databases_of_its_own_run() -> None:
                 admin.execute(
                     SQL("DROP DATABASE IF EXISTS {} WITH (FORCE)").format(Identifier(name))
                 )
+
+
+def test_prepare_registers_the_run_database_for_lifecycle_cleanup(
+    authoritative_copy: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The record binds cluster, OID, name, marker digests and the owning process."""
+    current = isolation.IsolationPolicy.from_environment()
+    url = os.environ["TEST_DATABASE_URL"]
+    name = "football_lifecycle_run_" + uuid4().hex
+    with _raw_connect(psycopg.conninfo.make_conninfo(url, dbname="postgres")) as admin:
+        admin.execute(SQL("CREATE DATABASE {}").format(Identifier(name)))
+        try:
+            found = admin.execute("SELECT oid FROM pg_database WHERE datname=%s", (name,))
+            oid = found.fetchone()[0]
+            run = isolation.IsolationPolicy(
+                "d" * 64, current.cluster, frozenset(), frozenset(), f"{current.cluster}:{oid}"
+            )
+            # The harness registers outside the guard; the test bypasses it the same way.
+            monkeypatch.setattr(
+                isolation.psycopg, "connect", lambda target, **_: _raw_connect(target)
+            )
+            monkeypatch.setenv(isolation.OWNER_PID_ENV, str(os.getpid()))
+            assert isolation.register_lifecycle(url, run, name) is False  # not authoritative
+            assert isolation.register_lifecycle(authoritative_copy, run, name) is True
+            with _raw_connect(authoritative_copy) as connection:
+                row = connection.execute(
+                    "SELECT resource_class, state, identity, owner_ref FROM "
+                    "football.storage_lifecycle_resources WHERE identity_key=%s",
+                    (f"postgres:{current.cluster}:{oid}",),
+                ).fetchone()
+                events = connection.execute(
+                    "SELECT event FROM football.storage_lifecycle_events WHERE identity_key=%s",
+                    (f"postgres:{current.cluster}:{oid}",),
+                ).fetchall()
+        finally:
+            admin.execute(SQL("DROP DATABASE IF EXISTS {} WITH (FORCE)").format(Identifier(name)))
+    assert row is not None
+    resource_class, state, identity, owner = row
+    assert (resource_class, state) == ("TEST_DATABASE", "ACTIVE")
+    assert identity == {"system_identifier": current.cluster, "oid": oid, "database": name}
+    assert owner["marker"] == isolation.marker_for(run.token)
+    assert owner["owned_marker"] == isolation.owned_marker_for(run.token)
+    assert owner["pid"] == os.getpid() and owner["process_started"]
+    assert run.token not in str(owner)
+    assert events == [("REGISTERED",)]

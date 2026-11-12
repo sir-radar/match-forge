@@ -42,7 +42,7 @@ API_DATABASE_CREATED=1
 export API_TEST_DATABASE
 . "$FOOTBALL_PROJECT_ROOT/scripts/toolchain.sh"
 API_TEST_DATABASE_URL=$(uv run python -c 'import os; from psycopg.conninfo import make_conninfo; print(make_conninfo(os.environ["DATABASE_URL"], dbname=os.environ["API_TEST_DATABASE"]))' )
-isolation_exports=$(uv run python -m tests.integration.database_isolation prepare "$API_TEST_DATABASE_URL" "$DATABASE_URL")
+isolation_exports=$(MATCHFORGE_TEST_OWNER_PID=$$ uv run python -m tests.integration.database_isolation prepare "$API_TEST_DATABASE_URL" "$DATABASE_URL")
 set -a
 eval "$isolation_exports"
 set +a
