@@ -231,6 +231,7 @@ func (application *App) storageScheduleTick(ctx context.Context, policy storage.
 	if err := runner.pool.QueryRow(ctx, `SELECT to_regclass('football.storage_reviews') IS NOT NULL`).Scan(&ready); err != nil || !ready {
 		return
 	}
+	application.runAutomaticStorageCleanup(ctx)
 	for _, kind := range []SyncType{SyncStorageLifecycle, SyncManualBackup} {
 		request, due, err := runner.storageScheduledRequest(ctx, kind, policy)
 		if err == nil && due {
@@ -278,4 +279,18 @@ func storageScheduleID(kind SyncType, slot string) string {
 	b[6] = (b[6] & 15) | 64
 	b[8] = (b[8] & 63) | 128
 	return fmt.Sprintf("%x-%x-%x-%x-%x", b[:4], b[4:6], b[6:8], b[8:10], b[10:])
+}
+
+// runAutomaticStorageCleanup applies only explicitly approved automatic policies.
+// Without such a policy, scheduling remains read-only.
+func (application *App) runAutomaticStorageCleanup(ctx context.Context) {
+	if application.storage == nil || !application.storageReady(ctx) {
+		return
+	}
+	submitted, err := application.storage.RunAutomaticCleanup(ctx)
+	if err != nil {
+		application.logger.Warn("automatic storage cleanup blocked", "error", err)
+	} else if submitted > 0 {
+		application.logger.Info("automatic storage cleanup submitted", "resources", submitted)
+	}
 }

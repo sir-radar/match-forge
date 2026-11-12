@@ -178,6 +178,29 @@ path is free. Quarantine frees no space; Permanently delete does. A restart
 cancels pending operations and marks interrupted ones failed unless the exact
 resource is verifiably absent.
 
+### Policy-managed automation
+
+Scheduled work stays read-only unless the policy file declares an
+`automatic_cleanup` rule. Two rule kinds exist, and both apply only to direct
+children of a `managed_roots` entry with class `disposable`:
+
+```json
+"managed_roots": [{ "path": "/abs/cache-root", "class": "disposable", "description": "regenerable build cache" }],
+"protected_paths": ["/abs/cache-root/keep"],
+"automatic_cleanup": [{ "action": "DELETE_DISPOSABLE", "root": "/abs/cache-root",
+  "min_age_seconds": 604800, "max_per_run": 20,
+  "approved_by": "owner", "approval_record": "docs/governance/decision-events/<file>" }]
+```
+
+`PURGE_EXPIRED_QUARANTINE` permanently deletes quarantined items from that root
+after the quarantine retention. Validation refuses rules without an approval
+record, with more than 100 items per run, with less than one day of age, or on a
+root that is not disposable. Databases, worktrees, review roots and protected
+paths are never selected. Each run is limited to the policy's
+`interval_seconds`, goes through the same preview, revalidation, database
+protection trigger and measurement as a manual action, and is recorded with the
+actor `policy:<approval_record>:<approved_by>`.
+
 Deploying these controls authorizes nothing. Each existing-resource deletion
 still needs the owner's resource-specific approval through this workflow.
 

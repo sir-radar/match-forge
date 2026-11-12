@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
@@ -254,4 +256,36 @@ func TestUnverifiedAuthorityDisablesDatabaseDeletion(t *testing.T) {
 	r = assessDatabase(databaseRow{name: "football", oid: 5, size: 1}, auth, databaseFacts{}, time.Now(), time.Hour)
 	r.finish()
 	expect(t, !(r.Classification != Protected || r.Allows(ActionDelete) || r.Role != "AUTHORITATIVE_OPERATING_DATABASE"), "authoritative OID not protected: %+v", r)
+}
+
+func TestDatabaseAutomaticCleanupDeletesOnlyApprovedAgedDisposableFiles(t *testing.T) {
+	pool := databasePool(t)
+	InvalidateMeasurements()
+	p, root := managedPolicy(t, "disposable")
+	p.IntervalSeconds = 3600
+	p.AutomaticCleanup = []AutomaticPolicy{{Action: "DELETE_DISPOSABLE", Root: root, MinAgeSeconds: 86400, MaxPerRun: 10, ApprovedBy: "owner", ApprovalRecord: "test-approval"}}
+	old := time.Now().Add(-72 * time.Hour)
+	for _, name := range []string{"aged", "evidence", "fresh"} {
+		write(t, filepath.Join(root, name, "x.bin"), 1000)
+		if name != "fresh" {
+			must(t, os.Chtimes(filepath.Join(root, name), old, old))
+		}
+	}
+	m := &Manager{Pool: pool, Policy: &p}
+	submitted, err := m.RunAutomaticCleanup(context.Background())
+	must(t, err)
+	expect(t, submitted == 1, "submitted %d", submitted)
+	deadline := time.Now().Add(20 * time.Second)
+	for time.Now().Before(deadline) {
+		if _, err = os.Stat(filepath.Join(root, "aged")); os.IsNotExist(err) {
+			break
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+	_, agedErr := os.Stat(filepath.Join(root, "aged"))
+	_, evidenceErr := os.Stat(filepath.Join(root, "evidence", "x.bin"))
+	_, freshErr := os.Stat(filepath.Join(root, "fresh", "x.bin"))
+	expect(t, os.IsNotExist(agedErr) && evidenceErr == nil && freshErr == nil, "automatic cleanup outcome aged=%v evidence=%v fresh=%v", agedErr, evidenceErr, freshErr)
+	again, err := m.RunAutomaticCleanup(context.Background())
+	expect(t, err == nil && again == 0, "automatic cleanup ignored its interval: %d %v", again, err)
 }

@@ -171,6 +171,7 @@ func assessFile(ctx context.Context, p Policy, root ManagedRoot, path string, ro
 		r.classify(ReviewRequired, "measurement incomplete; size is a lower bound")
 		r.Details["measurement_errors"] = m.errors
 	}
+	r.Details["modified_at"] = info.ModTime().UTC()
 	r.EvidenceSHA256 = Fingerprint(r.IdentityKey, path, m.allocated, m.entries, info.ModTime().UnixNano())
 	if root.Class == "disposable" {
 		r.classify(Eligible, "direct child of an owner-declared disposable root ("+root.Path+")")

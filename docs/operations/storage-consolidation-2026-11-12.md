@@ -236,3 +236,23 @@ Remediation needs owner decisions, not file recovery:
 
 Until then each storage resource is judged on its own dependencies: these gaps
 block nothing except the resources that register them.
+
+## Stage H — automated maintenance
+
+Implemented, not enabled. The existing storage schedule (daily dry-run review
+and verified backup) gains narrowly scoped automatic cleanup that runs only when
+the reviewed policy contains an `automatic_cleanup` rule: purge expired
+quarantine or delete aged children of an owner-declared disposable root, bounded
+per run and rate-limited to the review interval. Databases, worktrees and
+review-class roots are excluded by validation and selection. The operating API
+has no policy configured (`MATCHFORGE_STORAGE_POLICY` is empty), so nothing
+runs. Tests cover selection bounds, root scoping, validation and an end-to-end
+run that deletes only the aged disposable child, spares the protected and fresh
+ones and respects the interval.
+
+Recommended first policy once deployed: managed roots for regenerable output
+only (for example task `node_modules`, `.next`, `target` and `.venv` trees
+outside the primary checkout, and `.local/backup-staging`), class `disposable`,
+with the 9 November audit's evidence directories listed as `protected_paths`.
+The evidence trees under `.local` (about 131 GB) should be a `review` root so
+each directory needs its own owner disposition.

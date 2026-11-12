@@ -207,3 +207,31 @@ func expect(t *testing.T, ok bool, message string, args ...any) {
 		t.Fatalf(message, args...)
 	}
 }
+
+func TestAutomaticCleanupSelectsOnlyAgedDisposableFilesWithinBounds(t *testing.T) {
+	now := time.Now()
+	old, recent := now.Add(-72*time.Hour), now.Add(-time.Hour)
+	rule := AutomaticPolicy{Action: "DELETE_DISPOSABLE", Root: "/m/cache", MinAgeSeconds: 86400, MaxPerRun: 2, ApprovedBy: "owner", ApprovalRecord: "rec"}
+	file := func(name string, modified time.Time, backend string, class Classification) ManagedResource {
+		r := ManagedResource{Backend: backend, Name: name, Location: "/m/cache/" + name, IdentityKey: "k" + name, Classification: class, Details: map[string]any{"modified_at": modified}}
+		r.finish()
+		r.ResourceID = name
+		return r
+	}
+	resources := []ManagedResource{
+		file("a", old, "filesystem", Eligible), file("b", recent, "filesystem", Eligible), file("c", old, "filesystem", Protected),
+		file("d", old, "postgres", Eligible), file("e", old, "git", Eligible), file("f", old, "filesystem", Eligible), file("g", old, "filesystem", Eligible),
+	}
+	ids, action := automaticCandidates(resources, rule, now)
+	expect(t, action == ActionDelete && len(ids) == 2 && ids[0] == "a" && ids[1] == "f", "unexpected automatic selection %v", ids)
+	elsewhere := rule
+	elsewhere.Root = "/m/other"
+	ids, _ = automaticCandidates(resources, elsewhere, now)
+	expect(t, len(ids) == 0, "selected outside the approved root: %v", ids)
+	p := Policy{ManagedRoots: []ManagedRoot{{Path: "/m/cache", Class: "review"}}}
+	expect(t, p.validateAutomatic(rule) != nil, "automatic cleanup accepted a review root")
+	p.ManagedRoots[0].Class = "disposable"
+	expect(t, p.validateAutomatic(rule) == nil, "valid automatic rule rejected")
+	rule.MinAgeSeconds = 60
+	expect(t, p.validateAutomatic(rule) != nil, "automatic cleanup accepted an age under one day")
+}

@@ -49,6 +49,8 @@ type Manager struct {
 	Logger     *slog.Logger
 	Now        func() time.Time
 	run        sync.Mutex
+	// lastAutomatic is guarded by run.
+	lastAutomatic time.Time
 }
 
 type Inventory struct {
