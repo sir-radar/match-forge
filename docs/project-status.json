@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-12T15:10:00Z",
+  "updated_at": "2026-11-12T15:15:00Z",
   "unified_architecture_investigation": {
     "status": "PASS_WITH_WARNINGS",
     "scope": "CURRENT_TASK.md revision 3; architecture investigation/planning only",
@@ -90,7 +90,8 @@
     "RATIFY_RECOVERY_SCOPE_MIGRATION_AS_APPLIED_V1",
     "APPLY_RECOVERY_SCOPE_DISPOSITIONS_V1",
     "APPLY_SOURCE_MANIFEST_BINDING_MIGRATION_V1",
-    "APPLY_FDUK_RAW_FILE_BINDINGS_V1"
+    "APPLY_FDUK_RAW_FILE_BINDINGS_V1",
+    "APPLY_SOURCE_SNAPSHOT_PATH_DIGEST_GUARD_V1"
   ],
   "closed_routes": [
     {
@@ -4122,19 +4123,23 @@
         "migration": "202611120300_source_manifest_raw_file_bindings",
         "migration_status": "APPLIED",
         "applied_at": "2026-11-12T15:03:16Z",
-        "goose_version": 202611120300,
-        "pending_migrations_after": [
-          "202611120400_source_snapshot_path_digest_guard"
-        ],
+        "goose_version": 202611120400,
+        "pending_migrations_after": [],
         "bindings_authorized": true,
         "bindings_recorded": 47,
-        "path_digest_guard_authorized": false,
+        "path_digest_guard_authorized": true,
         "preservation": "UNCHANGED",
         "full_recovery_verified": false,
         "bindings_decision_id": "APPLY_FDUK_RAW_FILE_BINDINGS_V1",
         "bindings_decision_ref": "docs/evidence/owner-decision-apply-fduk-raw-file-bindings-2026-11-12.json",
         "bindings_status": "APPLIED",
-        "bindings_recorded_at": "2026-11-12T15:06:12Z"
+        "bindings_recorded_at": "2026-11-12T15:06:12Z",
+        "path_digest_guard_decision_id": "APPLY_SOURCE_SNAPSHOT_PATH_DIGEST_GUARD_V1",
+        "path_digest_guard_decision_ref": "docs/evidence/owner-decision-apply-path-digest-guard-migration-2026-11-12.json",
+        "path_digest_guard_migration": "202611120400_source_snapshot_path_digest_guard",
+        "path_digest_guard_status": "APPLIED",
+        "path_digest_guard_applied_at": "2026-11-12T15:08:33Z",
+        "valid_ingestion_after_guard": "VERIFIED"
       }
     },
     "recovery_scope_migration": {
@@ -4164,6 +4169,6 @@
       "backup": "VERIFIED_LOGICAL_DUMP_RESTORE_CHECK",
       "full_recovery_verified": false
     },
-    "required_next_action": "A separate owner decision is needed to apply migration 202611120400; migration 202611120300 and the 47 Football-Data.co.uk raw-file bindings are applied. Diagnose the failing admin backup; FULL_RECOVERY still needs a fresh Admin backup and isolated restore verification. The rehearsal databases, football_v4_integration_20261110 and the StatsBomb and P02 databases stay until separately reviewed."
+    "required_next_action": "Migrations 202611120300 and 202611120400 and the 47 Football-Data.co.uk raw-file bindings are applied; no migration is pending. Merge PR 213 so backups capture the bound checksums. Diagnose the failing admin backup; FULL_RECOVERY still needs a fresh Admin backup and isolated restore verification. The rehearsal databases, football_v4_integration_20261110 and the StatsBomb and P02 databases stay until separately reviewed."
   }
 }

@@ -1,0 +1,69 @@
+{
+ "contract": "OwnerDecisionRecordV1",
+ "decision_id": "APPLY_SOURCE_SNAPSHOT_PATH_DIGEST_GUARD_V1",
+ "recorded_at": "2026-11-12T15:15:00Z",
+ "title": "Apply migration 202611120400 to the operating database",
+ "status": "APPROVED",
+ "owner": "repository owner / sir-radar",
+ "map": "storage-lifecycle",
+ "ticket": "Football-Data.co.uk manifest path digests (PR 206) and recovery reference follow-up (PR 213)",
+ "source": {
+  "execution_instruction": "Owner answer 'Approve 0400' in this session to the question whether to apply migration 202611120400 (the path-digest guard), after 202611120300 and the 47 bindings were applied.",
+  "migration_file": "infrastructure/migrations/202611120400_source_snapshot_path_digest_guard.sql",
+  "migration_file_identical_to_main": true,
+  "rehearsal_ref": "docs/evidence/fduk-binding-rehearsal-2026-11-12.json"
+ },
+ "authorizes": [
+  "applying migration 202611120400_source_snapshot_path_digest_guard to the operating football database with `goose up-by-one`"
+ ],
+ "explicitly_not_authorized": [
+  "changing, deleting or re-registering any source snapshot, source resource or dependent row",
+  "deleting any database, dump or file, including the rehearsal copy",
+  "claiming FULL_RECOVERY"
+ ],
+ "pre_checks": {
+  "goose_version": 202611120300,
+  "pending": ["202611120400_source_snapshot_path_digest_guard"],
+  "binding_rows": 47,
+  "operating_state_unchanged_since_bindings": true,
+  "path_digest_registrations_total": 48,
+  "latest_path_digest_registration": "2026-10-07T15:42:57Z",
+  "snapshots_in_last_7_days": 12068,
+  "path_digest_snapshots_in_last_7_days": 0
+ },
+ "application": {
+  "method": "goose -dir infrastructure/migrations postgres $DATABASE_URL up-by-one",
+  "started_at": "2026-11-12T15:08:33Z",
+  "goose_output": "OK   202611120400_source_snapshot_path_digest_guard.sql (22.91ms)",
+  "goose_version_after": 202611120400,
+  "pending_after": []
+ },
+ "verification": {
+  "guard_trigger": "source_snapshots_reject_path_digest, enabled",
+  "rejection_probe": {
+   "method": "path-digest INSERT in a force-rolled-back transaction with lock_timeout 2s",
+   "result": "source snapshot manifest checksum is the digest of its path",
+   "rows_left": 0
+  },
+  "unchanged": {
+   "snapshots_47": {"rows": 47, "md5": "c13936d2cf8dd3b4f1de80f9c3acf9af"},
+   "resources_of_47": {"rows": 45, "md5": "95f0dea3ae4d6391a7627237f4b32e47"},
+   "source_manifest_corrections": {"rows": 1, "md5": "7838e7ecad6e2b1ed02fd5b28d94e6d6"},
+   "recovery_scope_retirements": {"rows": 160, "md5": "c82b94367d4958d695ad7dc992b0dc44"},
+   "binding_rows": 47,
+   "dependent_rows_of_the_47": 721931
+  },
+  "valid_ingestion_after_guard": {
+   "observed_until": "2026-11-12T15:09:18Z",
+   "new_source_snapshots": 1,
+   "first_new_snapshot_at": "2026-11-12T15:09:18.145558Z",
+   "sync_runs_finished": [
+    {"sync_type": "FOTMOB_SYNC", "status": "SUCCEEDED", "finished_at": "2026-11-12T15:08:50Z"},
+    {"sync_type": "PUBLIC_REPORTS", "status": "SUCCEEDED", "finished_at": "2026-11-12T15:08:54Z"},
+    {"sync_type": "PITCHAPI_SYNC", "status": "SUCCEEDED", "finished_at": "2026-11-12T15:09:09Z"}
+   ],
+   "failed_sync_runs": 0
+  }
+ },
+ "notes": "No migration is pending. FULL_RECOVERY still needs a fresh Admin backup and isolated restore verification; the last Admin backup recorded VERIFICATION_FAILED."
+}
