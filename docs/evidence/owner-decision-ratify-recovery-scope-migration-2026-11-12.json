@@ -1,0 +1,43 @@
+{
+ "contract": "OwnerDecisionRecordV1",
+ "decision_id": "RATIFY_RECOVERY_SCOPE_MIGRATION_AS_APPLIED_V1",
+ "recorded_at": "2026-11-12T09:40:00Z",
+ "title": "Ratify migration 202611120200 on the operating database as applied by make dev",
+ "status": "APPROVED",
+ "owner": "repository owner / sir-radar",
+ "map": "storage-lifecycle",
+ "ticket": "Governed recovery-scope retirements and manifest correction (PR 202)",
+ "source": {
+  "execution_instruction": "Owner answer 'Ratify it as applied' in this session to the question how to treat migration 202611120200, which was already on the operating database. The migration had not been applied through an authorized rollout: `make dev` (whose `dev` target depends on `migrate`, running `goose up` against DATABASE_URL) was started from an interactive shell on the main checkout at 2026-11-12T07:50:46Z and applied it at 07:50:48Z.",
+  "release_git_sha": "95e1b59d466781f1f280c39778e7b90aa8e819f7",
+  "migration_file": "infrastructure/migrations/202611120200_recovery_scope_retirements.sql",
+  "migration_file_sha256": "8a4a1342ce3cdd79209bf9497936565f67f31e155fae35053ca67083a5da8131"
+ },
+ "observed_state": {
+  "observed_at": "2026-11-12T09:35:00Z",
+  "database": "football",
+  "database_oid": 16384,
+  "goose_version": 202611120200,
+  "goose_applied_at": "2026-11-12T07:50:48.010546Z",
+  "unapplied_goose_rows": 0,
+  "recovery_scope_retirements_rows": 0,
+  "source_manifest_corrections_rows": 0,
+  "method": "read-only queries with default_transaction_read_only=on"
+ },
+ "authorizes": [
+  "keeping migration 202611120200_recovery_scope_retirements on the operating database as applied, without rollback",
+  "recording the operating database as at goose version 202611120200 in project status"
+ ],
+ "requires": [
+  "no recovery-scope retirement or manifest correction row on the operating database until a separate decision authorizes the 161 dispositions",
+  "the next Admin backup and isolated restore to report the schema at 202611120200"
+ ],
+ "explicitly_not_authorized": [
+  "applying the 161 recovery-scope dispositions (160 synthetic registration retirements and one OpenFootball manifest correction)",
+  "any correction of the 47 football-data.co.uk path-hashed manifest registrations",
+  "deleting, quarantining or purging any database, dump or file",
+  "applying any later migration, or treating `make dev` as an authorized migration path",
+  "claiming FULL_RECOVERY"
+ ],
+ "notes": "The migration was not rehearsed on a restored copy and no pre-migration backup was taken for it. It adds two append-only tables and their guards and changes no existing rows; both tables were empty when observed."
+}
