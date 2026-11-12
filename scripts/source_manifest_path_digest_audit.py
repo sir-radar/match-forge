@@ -161,9 +161,7 @@ def audit(connection: Connection[Any], data_root: Path) -> dict[str, Any]:
             }
         )
     ids = [item["keys"]["id"] for item in findings]
-    resource_ids = [
-        resource["id"] for item in findings for resource in item["resources"]
-    ]
+    resource_ids = [resource["id"] for item in findings for resource in item["resources"]]
     created = [item["created_at"] for item in findings]
     migration = connection.execute("SELECT max(version_id) FROM goose_db_version").fetchone()
     return {
