@@ -1,0 +1,912 @@
+{
+  "contract": "RehearsalDatabaseUniqueRowReviewV1",
+  "recorded_at": "2026-11-12T20:30:00Z",
+  "operating_database": {
+    "name": "football",
+    "identity_key": "postgres:7679328148388241450:16384"
+  },
+  "comparison_source": "Storage Management comparisons queued from the Admin page on 2026-11-12 (all 23 non-operating databases, every comparison SUCCEEDED)",
+  "method": "Read-only (default_transaction_read_only=on). Rows absent from football by primary key were matched to football by natural key: product_match_history_decisions by fixture_id; product_read_reports by (report_kind, scope_id, horizon); product_forecasts by (fixture_id, model_label); product_provider_mapping_decisions by semantic_sha256, then (provider_code, provider_match_id); resource_observation_artifacts by (contract_name, artifact_sha256), then (contract_name, provider code, source_record_key), and separately whether source_sha256 is retained in football.source_resources; source_snapshots by (provider code, source_identity, source_revision), then manifest_sha256; source_resources by sha256; provider mappings by (provider code, provider id); player_source_facts by fact_sha256, then provider player. Identity-only tables (teams, players, matches, seasons, competitions) are judged through their provider mappings. Experimental raw resources and observation artifacts were checked on disk by SHA-256 file name under .local/shadow-v4/.",
+  "comparison_results": {
+    "eligible_without_review": {
+      "football_p02_restore_check": 9664485055,
+      "football_v4_integration_20261110": 9391486655,
+      "football_fduk_binding_rehearsal_20261112": 11259287231
+    },
+    "not_reviewed_here_genuine_unique_history": [
+      "football_phase3a_serie_a_20260922",
+      "football_liga_f_recovery_20260910"
+    ]
+  },
+  "databases": {
+    "football_p02_rehearsal_2": {
+      "group": "OPERATING_EQUIVALENT",
+      "logical_bytes": 11182708415,
+      "evidence_sha256": "2a0ef0650644579fea7626e3c842477f8b5e02cd97aa34b64f71d46523395c47",
+      "comparison_observed_at": "2026-11-12T20:35:05.357063+01:00",
+      "classification": "REVIEW_REQUIRED",
+      "unique_rows": 271632,
+      "natural_key_present_in_operating": 271632,
+      "tables": {
+        "product_match_history_decisions": {
+          "absent": 14542,
+          "comparison_absent": 14542,
+          "natural_key_present_in_operating": 14542,
+          "natural_key_only_here": 0,
+          "by_key": {
+            "same fixture_id": 14542
+          }
+        },
+        "product_read_reports": {
+          "absent": 257090,
+          "comparison_absent": 257090,
+          "natural_key_present_in_operating": 257090,
+          "natural_key_only_here": 0,
+          "by_key": {
+            "same report_kind+scope_id+horizon": 257090,
+            "same report_kind+scope_id": 257090
+          }
+        }
+      },
+      "proposal": "DISPOSE_THEN_DELETE",
+      "proposed_disposition_text": "Rehearsal copy (football_p02_rehearsal_2). Every row absent from the operating database by primary key has an operating equivalent by natural key (same fixture for history decisions, same report kind, scope and horizon for read reports, same semantic hash for mapping decisions), or is an observation derived from raw source bytes that the operating database retains. Exceptions are listed in docs/evidence/remaining-database-unique-rows-2026-11-12.json. Approved for deletion; the operating database is backed up in VERIFIED_RECOVERABLE snapshot bb97d6fd."
+    },
+    "football_p02_rehearsal": {
+      "group": "OPERATING_EQUIVALENT",
+      "logical_bytes": 9853572799,
+      "evidence_sha256": "d8ad7953f160a2340836a63ed1ba2091859cda9a947f9c15f1b260f4d3eda9cc",
+      "comparison_observed_at": "2026-11-12T20:35:24.824448+01:00",
+      "classification": "REVIEW_REQUIRED",
+      "unique_rows": 20950,
+      "natural_key_present_in_operating": 20947,
+      "tables": {
+        "product_forecasts": {
+          "absent": 74,
+          "comparison_absent": 74,
+          "natural_key_present_in_operating": 71,
+          "natural_key_only_here": 3,
+          "by_key": {
+            "same fixture_id+model_label": 71,
+            "same fixture_id": 71
+          }
+        },
+        "product_match_history_decisions": {
+          "absent": 14797,
+          "comparison_absent": 14797,
+          "natural_key_present_in_operating": 14797,
+          "natural_key_only_here": 0,
+          "by_key": {
+            "same fixture_id": 14797
+          }
+        },
+        "product_provider_mapping_decisions": {
+          "absent": 20,
+          "comparison_absent": 20,
+          "natural_key_present_in_operating": 20,
+          "natural_key_only_here": 0,
+          "by_key": {
+            "same semantic_sha256": 20,
+            "same provider match": 20
+          }
+        },
+        "product_read_reports": {
+          "absent": 6059,
+          "comparison_absent": 6059,
+          "natural_key_present_in_operating": 6059,
+          "natural_key_only_here": 0,
+          "by_key": {
+            "same report_kind+scope_id+horizon": 6059,
+            "same report_kind+scope_id": 6059
+          }
+        }
+      },
+      "proposal": "DISPOSE_THEN_DELETE",
+      "proposed_disposition_text": "Rehearsal copy (football_p02_rehearsal). Every row absent from the operating database by primary key has an operating equivalent by natural key (same fixture for history decisions, same report kind, scope and horizon for read reports, same semantic hash for mapping decisions), or is an observation derived from raw source bytes that the operating database retains. Exceptions are listed in docs/evidence/remaining-database-unique-rows-2026-11-12.json. Approved for deletion; the operating database is backed up in VERIFIED_RECOVERABLE snapshot bb97d6fd."
+    },
+    "football_architecture_v2_shadow_20261016": {
+      "group": "OPERATING_EQUIVALENT",
+      "logical_bytes": 6937638591,
+      "evidence_sha256": "5cf792f99125f80990f6104bb36b858847e53967a391f604ca72c974a150ed8e",
+      "comparison_observed_at": "2026-11-12T20:36:03.670067+01:00",
+      "classification": "REVIEW_REQUIRED",
+      "unique_rows": 3153523,
+      "natural_key_present_in_operating": 106580,
+      "tables": {
+        "product_read_reports": {
+          "absent": 12,
+          "comparison_absent": 12,
+          "natural_key_present_in_operating": 12,
+          "natural_key_only_here": 0,
+          "by_key": {
+            "same report_kind+scope_id+horizon": 12,
+            "same report_kind+scope_id": 12
+          }
+        },
+        "resource_observation_artifacts": {
+          "absent": 3153511,
+          "comparison_absent": 3153511,
+          "natural_key_present_in_operating": 106568,
+          "natural_key_only_here": 3046943,
+          "by_key": {
+            "raw source bytes in operating source_resources": 3153511,
+            "same source record": 106568
+          }
+        }
+      },
+      "proposal": "DISPOSE_THEN_DELETE",
+      "proposed_disposition_text": "Rehearsal copy (football_architecture_v2_shadow_20261016). Every row absent from the operating database by primary key has an operating equivalent by natural key (same fixture for history decisions, same report kind, scope and horizon for read reports, same semantic hash for mapping decisions), or is an observation derived from raw source bytes that the operating database retains. Exceptions are listed in docs/evidence/remaining-database-unique-rows-2026-11-12.json. Approved for deletion; the operating database is backed up in VERIFIED_RECOVERABLE snapshot bb97d6fd."
+    },
+    "football_v4_phase14_shadow_20261101": {
+      "group": "DERIVED_FROM_OPERATING_RAW_SOURCE",
+      "logical_bytes": 77108927,
+      "evidence_sha256": "77783cae2569394048701f1fb7aab602937437c99a532d2f90041b376229a3cb",
+      "comparison_observed_at": "2026-11-12T20:36:08.253246+01:00",
+      "classification": "REVIEW_REQUIRED",
+      "unique_rows": 84610,
+      "natural_key_present_in_operating": 0,
+      "tables": {
+        "resource_observation_artifacts": {
+          "absent": 84610,
+          "comparison_absent": 84610,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 84610,
+          "by_key": {
+            "raw source bytes in operating source_resources": 84610
+          }
+        }
+      },
+      "proposal": "DISPOSE_THEN_DELETE",
+      "proposed_disposition_text": "Shadow or replay copy (football_v4_phase14_shadow_20261101). Its only unique rows are resource observation artifacts derived from raw source bytes that the operating database retains in source_resources; they can be regenerated. Approved for deletion."
+    },
+    "football_v4_unblocking_r02_20261102": {
+      "group": "DERIVED_FROM_OPERATING_RAW_SOURCE",
+      "logical_bytes": 17864383,
+      "evidence_sha256": "2f325ca4c04666069c681e5349a2e23ca4edb5261882ba92378caaf7fa1f5628",
+      "comparison_observed_at": "2026-11-12T20:36:10.700058+01:00",
+      "classification": "REVIEW_REQUIRED",
+      "unique_rows": 10,
+      "natural_key_present_in_operating": 0,
+      "tables": {
+        "resource_observation_artifacts": {
+          "absent": 10,
+          "comparison_absent": 10,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 10,
+          "by_key": {
+            "raw source bytes in operating source_resources": 10
+          }
+        }
+      },
+      "proposal": "DISPOSE_THEN_DELETE",
+      "proposed_disposition_text": "Shadow or replay copy (football_v4_unblocking_r02_20261102). Its only unique rows are resource observation artifacts derived from raw source bytes that the operating database retains in source_resources; they can be regenerated. Approved for deletion."
+    },
+    "football_v4_unblocking_r02_replay_20261102": {
+      "group": "DERIVED_FROM_OPERATING_RAW_SOURCE",
+      "logical_bytes": 18020031,
+      "evidence_sha256": "20430a1b515652ec2ac7d7fb5693a5a2399aaf28dfdbdc5e0091e5fce225db4c",
+      "comparison_observed_at": "2026-11-12T20:36:09.887125+01:00",
+      "classification": "REVIEW_REQUIRED",
+      "unique_rows": 10,
+      "natural_key_present_in_operating": 0,
+      "tables": {
+        "resource_observation_artifacts": {
+          "absent": 10,
+          "comparison_absent": 10,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 10,
+          "by_key": {
+            "raw source bytes in operating source_resources": 10
+          }
+        }
+      },
+      "proposal": "DISPOSE_THEN_DELETE",
+      "proposed_disposition_text": "Shadow or replay copy (football_v4_unblocking_r02_replay_20261102). Its only unique rows are resource observation artifacts derived from raw source bytes that the operating database retains in source_resources; they can be regenerated. Approved for deletion."
+    },
+    "football_v4_identity_recovery_projection_20261102": {
+      "group": "DERIVED_FROM_OPERATING_RAW_SOURCE",
+      "logical_bytes": 17872575,
+      "evidence_sha256": "3c678ac96d9fe068be22d3b90793cd76531fc6f38bacfbd62890fd5f4f522635",
+      "comparison_observed_at": "2026-11-12T20:36:10.40391+01:00",
+      "classification": "REVIEW_REQUIRED",
+      "unique_rows": 10,
+      "natural_key_present_in_operating": 0,
+      "tables": {
+        "resource_observation_artifacts": {
+          "absent": 10,
+          "comparison_absent": 10,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 10,
+          "by_key": {
+            "raw source bytes in operating source_resources": 10
+          }
+        }
+      },
+      "proposal": "DISPOSE_THEN_DELETE",
+      "proposed_disposition_text": "Shadow or replay copy (football_v4_identity_recovery_projection_20261102). Its only unique rows are resource observation artifacts derived from raw source bytes that the operating database retains in source_resources; they can be regenerated. Approved for deletion."
+    },
+    "football_v4_access_r04_20261102": {
+      "group": "EXPERIMENTAL_ACQUISITION_FILES_RETAINED",
+      "logical_bytes": 158668479,
+      "evidence_sha256": "c24a3d9b18afb4e0a601054135bd2310d77e0745c9f930db14b242cabcdc3f28",
+      "comparison_observed_at": "2026-11-12T20:36:07.981073+01:00",
+      "classification": "REVIEW_REQUIRED",
+      "unique_rows": 210251,
+      "natural_key_present_in_operating": 0,
+      "tables": {
+        "resource_observation_artifacts": {
+          "absent": 203721,
+          "comparison_absent": 203721,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 203721,
+          "by_key": {}
+        },
+        "source_resources": {
+          "absent": 3265,
+          "comparison_absent": 3265,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 3265,
+          "by_key": {}
+        },
+        "source_snapshots": {
+          "absent": 3265,
+          "comparison_absent": 3265,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 3265,
+          "by_key": {}
+        }
+      },
+      "proposal": "KEEP_UNTIL_R04_HANDOFF_CLOSES",
+      "proposed_disposition_text": "EXPERIMENTAL_ONLY acquisition database (football_v4_access_r04_20261102). Its unique source snapshots, source resources and observation artifacts index files that remain on disk under .local/shadow-v4/ (every raw resource and observation file verified present by SHA-256 name on 2026-11-12); the raw files are retained and only this registry is removed. Approved for deletion."
+    },
+    "football_v4_expansion_r03_20261101": {
+      "group": "EXPERIMENTAL_ACQUISITION_FILES_RETAINED",
+      "logical_bytes": 24467135,
+      "evidence_sha256": "207f6a9c62128eae0976327791e917a0c3edecbf330a63945000ad7741628195",
+      "comparison_observed_at": "2026-11-12T20:36:08.445595+01:00",
+      "classification": "REVIEW_REQUIRED",
+      "unique_rows": 9848,
+      "natural_key_present_in_operating": 9345,
+      "tables": {
+        "resource_observation_artifacts": {
+          "absent": 9704,
+          "comparison_absent": 9704,
+          "natural_key_present_in_operating": 9337,
+          "natural_key_only_here": 367,
+          "by_key": {
+            "same source record": 9337,
+            "raw source bytes in operating source_resources": 1190
+          }
+        },
+        "source_resources": {
+          "absent": 72,
+          "comparison_absent": 72,
+          "natural_key_present_in_operating": 8,
+          "natural_key_only_here": 64,
+          "by_key": {
+            "same content sha256": 8
+          }
+        },
+        "source_snapshots": {
+          "absent": 72,
+          "comparison_absent": 72,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 72,
+          "by_key": {}
+        }
+      },
+      "proposal": "DISPOSE_THEN_DELETE",
+      "proposed_disposition_text": "EXPERIMENTAL_ONLY acquisition database (football_v4_expansion_r03_20261101). Its unique source snapshots, source resources and observation artifacts index files that remain on disk under .local/shadow-v4/ (every raw resource and observation file verified present by SHA-256 name on 2026-11-12); the raw files are retained and only this registry is removed. Approved for deletion."
+    },
+    "football_v4_identity_recovery_20261102": {
+      "group": "SYNTHETIC_TEST_FIXTURES",
+      "logical_bytes": 20985535,
+      "evidence_sha256": "a330f596b0abc0c9831be09ebf3520ec188e6cb79195a605e19371e223407fb1",
+      "comparison_observed_at": "2026-11-12T20:36:08.92172+01:00",
+      "classification": "REVIEW_REQUIRED",
+      "unique_rows": 18,
+      "natural_key_present_in_operating": 2,
+      "tables": {
+        "competitions": {
+          "absent": 1,
+          "note": "identity-only table; judged through provider mappings"
+        },
+        "match_provider_mappings": {
+          "absent": 1,
+          "comparison_absent": 1,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 1,
+          "by_key": {}
+        },
+        "matches": {
+          "absent": 1,
+          "note": "identity-only table; judged through provider mappings"
+        },
+        "player_provider_mappings": {
+          "absent": 2,
+          "comparison_absent": 2,
+          "natural_key_present_in_operating": 1,
+          "natural_key_only_here": 1,
+          "by_key": {
+            "same provider player": 1
+          }
+        },
+        "player_source_facts": {
+          "absent": 2,
+          "comparison_absent": 2,
+          "natural_key_present_in_operating": 1,
+          "natural_key_only_here": 1,
+          "by_key": {
+            "same provider player": 1
+          }
+        },
+        "players": {
+          "absent": 2,
+          "note": "identity-only table; judged through provider mappings"
+        },
+        "seasons": {
+          "absent": 1,
+          "note": "identity-only table; judged through provider mappings"
+        },
+        "source_resources": {
+          "absent": 3,
+          "comparison_absent": 3,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 3,
+          "by_key": {}
+        },
+        "source_snapshots": {
+          "absent": 1,
+          "comparison_absent": 1,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 1,
+          "by_key": {}
+        },
+        "team_provider_mappings": {
+          "absent": 2,
+          "comparison_absent": 2,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 2,
+          "by_key": {}
+        },
+        "teams": {
+          "absent": 2,
+          "note": "identity-only table; judged through provider mappings"
+        }
+      },
+      "proposal": "DISPOSE_THEN_DELETE",
+      "proposed_disposition_text": "Test database (football_v4_identity_recovery_20261102). Its unique rows are synthetic contract or recovery fixtures (placeholder teams, fabricated provider ids, test snapshots), not football data. Approved for deletion."
+    },
+    "football_v4_identity_recovery_a_tests_20261102": {
+      "group": "SYNTHETIC_TEST_FIXTURES",
+      "logical_bytes": 19920575,
+      "evidence_sha256": "2f4afd348d9c772863b4a963f7ff7ee698131e19a068debf612197c8c135757e",
+      "comparison_observed_at": "2026-11-12T20:36:09.325427+01:00",
+      "classification": "REVIEW_REQUIRED",
+      "unique_rows": 18,
+      "natural_key_present_in_operating": 2,
+      "tables": {
+        "competitions": {
+          "absent": 1,
+          "note": "identity-only table; judged through provider mappings"
+        },
+        "match_provider_mappings": {
+          "absent": 1,
+          "comparison_absent": 1,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 1,
+          "by_key": {}
+        },
+        "matches": {
+          "absent": 1,
+          "note": "identity-only table; judged through provider mappings"
+        },
+        "player_provider_mappings": {
+          "absent": 2,
+          "comparison_absent": 2,
+          "natural_key_present_in_operating": 1,
+          "natural_key_only_here": 1,
+          "by_key": {
+            "same provider player": 1
+          }
+        },
+        "player_source_facts": {
+          "absent": 2,
+          "comparison_absent": 2,
+          "natural_key_present_in_operating": 1,
+          "natural_key_only_here": 1,
+          "by_key": {
+            "same provider player": 1
+          }
+        },
+        "players": {
+          "absent": 2,
+          "note": "identity-only table; judged through provider mappings"
+        },
+        "seasons": {
+          "absent": 1,
+          "note": "identity-only table; judged through provider mappings"
+        },
+        "source_resources": {
+          "absent": 3,
+          "comparison_absent": 3,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 3,
+          "by_key": {}
+        },
+        "source_snapshots": {
+          "absent": 1,
+          "comparison_absent": 1,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 1,
+          "by_key": {}
+        },
+        "team_provider_mappings": {
+          "absent": 2,
+          "comparison_absent": 2,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 2,
+          "by_key": {}
+        },
+        "teams": {
+          "absent": 2,
+          "note": "identity-only table; judged through provider mappings"
+        }
+      },
+      "proposal": "DISPOSE_THEN_DELETE",
+      "proposed_disposition_text": "Test database (football_v4_identity_recovery_a_tests_20261102). Its unique rows are synthetic contract or recovery fixtures (placeholder teams, fabricated provider ids, test snapshots), not football data. Approved for deletion."
+    },
+    "football_v4_identity_recovery_upgrade_20261102": {
+      "group": "SYNTHETIC_TEST_FIXTURES",
+      "logical_bytes": 18306751,
+      "evidence_sha256": "22cb51479a676bfb3b51eda276cc80f6269158144215cdf515c741696ac5b78c",
+      "comparison_observed_at": "2026-11-12T20:36:09.583971+01:00",
+      "classification": "REVIEW_REQUIRED",
+      "unique_rows": 22,
+      "natural_key_present_in_operating": 2,
+      "tables": {
+        "competitions": {
+          "absent": 2,
+          "note": "identity-only table; judged through provider mappings"
+        },
+        "match_provider_mappings": {
+          "absent": 1,
+          "comparison_absent": 1,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 1,
+          "by_key": {}
+        },
+        "matches": {
+          "absent": 1,
+          "note": "identity-only table; judged through provider mappings"
+        },
+        "player_provider_mappings": {
+          "absent": 2,
+          "comparison_absent": 2,
+          "natural_key_present_in_operating": 1,
+          "natural_key_only_here": 1,
+          "by_key": {
+            "same provider player": 1
+          }
+        },
+        "player_source_facts": {
+          "absent": 2,
+          "comparison_absent": 2,
+          "natural_key_present_in_operating": 1,
+          "natural_key_only_here": 1,
+          "by_key": {
+            "same provider player": 1
+          }
+        },
+        "players": {
+          "absent": 2,
+          "note": "identity-only table; judged through provider mappings"
+        },
+        "seasons": {
+          "absent": 2,
+          "note": "identity-only table; judged through provider mappings"
+        },
+        "source_resources": {
+          "absent": 4,
+          "comparison_absent": 4,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 4,
+          "by_key": {}
+        },
+        "source_snapshots": {
+          "absent": 2,
+          "comparison_absent": 2,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 2,
+          "by_key": {}
+        },
+        "team_provider_mappings": {
+          "absent": 2,
+          "comparison_absent": 2,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 2,
+          "by_key": {}
+        },
+        "teams": {
+          "absent": 2,
+          "note": "identity-only table; judged through provider mappings"
+        }
+      },
+      "proposal": "DISPOSE_THEN_DELETE",
+      "proposed_disposition_text": "Test database (football_v4_identity_recovery_upgrade_20261102). Its unique rows are synthetic contract or recovery fixtures (placeholder teams, fabricated provider ids, test snapshots), not football data. Approved for deletion."
+    },
+    "football_r3_contract_final_20261014": {
+      "group": "SYNTHETIC_TEST_FIXTURES",
+      "logical_bytes": 16996031,
+      "evidence_sha256": "48449d90504c199f635559c3500895d77433be7104d9c99e7691b4ed02e3b212",
+      "comparison_observed_at": "2026-11-12T20:36:10.869244+01:00",
+      "classification": "REVIEW_REQUIRED",
+      "unique_rows": 373,
+      "natural_key_present_in_operating": 0,
+      "tables": {
+        "competitions": {
+          "absent": 1,
+          "note": "identity-only table; judged through provider mappings"
+        },
+        "match_provider_mappings": {
+          "absent": 12,
+          "comparison_absent": 12,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 12,
+          "by_key": {}
+        },
+        "matches": {
+          "absent": 12,
+          "note": "identity-only table; judged through provider mappings"
+        },
+        "product_competitions": {
+          "absent": 1,
+          "comparison_absent": 1,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 1,
+          "by_key": {}
+        },
+        "product_fixtures": {
+          "absent": 12,
+          "comparison_absent": 12,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 12,
+          "by_key": {}
+        },
+        "product_provider_mapping_decisions": {
+          "absent": 28,
+          "comparison_absent": 28,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 28,
+          "by_key": {}
+        },
+        "product_team_aliases": {
+          "absent": 24,
+          "comparison_absent": 24,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 24,
+          "by_key": {}
+        },
+        "product_teams": {
+          "absent": 24,
+          "comparison_absent": 24,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 24,
+          "by_key": {}
+        },
+        "seasons": {
+          "absent": 1,
+          "note": "identity-only table; judged through provider mappings"
+        },
+        "source_resources": {
+          "absent": 105,
+          "comparison_absent": 105,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 105,
+          "by_key": {}
+        },
+        "source_snapshots": {
+          "absent": 105,
+          "comparison_absent": 105,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 105,
+          "by_key": {}
+        },
+        "team_provider_mappings": {
+          "absent": 24,
+          "comparison_absent": 24,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 24,
+          "by_key": {}
+        },
+        "teams": {
+          "absent": 24,
+          "note": "identity-only table; judged through provider mappings"
+        }
+      },
+      "proposal": "DISPOSE_THEN_DELETE",
+      "proposed_disposition_text": "Test database (football_r3_contract_final_20261014). Its unique rows are synthetic contract or recovery fixtures (placeholder teams, fabricated provider ids, test snapshots), not football data. Approved for deletion."
+    },
+    "football_r3_contract_clean_20261014": {
+      "group": "SYNTHETIC_TEST_FIXTURES",
+      "logical_bytes": 16930495,
+      "evidence_sha256": "1a535bc299daeccc4454f73e0e2d051cdb21382bf434a029068c6673506a46ba",
+      "comparison_observed_at": "2026-11-12T20:36:11.096936+01:00",
+      "classification": "REVIEW_REQUIRED",
+      "unique_rows": 373,
+      "natural_key_present_in_operating": 0,
+      "tables": {
+        "competitions": {
+          "absent": 1,
+          "note": "identity-only table; judged through provider mappings"
+        },
+        "match_provider_mappings": {
+          "absent": 12,
+          "comparison_absent": 12,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 12,
+          "by_key": {}
+        },
+        "matches": {
+          "absent": 12,
+          "note": "identity-only table; judged through provider mappings"
+        },
+        "product_competitions": {
+          "absent": 1,
+          "comparison_absent": 1,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 1,
+          "by_key": {}
+        },
+        "product_fixtures": {
+          "absent": 12,
+          "comparison_absent": 12,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 12,
+          "by_key": {}
+        },
+        "product_provider_mapping_decisions": {
+          "absent": 28,
+          "comparison_absent": 28,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 28,
+          "by_key": {}
+        },
+        "product_team_aliases": {
+          "absent": 24,
+          "comparison_absent": 24,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 24,
+          "by_key": {}
+        },
+        "product_teams": {
+          "absent": 24,
+          "comparison_absent": 24,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 24,
+          "by_key": {}
+        },
+        "seasons": {
+          "absent": 1,
+          "note": "identity-only table; judged through provider mappings"
+        },
+        "source_resources": {
+          "absent": 105,
+          "comparison_absent": 105,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 105,
+          "by_key": {}
+        },
+        "source_snapshots": {
+          "absent": 105,
+          "comparison_absent": 105,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 105,
+          "by_key": {}
+        },
+        "team_provider_mappings": {
+          "absent": 24,
+          "comparison_absent": 24,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 24,
+          "by_key": {}
+        },
+        "teams": {
+          "absent": 24,
+          "note": "identity-only table; judged through provider mappings"
+        }
+      },
+      "proposal": "DISPOSE_THEN_DELETE",
+      "proposed_disposition_text": "Test database (football_r3_contract_clean_20261014). Its unique rows are synthetic contract or recovery fixtures (placeholder teams, fabricated provider ids, test snapshots), not football data. Approved for deletion."
+    },
+    "football_r3_contract_20261014": {
+      "group": "SYNTHETIC_TEST_FIXTURES",
+      "logical_bytes": 16766655,
+      "evidence_sha256": "f59544c4747c911880aab2bb2e1db624aace028a25577c27e842efc57c27691e",
+      "comparison_observed_at": "2026-11-12T20:36:11.375758+01:00",
+      "classification": "REVIEW_REQUIRED",
+      "unique_rows": 240,
+      "natural_key_present_in_operating": 0,
+      "tables": {
+        "product_provider_mapping_decisions": {
+          "absent": 26,
+          "comparison_absent": 26,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 26,
+          "by_key": {}
+        },
+        "source_resources": {
+          "absent": 107,
+          "comparison_absent": 107,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 107,
+          "by_key": {}
+        },
+        "source_snapshots": {
+          "absent": 107,
+          "comparison_absent": 107,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 107,
+          "by_key": {}
+        }
+      },
+      "proposal": "DISPOSE_THEN_DELETE",
+      "proposed_disposition_text": "Test database (football_r3_contract_20261014). Its unique rows are synthetic contract or recovery fixtures (placeholder teams, fabricated provider ids, test snapshots), not football data. Approved for deletion."
+    },
+    "football_r3_final_test_20261015": {
+      "group": "SYNTHETIC_TEST_FIXTURES",
+      "logical_bytes": 16004799,
+      "evidence_sha256": "463488e42113c8e0bcb2cf0b1e7e3fffdbcde094dad787e2cd5937d452333e9e",
+      "comparison_observed_at": "2026-11-12T20:36:11.52494+01:00",
+      "classification": "REVIEW_REQUIRED",
+      "unique_rows": 28,
+      "natural_key_present_in_operating": 0,
+      "tables": {
+        "product_provider_mapping_decisions": {
+          "absent": 4,
+          "comparison_absent": 4,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 4,
+          "by_key": {}
+        },
+        "source_resources": {
+          "absent": 12,
+          "comparison_absent": 12,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 12,
+          "by_key": {}
+        },
+        "source_snapshots": {
+          "absent": 12,
+          "comparison_absent": 12,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 12,
+          "by_key": {}
+        }
+      },
+      "proposal": "DISPOSE_THEN_DELETE",
+      "proposed_disposition_text": "Test database (football_r3_final_test_20261015). Its unique rows are synthetic contract or recovery fixtures (placeholder teams, fabricated provider ids, test snapshots), not football data. Approved for deletion."
+    },
+    "football_r3_scoped_history_20261014": {
+      "group": "SYNTHETIC_TEST_FIXTURES",
+      "logical_bytes": 15808191,
+      "evidence_sha256": "05f95db6ccff021491039ec92f00d7474784cf0afdeee58732c5a3b8ee38980f",
+      "comparison_observed_at": "2026-11-12T20:36:11.665011+01:00",
+      "classification": "REVIEW_REQUIRED",
+      "unique_rows": 20,
+      "natural_key_present_in_operating": 0,
+      "tables": {
+        "product_provider_mapping_decisions": {
+          "absent": 4,
+          "comparison_absent": 4,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 4,
+          "by_key": {}
+        },
+        "source_resources": {
+          "absent": 8,
+          "comparison_absent": 8,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 8,
+          "by_key": {}
+        },
+        "source_snapshots": {
+          "absent": 8,
+          "comparison_absent": 8,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 8,
+          "by_key": {}
+        }
+      },
+      "proposal": "DISPOSE_THEN_DELETE",
+      "proposed_disposition_text": "Test database (football_r3_scoped_history_20261014). Its unique rows are synthetic contract or recovery fixtures (placeholder teams, fabricated provider ids, test snapshots), not football data. Approved for deletion."
+    },
+    "football_restore_test_3f302f20623f44e3b9dd4b726e879b87": {
+      "group": "SYNTHETIC_TEST_FIXTURES",
+      "logical_bytes": 18175679,
+      "evidence_sha256": "8a3b44cef9ce487dd6a59589ccac9b5b8e921e011f8b4fee1628f130fdd6dd41",
+      "comparison_observed_at": "2026-11-12T20:36:09.465171+01:00",
+      "classification": "REVIEW_REQUIRED",
+      "unique_rows": 2,
+      "natural_key_present_in_operating": 0,
+      "tables": {
+        "source_snapshots": {
+          "absent": 2,
+          "comparison_absent": 2,
+          "natural_key_present_in_operating": 0,
+          "natural_key_only_here": 2,
+          "by_key": {}
+        }
+      },
+      "proposal": "DISPOSE_THEN_DELETE",
+      "proposed_disposition_text": "Test database (football_restore_test_3f302f20623f44e3b9dd4b726e879b87). Its unique rows are synthetic contract or recovery fixtures (placeholder teams, fabricated provider ids, test snapshots), not football data. Approved for deletion."
+    }
+  },
+  "special_findings": {
+    "p02_rehearsal_forecasts": {
+      "database": "football_p02_rehearsal",
+      "rows_without_operating_equivalent": 3,
+      "fixture_ids": [
+        "2eab7bb6-f6fc-5b84-a886-476e9eeec21f",
+        "6d1c7881-caf2-5d9d-bd39-b794fba392af",
+        "8acceaa9-99a1-5921-84a9-21397c6f9287"
+      ],
+      "model_label": "MVP_FORECAST",
+      "created_in_rehearsal": "2026-11-11T13:10:49",
+      "fixtures_kickoff": "2026-11-11",
+      "operating_forecasts_for_same_fixtures": 0,
+      "operating_fixture_status": {
+        "2eab7bb6": "AWARDED",
+        "6d1c7881": "AWARDED",
+        "8acceaa9": "FINISHED"
+      },
+      "operating_read_reports_containing_forecast_id_or_semantic_sha256": 0,
+      "repository_documents_citing_them": 0,
+      "conclusion": "generated inside the P02 rehearsal for fixtures the operating database never forecast; never issued"
+    },
+    "architecture_v2_shadow_observations": {
+      "rows": 3153511,
+      "same_source_record_in_operating": 106568,
+      "raw_source_bytes_in_operating_source_resources": 3153511,
+      "conclusion": "shadow observations derived from raw bytes the operating database retains; regenerable"
+    },
+    "experimental_acquisitions": {
+      "football_v4_access_r04_20261102": {
+        "providers": {
+          "fbref": 3252,
+          "sofascore": 12,
+          "clubelo": 1
+        },
+        "source_resources": 3265,
+        "raw_files_present": 3265,
+        "observation_artifacts": 203721,
+        "observation_files_present": 203721,
+        "data_classification": "EXPERIMENTAL_ONLY",
+        "status_ref": "docs/project-status.json provider_access_recovery",
+        "open_handoff": "required_next_action returns R04 Resolution Center proposals to the owner"
+      },
+      "football_v4_expansion_r03_20261101": {
+        "providers": {
+          "espn": 27,
+          "flashscore": 26,
+          "soccerway": 12,
+          "understat": 4,
+          "whoscored": 3
+        },
+        "source_resources": 72,
+        "raw_files_present": 72,
+        "observation_artifacts": 9704,
+        "observation_files_present": 9704,
+        "observations_with_operating_source_record": 9337,
+        "data_classification": "EXPERIMENTAL_ONLY"
+      },
+      "conclusion": "the databases index files that remain under .local/shadow-v4/ (access-r04 5.9 GB, expansion-r03 77 MB); deleting a database removes the registry, not the files"
+    },
+    "synthetic_fixtures": "placeholder teams ('Home 6', 'Away 6'), competition 'Calendar test', pitchapi ids l_Grow02, m_Fair0010, l_Cach01-2099, statsbomb snapshot 2222222222222222222222222222222222222222, recovery_test original.json/unavailable.json"
+  },
+  "proposal": "OWNER_DISPOSITION_THEN_DELETE for 17 databases; keep football_v4_access_r04_20261102 until the R04 owner handoff closes",
+  "not_done": [
+    "No disposition recorded",
+    "Nothing deleted",
+    "Files under .local/shadow-v4/ not changed"
+  ]
+}
