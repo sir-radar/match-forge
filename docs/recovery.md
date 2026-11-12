@@ -350,6 +350,40 @@ owning that path has a disposition bound to the same registered checksum, and it
 the excluded list with `excluded_sha256`. Exclusion never makes a capture `CAPTURED`:
 `RECOVERABLE_ONLY` captures still report `full_recovery: false`.
 
+### Recovery classifications
+
+Three backup policies are kept apart in configuration, receipts, Restic tags and Admin:
+
+| Policy (`MATCHFORGE_BACKUP_SCOPE`) | Verified status | Restic tag | `full_recovery` | Accepts |
+| --- | --- | --- | --- | --- |
+| `FULL_RECOVERY` | `VERIFIED` | `matchforge-verified` | `true` | Every registered file present. Unchanged by dispositions. |
+| `GOVERNED_SCOPE` | `VERIFIED_GOVERNED_SCOPE` | `matchforge-governed-verified` | `false` | Zero unavailable dependencies; missing files only where every owning registration has a recorded disposition. |
+| `RECOVERABLE_ONLY` | `VERIFIED_RECOVERABLE` | `matchforge-recoverable-verified` | `false` | The owner-reviewed list of unavailable dependencies. |
+
+`FULL_RECOVERY` stays strict: it ignores dispositions, so a missing excluded file still
+fails it. A governed scope is the honest description of a store whose only gaps are
+approved synthetic registrations:
+
+- Exclusions apply only to files that are missing. Every present original, including a
+  file owned by a retired registration, is still captured, read back and checksummed.
+- The reviewed inventory carries `governed_sha256`, which binds each excluded dependency
+  to the recorded disposition (evidence file and SHA-256, decision reference, code commit)
+  of every registration that owns it. A shared path is governed only when all of its
+  owners are. Capture recomputes the binding and stops if anything changed: a new gap,
+  a different checksum, a different or later approval, or a missing owner.
+- Restore is as strict as full recovery: encrypted read-back, an isolated database and
+  file restore, row hashes and cutoffs, every remaining file re-hashed against the
+  restored registrations, globals and ownership in a network-isolated cluster, and the
+  same exclusions and approvals recomputed from the restored database. Only datasets or
+  models retired as synthetic lineage may fail their registered reader.
+- Receipts record `excluded_dependencies` and `governed_sha256`. Admin labels the scope
+  "Governed scope (approved exclusions)" and states that excluded files are not recovered.
+
+Use `python -m scripts.manual_backup run --governed --recoverable-inventory <reviewed>
+--restore-destination <new-directory>` for an explicitly authorized command-line run, or
+set `MATCHFORGE_BACKUP_SCOPE=GOVERNED_SCOPE` with the reviewed inventory for Admin. Both
+are operating configuration changes and need owner approval.
+
 `python -m scripts.recovery_dispositions --decision-reference <ref> --code-commit-sha <sha>`
 validates the pinned evidence (`docs/evidence/storage-recovery-gaps-2026-11-12.json`
 and its shared-owner supplement) and prints the counts. Adding `--apply` writes to

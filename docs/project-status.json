@@ -89,6 +89,7 @@
     "APPROVE_STORAGE_CANDIDATE_DATABASE_DELETION_V1",
     "RATIFY_RECOVERY_SCOPE_MIGRATION_AS_APPLIED_V1",
     "APPLY_RECOVERY_SCOPE_DISPOSITIONS_V1",
+    "AUTHORIZE_RECOVERABLE_CLI_BACKUP_V1",
     "APPLY_SOURCE_MANIFEST_BINDING_MIGRATION_V1",
     "APPLY_FDUK_RAW_FILE_BINDINGS_V1",
     "APPLY_SOURCE_SNAPSHOT_PATH_DIGEST_GUARD_V1"
@@ -4178,6 +4179,20 @@
       "backup": "VERIFIED_LOGICAL_DUMP_RESTORE_CHECK",
       "full_recovery_verified": false
     },
-    "required_next_action": "Migrations 202611120300 and 202611120400 and the 47 Football-Data.co.uk raw-file bindings are applied; no migration is pending. Merge PR 213 so backups capture the bound checksums. FULL_RECOVERY is not eligible: its strict capture still enumerates the 159 approved exclusions, and a read-only preflight stops on the 33 retired legacy source resources. A verified point needs the governed-scope policy proposed in PR 211 (VERIFIED_GOVERNED_SCOPE, full_recovery false) or a reviewed recoverable-only inventory. The rehearsal databases, football_v4_integration_20261110 and the StatsBomb and P02 databases stay until separately reviewed."
+    "recovery_point_after_dispositions": {
+      "decision_id": "AUTHORIZE_RECOVERABLE_CLI_BACKUP_V1",
+      "decision_ref": "docs/evidence/owner-decision-authorize-recoverable-cli-backup-2026-11-12.json",
+      "evidence_ref": "docs/evidence/recoverable-backup-verification-2026-11-12.json",
+      "status": "VERIFIED_RECOVERABLE",
+      "snapshot_id": "bb97d6fddd7898d3c3adf6e779e29014a04a66cc886d22ee4adb3ff6d7c693f0",
+      "verified_at": "2026-11-12T14:53:00Z",
+      "unavailable_dependencies": 0,
+      "excluded_dependencies": 159,
+      "restore_drill": "PASS_RECOVERABLE",
+      "recorded_in_admin_history": false,
+      "full_recovery_verified": false,
+      "full_recovery_blocker": "FULL_RECOVERY capture enumerates the 159 governed exclusions and fails by design; VERIFIED_GOVERNED_SCOPE is proposed separately"
+    },
+    "required_next_action": "Migrations 202611120300 and 202611120400 and the 47 Football-Data.co.uk raw-file bindings are applied; no migration is pending. A VERIFIED_RECOVERABLE point (bb97d6fd, before the bindings) exists outside Admin history. FULL_RECOVERY cannot pass while governed exclusions exist; VERIFIED_GOVERNED_SCOPE (merged in PR 211) needs a deployed release, an owner-authorized GOVERNED_SCOPE configuration and a fresh Admin backup. The rehearsal databases, football_v4_integration_20261110 and the StatsBomb and P02 databases stay until separately reviewed."
   }
 }

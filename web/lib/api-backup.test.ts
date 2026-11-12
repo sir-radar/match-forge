@@ -57,3 +57,19 @@ describe("backup status requests", () => {
     }));
   });
 });
+
+describe("governed backup submission", () => {
+  afterEach(() => vi.unstubAllGlobals());
+  it("binds both the empty gap digest and the approval digest", async () => {
+    const empty = "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945";
+    const governed = "d".repeat(64);
+    const id = "10000000-0000-4000-8000-000000000003";
+    const run = { run_id: id, sync_type: "MANUAL_BACKUP", status: "QUEUED", requested_date: null, requested_at: "2026-11-12T12:00:00Z", started_at: null, finished_at: null, heartbeat_at: null, error_message: null, log_path: null, parameters: { scope: "GOVERNED_SCOPE", unavailable_sha256: empty, governed_sha256: governed }, summary: {} };
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify(run), { status: 202, headers: { "Content-Type": "application/json" } }));
+    vi.stubGlobal("fetch", fetchMock);
+    await api.startBackup(id, "GOVERNED_SCOPE", empty, undefined, governed);
+    const body = JSON.parse(String((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].body));
+    expect(body).toMatchObject({ scope: "GOVERNED_SCOPE", unavailable_sha256: empty, governed_sha256: governed });
+    await expect(api.startBackup(id, "GOVERNED_SCOPE", empty, undefined, "e".repeat(64))).rejects.toThrow();
+  });
+});

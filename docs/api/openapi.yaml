@@ -326,7 +326,7 @@ paths:
     post:
       operationId: startManualBackup
       summary: Confirm and submit one manual encrypted backup through shared work
-      description: Requires trusted local Origin or CLI credential and JSON. Rechecks preflight. Reusing the same request_id with the original policy and inventory digest returns the existing run. RECOVERABLE_ONLY confirms the exact reviewed gap manifest digest and remains distinct from FULL_RECOVERY. A configured storage policy can submit the same verified backup workflow on its reviewed interval. No pruning or operating restore.
+      description: Requires trusted local Origin or CLI credential and JSON. Rechecks preflight. Reusing the same request_id with the original policy and inventory digest returns the existing run. RECOVERABLE_ONLY confirms the exact reviewed gap manifest digest and remains distinct from FULL_RECOVERY. GOVERNED_SCOPE confirms an empty gap digest and the governed_sha256 binding of every approved exclusion; it restores every present original as strictly as FULL_RECOVERY, records VERIFIED_GOVERNED_SCOPE, and never reports full recovery. A configured storage policy can submit the same verified backup workflow on its reviewed interval. No pruning or operating restore.
       requestBody:
         required: true
         content:
@@ -338,16 +338,28 @@ paths:
               properties:
                 request_id: { type: string, format: uuid, description: Lowercase UUID v4 idempotency key }
                 confirmed: { type: boolean, const: true }
-                scope: { type: string, enum: [FULL_RECOVERY, RECOVERABLE_ONLY] }
-                unavailable_sha256: { type: string, pattern: '^[0-9a-f]{64}$', description: Required for RECOVERABLE_ONLY. Omit for FULL_RECOVERY. }
-              if:
-                properties:
-                  scope: { const: RECOVERABLE_ONLY }
-              then:
-                required: [unavailable_sha256]
-              else:
-                not:
-                  required: [unavailable_sha256]
+                scope: { type: string, enum: [FULL_RECOVERY, GOVERNED_SCOPE, RECOVERABLE_ONLY] }
+                unavailable_sha256: { type: string, pattern: '^[0-9a-f]{64}$', description: Required for RECOVERABLE_ONLY and GOVERNED_SCOPE (the empty-gap digest). Omit for FULL_RECOVERY. }
+                governed_sha256: { type: string, pattern: '^[0-9a-f]{64}$', description: Required for GOVERNED_SCOPE only. Binds the approved exclusions and their recorded dispositions. }
+              allOf:
+                - if:
+                    properties:
+                      scope: { const: FULL_RECOVERY }
+                  then:
+                    not:
+                      anyOf:
+                        - required: [unavailable_sha256]
+                        - required: [governed_sha256]
+                  else:
+                    required: [unavailable_sha256]
+                - if:
+                    properties:
+                      scope: { const: GOVERNED_SCOPE }
+                  then:
+                    required: [governed_sha256]
+                  else:
+                    not:
+                      required: [governed_sha256]
       responses:
         '202': { description: Persisted manual run, content: { application/json: { schema: { $ref: '#/components/schemas/SyncRun' } } } }
         '400': { $ref: '#/components/responses/BadRequest' }

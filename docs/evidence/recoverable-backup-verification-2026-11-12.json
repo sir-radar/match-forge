@@ -1,0 +1,250 @@
+{
+ "contract": "RecoverableBackupVerificationV1",
+ "recorded_at": "2026-11-12T15:10:00Z",
+ "decision_id": "AUTHORIZE_RECOVERABLE_CLI_BACKUP_V1",
+ "decision_ref": "docs/evidence/owner-decision-authorize-recoverable-cli-backup-2026-11-12.json",
+ "database": {
+  "name": "football",
+  "oid": 16384,
+  "goose_version": 202611120200
+ },
+ "inventory": {
+  "unavailable": 0,
+  "unavailable_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "excluded": 159,
+  "excluded_sha256": "5043306f0e0c58ce609018f8de300b9d1002615228c82cd3ba987db7dea6b92d",
+  "reviewed_inventory_sha256": "ec7e8deb40bd284f3f8614db101bef9752130f2dc094feb260907e77560d445f"
+ },
+ "run": {
+  "started_at": "2026-11-12T13:30:17Z",
+  "finished_at": "2026-11-12T14:53:31Z",
+  "code_commit_sha": "2e0263e",
+  "path": "command line (not recorded in Admin backup history; does not reset the Admin reminder)"
+ },
+ "result": {
+  "status": "VERIFIED_RECOVERABLE",
+  "scope": "RECOVERABLE_ONLY",
+  "verified": true,
+  "full_recovery": false,
+  "snapshot_id": "bb97d6fddd7898d3c3adf6e779e29014a04a66cc886d22ee4adb3ff6d7c693f0",
+  "unavailable_dependencies": 0,
+  "captured_at": "2026-11-12T13:31:46.054303+00:00",
+  "verified_at": "2026-11-12T14:53:00.854778+00:00",
+  "logical_bytes": 31531204788,
+  "data_added_packed_bytes": 479318609,
+  "repository_file_bytes": 8521202806,
+  "volume_free_space_change_bytes": 17375166464,
+  "capture_seconds": 2107.9723158340203,
+  "volume_uuid": "988F99A7-D7C1-329C-9AFF-941D5D8B934C",
+  "repository_id": "44aa85e3bbbf737d5852d9b7666ca84d8260b8027e318b32067d278878d4c0b8"
+ },
+ "restore_drill": {
+  "status": "PASS_RECOVERABLE",
+  "full_recovery": false,
+  "unavailable_dependencies": 0,
+  "database_isolated": true,
+  "duration_seconds": 1690.6671528340084,
+  "global_role_restore": "NOT_RUN: apply globals only to a new isolated cluster"
+ },
+ "independent_checks": {
+  "restic_tag": "matchforge-recoverable-verified",
+  "snapshot_listed": "bb97d6fd",
+  "retained_points": [
+   "42ada89c",
+   "64e8a642",
+   "b0cc2b85",
+   "0a1122d8",
+   "d05c5e8a",
+   "525f90fe",
+   "2f0a6cf3"
+  ],
+  "repository_locks": 0,
+  "drill_verification_json": "PASS_RECOVERABLE"
+ },
+ "classification": "VERIFIED_RECOVERABLE",
+ "full_recovery_verified": false,
+ "full_recovery_blocker": "A FULL_RECOVERY capture enumerates every registration, including the 159 governed exclusions (145 missing files, 33 unresolved), so it fails by design. VERIFIED_GOVERNED_SCOPE is proposed separately.",
+ "drill_directory": {
+  "path": ".local/recovery-drills/cli-recoverable-20261112T132949Z",
+  "bytes_approx": "9.3 GB",
+  "verification": "PASS_RECOVERABLE",
+  "removed": "after verification, on owner instruction 'Yes, remove it'"
+ },
+ "rehearsal_databases_removed": {
+  "instruction": "owner answer 'Delete those two' after VERIFIED_RECOVERABLE snapshot bb97d6fd",
+  "databases": [
+   {
+    "name": "football_disposition_rehearsal_20261112",
+    "oid": 130681765,
+    "purpose": "disposition rehearsal copy of football",
+    "size_mb": 10712
+   },
+   {
+    "name": "football_disposition_backup_check_20261112",
+    "oid": 133179006,
+    "purpose": "restore check of operating-before-dispositions.dump",
+    "size_mb": 10719
+   }
+  ],
+  "method": "dropdb without --force after confirming zero connections",
+  "operating_database_untouched": true,
+  "retained": ".local/storage-rollout/operating-before-dispositions.dump"
+ },
+ "storage_comparison_after_backup": {
+  "mechanism": "Storage Management API (running release cefc805, predating PR 200's digest change): compare, preview, owner credential, typed confirmation, fenced DROP without FORCE",
+  "authority": {
+   "system_identifier": "7679328148388241450",
+   "oid": 16384,
+   "database": "football",
+   "verified": true
+  },
+  "compared": [
+   {
+    "name": "football_storage_rollout_rehearsal",
+    "classification": "ELIGIBLE",
+    "logical_bytes": 11180324543,
+    "unique_rows_by_table": {}
+   },
+   {
+    "name": "football_fr_native_restore_20261109",
+    "classification": "REVIEW_REQUIRED",
+    "logical_bytes": 8638191295,
+    "unique_rows_by_table": {
+     "product_identity_admissions": 4,
+     "product_match_history_decisions": 432,
+     "product_provider_mapping_decisions": 2
+    }
+   },
+   {
+    "name": "football_fr_native_restore_20261103",
+    "classification": "REVIEW_REQUIRED",
+    "logical_bytes": 8296265407,
+    "unique_rows_by_table": {
+     "product_forecasts": 13,
+     "product_identity_admissions": 4,
+     "product_match_history_decisions": 430,
+     "product_provider_mapping_decisions": 2
+    }
+   },
+   {
+    "name": "football_fr_rollout_restore_20261103",
+    "classification": "REVIEW_REQUIRED",
+    "logical_bytes": 8236922559,
+    "unique_rows_by_table": {
+     "product_identity_admissions": 15,
+     "product_match_history_decisions": 1150
+    }
+   },
+   {
+    "name": "football_fr_execution_20261103",
+    "classification": "REVIEW_REQUIRED",
+    "logical_bytes": 8039462591,
+    "unique_rows_by_table": {
+     "product_identity_admissions": 15,
+     "product_match_history_decisions": 1150
+    }
+   },
+   {
+    "name": "football_ds_populated_7bd6703eae2842fcb98c299445d116da",
+    "classification": "REVIEW_REQUIRED",
+    "logical_bytes": 7827887807,
+    "unique_rows_by_table": {
+     "team_provider_mappings": 1,
+     "match_provider_mappings": 269,
+     "fixture_identity_resolutions": 26,
+     "product_match_history_decisions": 209,
+     "product_provider_mapping_decisions": 741
+    }
+   },
+   {
+    "name": "football_r3_final_rehearsal_20261015",
+    "classification": "REVIEW_REQUIRED",
+    "logical_bytes": 4414944959,
+    "unique_rows_by_table": {
+     "team_provider_mappings": 923,
+     "match_provider_mappings": 10976,
+     "product_identity_admissions": 1398,
+     "fixture_identity_resolutions": 6879,
+     "product_match_history_decisions": 9574,
+     "product_provider_mapping_decisions": 21664
+    }
+   },
+   {
+    "name": "football_r3_internet_verified_20261015",
+    "classification": "REVIEW_REQUIRED",
+    "logical_bytes": 4385035967,
+    "unique_rows_by_table": {
+     "team_provider_mappings": 960,
+     "match_provider_mappings": 23175,
+     "product_identity_admissions": 2011,
+     "fixture_identity_resolutions": 9686,
+     "product_match_history_decisions": 21958,
+     "product_provider_mapping_decisions": 37102
+    }
+   },
+   {
+    "name": "football_r3_internet_20261015",
+    "classification": "REVIEW_REQUIRED",
+    "logical_bytes": 4248540863,
+    "unique_rows_by_table": {
+     "matches": 3,
+     "team_provider_mappings": 612,
+     "match_provider_mappings": 9170,
+     "product_team_match_history": 3,
+     "product_identity_admissions": 1227,
+     "fixture_identity_resolutions": 159,
+     "product_match_history_decisions": 8570,
+     "product_provider_mapping_decisions": 311
+    }
+   },
+   {
+    "name": "football_r3_coverage_20261015",
+    "classification": "REVIEW_REQUIRED",
+    "logical_bytes": 4213724863,
+    "unique_rows_by_table": {
+     "team_provider_mappings": 143,
+     "match_provider_mappings": 76,
+     "product_identity_admissions": 307,
+     "fixture_identity_resolutions": 58,
+     "product_match_history_decisions": 6886,
+     "product_provider_mapping_decisions": 107
+    }
+   },
+   {
+    "name": "football_r3_identity_20261014",
+    "classification": "REVIEW_REQUIRED",
+    "logical_bytes": 3938514623,
+    "unique_rows_by_table": {
+     "team_provider_mappings": 340,
+     "match_provider_mappings": 196,
+     "product_identity_admissions": 923,
+     "fixture_identity_resolutions": 53,
+     "product_match_history_decisions": 15627,
+     "product_provider_mapping_decisions": 237
+    }
+   },
+   {
+    "name": "football_r3_completion_20261014",
+    "classification": "REVIEW_REQUIRED",
+    "logical_bytes": 3863541439,
+    "unique_rows_by_table": {
+     "team_provider_mappings": 222,
+     "product_identity_admissions": 10708,
+     "product_match_history_decisions": 230177
+    }
+   }
+  ],
+  "deleted": {
+   "instruction": "owner answer 'Delete that one'",
+   "name": "football_storage_rollout_rehearsal",
+   "identity_key": "postgres:7679328148388241450:121976915",
+   "evidence_sha256": "567f85cf8c33b48125d03f26e5b89ed7ead805208633e3025dcfcd67d25ca575",
+   "plan_sha256": "1970dc0fcef53819cea341bf10571517a8d3a95a16bc2d964f5a83dfe5c8b3d4",
+   "batch_id": "732eb049-1b57-4d57-b914-56ebb04725fd",
+   "reclaimed_bytes": 11180324543,
+   "state": "SUCCEEDED",
+   "absent_after": true
+  },
+  "retained_review_required": 11
+ }
+}
