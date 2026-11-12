@@ -197,3 +197,42 @@ the API, then open Storage Management and confirm the authoritative database
 shows OID `16384`. Rollback for the schema is forward-only; the new tables are
 additive and unused by other code, so the previous API binary keeps working
 against the migrated database.
+
+## Stage F — recovery gaps
+
+All 159 declared gaps are explained and none of them is missing football data
+([evidence](../evidence/storage-recovery-gaps-2026-11-12.json)). Nothing was
+recovered because no original exists, and no registration was changed.
+`FULL_RECOVERY` stays false.
+
+| Gaps | Classification | Evidence |
+| ---: | --- | --- |
+| 89 | Synthetic test registration with a placeholder checksum | Registered checksums are one repeated hex character (`ccc…`, `fff…`, `555…`); their snapshots are `example/open-data` with `git_sha` `bbbb…`, `manifest_sha256` `aaaa…` and `acquired_at` 2026-01-01, created 29 August–5 September by test runs against the operating database |
+| 69 | Synthetic test registration derived from those snapshots | 26 model artifacts, their 26 artifact files, 13 baseline forecasts and 4 Sprint 2 evaluation runs, all built only from `example/open-data` snapshots; no runtime model registration exists |
+| 1 | Manifest never written | OpenFootball snapshot `7389bfe6-…` registered `openfootball/e6744429…/catalog.json`; its `manifest_sha256` is the SHA-256 of the path string (verified). The code at `246e24ba` registered the path but never wrote a file. Its 291 source resources are present. |
+
+The 31 impossible checksum and length pairs are all synthetic: 30 two-byte
+resources registered as `ccc…` and one one-byte dataset file registered as
+`555…`.
+
+Searches, all read-only: the three MatchForge data copies by registered path
+(0 of 126 present); 31,271 same-named files across `.local`, `/private/tmp`
+task directories, worktrees and mounted volumes, hashed (0 matches); and every
+snapshot in the external Restic repository by content blob for all 72 distinct
+checksums (0 matches; files under 512 KiB are stored as one blob whose ID is
+their SHA-256).
+
+Remediation needs owner decisions, not file recovery:
+
+1. Retire the 158 synthetic registrations from the operating recovery scope
+   through the existing artifact-retirement events
+   (`202609051000_artifact_retirement_events`), preserving the rows and this
+   evidence. Do not invent files or checksums for them.
+2. Record a governed correction for the OpenFootball snapshot stating that its
+   manifest checksum is a path digest with no file, or regenerate a real
+   manifest under a new registration.
+3. Re-run the recovery inventory. Only then can the next backup be
+   classified as full recovery, and only if no other dependency is missing.
+
+Until then each storage resource is judged on its own dependencies: these gaps
+block nothing except the resources that register them.
