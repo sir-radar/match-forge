@@ -224,6 +224,7 @@ def _require_classified_columns(connection: Connection[Any]) -> None:
         # Dispositions copy the path of the registration they name; not a dependency.
         ("recovery_scope_retirements", "registered_path"),
         ("source_manifest_corrections", "registered_path"),
+        ("source_manifest_raw_file_bindings", "registered_path"),
     }
     actual = set(
         connection.execute(

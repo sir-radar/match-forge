@@ -294,6 +294,10 @@ reader and logical digest; its trailing-newline representation has a distinct
 physical checksum. Recovery preserves both identities and never rewrites a legacy
 registration or source to make a checksum appear valid.
 
+The 47 Football-Data.co.uk snapshots with path digests, a proposed append-only binding to
+their resource checksums and a guard against new path digests are described in
+[Football-Data.co.uk manifest path digests](operations/fduk-manifest-path-digests-2026-11-12.md).
+
 ## Recovery when original dependencies are unavailable
 
 `MATCHFORGE_BACKUP_SCOPE=FULL_RECOVERY` is the default. It fails closed if

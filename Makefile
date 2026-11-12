@@ -8,7 +8,7 @@ export MATCHFORGE_PYTHON_COMMAND MATCHFORGE_RUST_COMMAND
 PROTOTYPE_DIR := experiments/sprint1_roundtrip
 PROTOTYPE_COMPOSE := $(PROTOTYPE_DIR)/compose.yaml
 MIGRATIONS_DIR := infrastructure/migrations
-RECOVERY_SCRIPTS := scripts/foundation_release.py scripts/capture_architecture_v2_baseline.py scripts/backup_recovery.py scripts/recovery_files.py scripts/recovery_scope.py scripts/recovery_dispositions.py scripts/backup_destination.py scripts/manual_backup.py scripts/install_restic.py
+RECOVERY_SCRIPTS := scripts/foundation_release.py scripts/capture_architecture_v2_baseline.py scripts/backup_recovery.py scripts/recovery_files.py scripts/recovery_scope.py scripts/recovery_dispositions.py scripts/source_manifest_bindings.py scripts/source_manifest_path_digest_audit.py scripts/backup_destination.py scripts/manual_backup.py scripts/install_restic.py
 SPRINT2_REPORT_ROOT ?= $(CURDIR)/.local/reports/sprint2
 CODE_COMMIT_SHA ?= $(shell git rev-parse HEAD)
 DEPENDENCY_LOCK_SHA256 ?= $(shell shasum -a 256 uv.lock | cut -d ' ' -f 1)
