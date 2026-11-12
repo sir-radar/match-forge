@@ -66,3 +66,43 @@ def test_application_restore_keeps_retained_evidence_and_rejects_links(tmp_path:
     with pytest.raises(ValueError, match="link"):
         restore_application(tmp_path, repository)
     assert not (repository / "escape").exists()
+
+
+def test_restore_keeps_registered_old_source_beside_current_application(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A tracked file changed after a record registered it must not block restore."""
+    import io
+    import tarfile
+
+    from scripts import backup_recovery
+
+    path = "python/module.py"
+    with tarfile.open(tmp_path / "application.tar", "w") as archive:
+        member = tarfile.TarInfo(path)
+        member.size = len(b"current")
+        archive.addfile(member, io.BytesIO(b"current"))
+
+    def restore_evidence(_archive: Path, roots: dict[str, Path]) -> None:
+        target = roots["repository"] / path
+        target.parent.mkdir(parents=True)
+        target.write_bytes(b"registered")
+
+    class Stop(Exception):
+        pass
+
+    def stop(*_args: object, **_kwargs: object) -> None:
+        raise Stop
+
+    monkeypatch.setattr(
+        backup_recovery, "verify_capture", lambda *_a, **_k: {"files": {"logical_bytes": 0}}
+    )
+    monkeypatch.setattr(backup_recovery, "require_restore_storage", lambda *_a: None)
+    monkeypatch.setattr(backup_recovery, "restore_files", restore_evidence)
+    monkeypatch.setattr("psycopg.connect", stop)
+    monkeypatch.setenv("DATABASE_URL", "postgresql://unused")
+    destination = tmp_path / "restored"
+    with pytest.raises(Stop):
+        backup_recovery.verify_restore(tmp_path, destination)
+    assert (destination / "repository" / path).read_bytes() == b"registered"
+    assert (destination / "application" / path).read_bytes() == b"current"

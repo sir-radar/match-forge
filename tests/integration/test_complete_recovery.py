@@ -348,7 +348,7 @@ def test_declared_missing_sources_restore_without_claiming_full_recovery(
         assert result["unavailable_dependencies"] == 1
         assert (restored / "data/original.json").read_bytes() == payload
         assert not (restored / "data/unavailable.json").exists()
-        assert (restored / "repository/uv.lock").is_file()
+        assert (restored / "application/uv.lock").is_file()
         monkeypatch.setenv("FOOTBALL_DATA_ROOT", str(restored / "data"))
         password = tmp_path / "password"
         password.write_text("disposable-fixture-password")
