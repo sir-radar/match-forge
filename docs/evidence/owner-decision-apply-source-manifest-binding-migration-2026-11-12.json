@@ -1,0 +1,67 @@
+{
+ "contract": "OwnerDecisionRecordV1",
+ "decision_id": "APPLY_SOURCE_MANIFEST_BINDING_MIGRATION_V1",
+ "recorded_at": "2026-11-12T15:05:00Z",
+ "title": "Apply migration 202611120300 to the operating database",
+ "status": "APPROVED",
+ "owner": "repository owner / sir-radar",
+ "map": "storage-lifecycle",
+ "ticket": "Football-Data.co.uk manifest path digests (PR 206) and recovery reference follow-up (PR 213)",
+ "source": {
+  "execution_instruction": "Owner answer 'Approve 0300 only' in this session to the question whether to apply migration 202611120300 to the operating football database.",
+  "migration_file": "infrastructure/migrations/202611120300_source_manifest_raw_file_bindings.sql",
+  "migration_file_sha256": "b1b55bec78eadb572aec8fcafb0cb43bb116aa171b3d7ab0a0d58dc64c2b7a6e",
+  "migration_file_identical_to_main": true,
+  "rehearsal_ref": "docs/evidence/fduk-binding-rehearsal-2026-11-12.json"
+ },
+ "authorizes": [
+  "applying migration 202611120300_source_manifest_raw_file_bindings to the operating football database with `goose up-by-one`"
+ ],
+ "explicitly_not_authorized": [
+  "inserting any of the 47 source_manifest_raw_file_bindings rows",
+  "applying migration 202611120400_source_snapshot_path_digest_guard or running `make migrate`/`goose up`",
+  "changing, deleting or re-registering any source snapshot, source resource or dependent row",
+  "deleting any database, dump or file, including the rehearsal copy",
+  "claiming FULL_RECOVERY"
+ ],
+ "application": {
+  "method": "goose -dir infrastructure/migrations postgres $DATABASE_URL up-by-one, from the PR 213 worktree",
+  "started_at": "2026-11-12T15:03:16Z",
+  "goose_output": "OK   202611120300_source_manifest_raw_file_bindings.sql (25.67ms)",
+  "database": "football",
+  "database_oid": 16384,
+  "goose_version_before": 202611120200,
+  "goose_version_after": 202611120300,
+  "pending_before": [
+   "202611120300_source_manifest_raw_file_bindings",
+   "202611120400_source_snapshot_path_digest_guard"
+  ],
+  "pending_after": [
+   "202611120400_source_snapshot_path_digest_guard"
+  ]
+ },
+ "verification": {
+  "method": "read-only queries with default_transaction_read_only=on before and after",
+  "source_manifest_raw_file_bindings_rows": 0,
+  "binding_triggers": [
+   "source_manifest_raw_file_bindings_append_only",
+   "source_manifest_raw_file_bindings_no_truncate",
+   "source_manifest_raw_file_bindings_target"
+  ],
+  "path_digest_guard_trigger_present": false,
+  "validate_source_manifest_correction_md5": {
+   "before": "480b29b2f17855250010cf2cd7182400",
+   "after": "430f6da269a1c9d5f5ba5776c723e3cc",
+   "expected_change": "the migration adds the binding exclusivity check"
+  },
+  "unchanged": {
+   "snapshots_47": {"rows": 47, "md5": "c13936d2cf8dd3b4f1de80f9c3acf9af"},
+   "resources_of_47": {"rows": 45, "md5": "95f0dea3ae4d6391a7627237f4b32e47"},
+   "source_manifest_corrections": {"rows": 1, "md5": "7838e7ecad6e2b1ed02fd5b28d94e6d6"},
+   "recovery_scope_retirements": {"rows": 160, "md5": "c82b94367d4958d695ad7dc992b0dc44"},
+   "dependent_rows_of_the_47": 721931
+  }
+ },
+ "backup": "No new pre-migration backup. The latest restore point is the isolated logical restore football_fduk_binding_rehearsal_20261112 (dump started 2026-11-12T13:39:22Z). The migration adds one empty append-only table and replaces one validation function; it changes no existing rows and has a goose Down section.",
+ "notes": "The 47 bindings and migration 202611120400 each need their own owner decision. The next Admin backup and isolated restore should report the schema at 202611120300 or later."
+}

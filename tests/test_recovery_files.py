@@ -10,6 +10,7 @@ from football.providers.football_data_uk_evidence import (
 from python.football.tests.test_football_data_uk_evidence import _receipts
 from scripts.recovery_files import (
     FileReference,
+    RawFileBinding,
     RecoveryReferenceError,
     capture_files,
     legacy_source_path,
@@ -112,6 +113,58 @@ def test_legacy_path_identity_is_not_treated_as_a_physical_file_checksum(tmp_pat
     ref = source_manifest_reference(tmp_path, "football_data_uk", "old-revision", path, identity)
     assert ref.sha256 is None
     assert legacy_source_path("football_data_uk", None, "E0.csv", path, identity, "a" * 64) == path
+
+
+def _bound(payload: bytes) -> tuple[str, str, RawFileBinding]:
+    digest = hashlib.sha256(payload).hexdigest()
+    path = f"football_data_uk/2010-2011/{digest}.zip"
+    identity = hashlib.sha256(path.encode()).hexdigest()
+    return path, identity, RawFileBinding(path, identity, "resource-id", digest, len(payload))
+
+
+def test_bound_path_digest_captures_the_resource_checksum(tmp_path: Path) -> None:
+    payload = b"raw provider archive"
+    path, identity, bound = _bound(payload)
+    ref = source_manifest_reference(
+        tmp_path, "football_data_uk", bound.sha256, path, identity, bound
+    )
+    assert (ref.path, ref.sha256, ref.size) == (path, bound.sha256, len(payload))
+    (tmp_path / path).parent.mkdir(parents=True)
+    (tmp_path / path).write_bytes(payload)
+    assert capture_files([ref], {"data": tmp_path}, tmp_path / "ok")["status"] == "COMPLETE"
+    (tmp_path / path).write_bytes(payload + b"!")
+    assert capture_files([ref], {"data": tmp_path}, tmp_path / "bad")["status"] == "INCOMPLETE"
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        {"resource_matches": False},
+        {"registered_sha256": "f" * 64},
+        {"registered_path": "football_data_uk/other.zip"},
+        {"sha256": "e" * 64},
+    ],
+)
+def test_bound_reference_rejects_a_binding_that_differs(tmp_path: Path, change: dict) -> None:
+    from dataclasses import replace
+
+    path, identity, bound = _bound(b"raw provider archive")
+    with pytest.raises(RecoveryReferenceError, match="raw-file binding"):
+        source_manifest_reference(
+            tmp_path, "football_data_uk", bound.sha256, path, identity, replace(bound, **change)
+        )
+
+
+def test_bound_reference_rejects_manifest_v1_and_physical_registrations(tmp_path: Path) -> None:
+    path, identity, bound = _bound(b"raw provider archive")
+    with pytest.raises(RecoveryReferenceError):
+        source_manifest_reference(
+            tmp_path, "football_data_uk", f"manifest-v1:{bound.sha256}", path, identity, bound
+        )
+    with pytest.raises(RecoveryReferenceError):
+        source_manifest_reference(
+            tmp_path, "football_data_uk", bound.sha256, path, bound.sha256, bound
+        )
 
 
 def test_acquisition_evidence_preserves_logical_identity_and_physical_bytes(tmp_path: Path) -> None:

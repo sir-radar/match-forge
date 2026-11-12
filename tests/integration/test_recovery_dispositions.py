@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import os
 from collections.abc import Iterator
+from contextlib import nullcontext
 from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
@@ -23,6 +24,7 @@ from scripts.recovery_dispositions import (
     record_dispositions,
 )
 from scripts.recovery_scope import inventory
+from tests.integration.legacy_rows import legacy_path_digest
 
 DATABASE_URL = os.environ["TEST_DATABASE_URL"]
 NOW = datetime(2026, 11, 12, 12, 0, tzinfo=UTC)
@@ -55,24 +57,23 @@ def _snapshot(
         (code, code),
     ).fetchone()
     assert provider_id is not None
-    if digest == hashlib.sha256(path.encode()).hexdigest():
-        # Seed a pre-guard legacy row; new path-digest registrations are rejected.
-        connection.execute("SET LOCAL session_replication_role = replica")
-    row = connection.execute(
-        "INSERT INTO football.source_snapshots(provider_id,source_identity,source_revision,"
-        "git_sha,acquired_at,manifest_path,manifest_sha256,status) "
-        "VALUES (%s,%s,%s,%s,%s,%s,%s,'acquired') RETURNING id",
-        (
-            provider_id[0],
-            identity,
-            revision,
-            None if revision.startswith("manifest-v1:") else revision,
-            NOW,
-            path,
-            digest,
-        ),
-    ).fetchone()
-    connection.execute("SET LOCAL session_replication_role = origin")
+    # Seed a pre-guard legacy row when asked; new path-digest registrations are rejected.
+    legacy = digest == hashlib.sha256(path.encode()).hexdigest()
+    with legacy_path_digest(connection) if legacy else nullcontext():
+        row = connection.execute(
+            "INSERT INTO football.source_snapshots(provider_id,source_identity,source_revision,"
+            "git_sha,acquired_at,manifest_path,manifest_sha256,status) "
+            "VALUES (%s,%s,%s,%s,%s,%s,%s,'acquired') RETURNING id",
+            (
+                provider_id[0],
+                identity,
+                revision,
+                None if revision.startswith("manifest-v1:") else revision,
+                NOW,
+                path,
+                digest,
+            ),
+        ).fetchone()
     assert row is not None
     return UUID(str(row[0]))
 

@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-12T07:10:00Z",
+  "updated_at": "2026-11-12T15:25:00Z",
   "unified_architecture_investigation": {
     "status": "PASS_WITH_WARNINGS",
     "scope": "CURRENT_TASK.md revision 3; architecture investigation/planning only",
@@ -89,7 +89,10 @@
     "APPROVE_STORAGE_CANDIDATE_DATABASE_DELETION_V1",
     "RATIFY_RECOVERY_SCOPE_MIGRATION_AS_APPLIED_V1",
     "APPLY_RECOVERY_SCOPE_DISPOSITIONS_V1",
-    "AUTHORIZE_RECOVERABLE_CLI_BACKUP_V1"
+    "AUTHORIZE_RECOVERABLE_CLI_BACKUP_V1",
+    "APPLY_SOURCE_MANIFEST_BINDING_MIGRATION_V1",
+    "APPLY_FDUK_RAW_FILE_BINDINGS_V1",
+    "APPLY_SOURCE_SNAPSHOT_PATH_DIGEST_GUARD_V1"
   ],
   "closed_routes": [
     {
@@ -4113,6 +4116,40 @@
         "databases_deleted": 10,
         "reclaimed_bytes_measured": 43923338390,
         "postgres_volume_freed_bytes": 44405219328
+      },
+      "source_manifest_bindings": {
+        "migration_decision_id": "APPLY_SOURCE_MANIFEST_BINDING_MIGRATION_V1",
+        "migration_decision_ref": "docs/evidence/owner-decision-apply-source-manifest-binding-migration-2026-11-12.json",
+        "rehearsal_ref": "docs/evidence/fduk-binding-rehearsal-2026-11-12.json",
+        "migration": "202611120300_source_manifest_raw_file_bindings",
+        "migration_status": "APPLIED",
+        "applied_at": "2026-11-12T15:03:16Z",
+        "goose_version": 202611120400,
+        "pending_migrations_after": [],
+        "bindings_authorized": true,
+        "bindings_recorded": 47,
+        "path_digest_guard_authorized": true,
+        "preservation": "UNCHANGED",
+        "full_recovery_verified": false,
+        "bindings_decision_id": "APPLY_FDUK_RAW_FILE_BINDINGS_V1",
+        "bindings_decision_ref": "docs/evidence/owner-decision-apply-fduk-raw-file-bindings-2026-11-12.json",
+        "bindings_status": "APPLIED",
+        "bindings_recorded_at": "2026-11-12T15:06:12Z",
+        "path_digest_guard_decision_id": "APPLY_SOURCE_SNAPSHOT_PATH_DIGEST_GUARD_V1",
+        "path_digest_guard_decision_ref": "docs/evidence/owner-decision-apply-path-digest-guard-migration-2026-11-12.json",
+        "path_digest_guard_migration": "202611120400_source_snapshot_path_digest_guard",
+        "path_digest_guard_status": "APPLIED",
+        "path_digest_guard_applied_at": "2026-11-12T15:08:33Z",
+        "valid_ingestion_after_guard": "VERIFIED",
+        "full_recovery_preflight": {
+          "observed_at": "2026-11-12T15:25:00Z",
+          "method": "python -m scripts.manual_backup preview --scope FULL_RECOVERY (read-only; no capture or repository write)",
+          "result": "INCOMPLETE: legacy source resource lacks a verified physical file locator",
+          "unresolved_references": 33,
+          "unresolved_owned_by": "source_resources retired under APPLY_RECOVERY_SCOPE_DISPOSITIONS_V1 (33 of 33)",
+          "unresolved_from_the_47_bindings": 0,
+          "eligible": false
+        }
       }
     },
     "recovery_scope_migration": {
@@ -4156,6 +4193,6 @@
       "full_recovery_verified": false,
       "full_recovery_blocker": "FULL_RECOVERY capture enumerates the 159 governed exclusions and fails by design; VERIFIED_GOVERNED_SCOPE is proposed separately"
     },
-    "required_next_action": "Diagnose the failing admin backup. The 161 recovery-scope dispositions are applied (0 unavailable, 159 excluded); A fresh VERIFIED_RECOVERABLE recovery point (bb97d6fd) covers them; FULL_RECOVERY cannot pass while governed exclusions exist, and a VERIFIED_GOVERNED_SCOPE classification awaits review. The 26 rehearsal databases, football_v4_integration_20261110 and the StatsBomb and P02 databases stay until separately reviewed."
+    "required_next_action": "Migrations 202611120300 and 202611120400 and the 47 Football-Data.co.uk raw-file bindings are applied; no migration is pending. A VERIFIED_RECOVERABLE point (bb97d6fd, before the bindings) exists outside Admin history. FULL_RECOVERY cannot pass while governed exclusions exist; VERIFIED_GOVERNED_SCOPE (merged in PR 211) needs a deployed release, an owner-authorized GOVERNED_SCOPE configuration and a fresh Admin backup. The rehearsal databases, football_v4_integration_20261110 and the StatsBomb and P02 databases stay until separately reviewed."
   }
 }

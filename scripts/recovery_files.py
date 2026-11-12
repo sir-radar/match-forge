@@ -284,23 +284,29 @@ def _snapshot_files(
     connection: Connection[Any], data_root: Path, unresolved: list[dict[str, Any]] | None
 ) -> list[FileReference]:
     references = []
+    bindings = _raw_file_bindings(connection)
     for identity, provider, revision, path, digest in connection.execute(
         "SELECT s.id,p.code,s.source_revision,s.manifest_path,s.manifest_sha256 "
         "FROM football.source_snapshots s JOIN football.providers p ON p.id=s.provider_id"
     ):
-        owner = {
+        owner: dict[str, Any] = {
             "table": "source_snapshots",
             "keys": {"id": str(identity)},
             "column": "manifest_path",
             "registered_sha256": digest,
         }
+        bound = bindings.get(str(identity))
         try:
-            ref = source_manifest_reference(data_root, provider, revision, path, digest)
-            owner["checksum_kind"] = (
-                "PATH_IDENTITY"
-                if ref.sha256 is None
-                else ("PHYSICAL" if ref.sha256 == digest else "LOGICAL_IDENTITY")
-            )
+            ref = source_manifest_reference(data_root, provider, revision, path, digest, bound)
+            if bound is not None:
+                owner["checksum_kind"] = "BOUND_RESOURCE"
+                owner["source_resource_id"] = bound.source_resource_id
+            else:
+                owner["checksum_kind"] = (
+                    "PATH_IDENTITY"
+                    if ref.sha256 is None
+                    else ("PHYSICAL" if ref.sha256 == digest else "LOGICAL_IDENTITY")
+                )
             references.append(replace(ref, registrations=(owner,)))
         except (OSError, ValueError, KeyError, TypeError) as error:
             _unresolved_reference(
@@ -453,13 +459,61 @@ def legacy_source_path(
     raise RecoveryReferenceError("legacy source resource lacks a verified physical file locator")
 
 
+@dataclass(frozen=True)
+class RawFileBinding:
+    """A recorded MANIFEST_PATH_IS_RAW_RESOURCE binding (migration 202611120300)."""
+
+    registered_path: str
+    registered_sha256: str
+    source_resource_id: str
+    sha256: str
+    size: int
+    resource_matches: bool = True
+
+
+def _raw_file_bindings(connection: Connection[Any]) -> dict[str, RawFileBinding]:
+    """Read bindings when the table exists; databases before 202611120300 have none."""
+    row = connection.execute(
+        "SELECT to_regclass('football.source_manifest_raw_file_bindings')"
+    ).fetchone()
+    if row is None or row[0] is None:
+        return {}
+    return {
+        str(snapshot): RawFileBinding(path, registered, str(resource), digest, size, matches)
+        for snapshot, path, registered, resource, digest, size, matches in connection.execute(
+            "SELECT b.source_snapshot_id,b.registered_path,b.registered_sha256,"
+            "b.source_resource_id,b.resource_sha256,b.resource_size_bytes,"
+            "r.sha256 IS NOT DISTINCT FROM b.resource_sha256 "
+            "AND r.size_bytes IS NOT DISTINCT FROM b.resource_size_bytes "
+            "FROM football.source_manifest_raw_file_bindings b "
+            "LEFT JOIN football.source_resources r ON r.id=b.source_resource_id"
+        )
+    }
+
+
 def source_manifest_reference(
-    root: Path, provider: str, revision: str, path: str, digest: str
+    root: Path,
+    provider: str,
+    revision: str,
+    path: str,
+    digest: str,
+    bound: RawFileBinding | None = None,
 ) -> FileReference:
-    if (
-        not revision.startswith("manifest-v1:")
-        and hashlib.sha256(path.encode()).hexdigest() == digest
-    ):
+    path_digest = hashlib.sha256(path.encode()).hexdigest() == digest
+    if bound is not None:
+        # The path digest identifies the snapshot; the bound resource checksum and size are
+        # what the bytes at that path must match. Capture then verifies the copied bytes.
+        if (
+            not bound.resource_matches
+            or revision.startswith("manifest-v1:")
+            or not path_digest
+            or (bound.registered_path, bound.registered_sha256) != (path, digest)
+            or revision != bound.sha256
+            or Path(path).stem != bound.sha256
+        ):
+            raise RecoveryReferenceError("raw-file binding differs from the registration")
+        return FileReference("data", path, bound.sha256, bound.size)
+    if not revision.startswith("manifest-v1:") and path_digest:
         # HistoricalBackfillStore originally registered a pathname identity, not a byte hash.
         # Source resource registrations still bind the original payload hashes and sizes.
         return FileReference("data", path, None)

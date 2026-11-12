@@ -5,6 +5,7 @@ import os
 from collections.abc import Iterator
 from dataclasses import replace
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -15,7 +16,9 @@ from psycopg.errors import CheckViolation, RaiseException
 
 from scripts.recovery_dispositions import Approval, Correction, RecoveryDispositionError
 from scripts.recovery_dispositions import record_dispositions as record_corrections
+from scripts.recovery_files import registered_files
 from scripts.source_manifest_bindings import Binding, SourceManifestBindingError, record_bindings
+from tests.integration.legacy_rows import legacy_path_digest
 
 DATABASE_URL = os.environ["TEST_DATABASE_URL"]
 NOW = datetime(2026, 11, 12, 12, 0, tzinfo=UTC)
@@ -47,14 +50,13 @@ def _legacy_snapshot(
     connection: Connection[Any], provider: UUID, identity: str, path: str, revision: str
 ) -> UUID:
     """Seed a pre-guard legacy row whose manifest checksum is the digest of its path."""
-    connection.execute("SET LOCAL session_replication_role = replica")
-    row = connection.execute(
-        "INSERT INTO football.source_snapshots(provider_id,source_identity,source_revision,"
-        "acquired_at,manifest_path,manifest_sha256,status) "
-        "VALUES (%s,%s,%s,%s,%s,%s,'validated') RETURNING id",
-        (provider, identity, revision, NOW, path, hashlib.sha256(path.encode()).hexdigest()),
-    ).fetchone()
-    connection.execute("SET LOCAL session_replication_role = origin")
+    with legacy_path_digest(connection):
+        row = connection.execute(
+            "INSERT INTO football.source_snapshots(provider_id,source_identity,source_revision,"
+            "acquired_at,manifest_path,manifest_sha256,status) "
+            "VALUES (%s,%s,%s,%s,%s,%s,'validated') RETURNING id",
+            (provider, identity, revision, NOW, path, hashlib.sha256(path.encode()).hexdigest()),
+        ).fetchone()
     assert row is not None
     return UUID(str(row[0]))
 
@@ -212,3 +214,33 @@ def test_guard_rejects_new_path_digest_snapshots_but_keeps_legacy_rows_writable(
     connection.execute(
         "UPDATE football.source_snapshots SET status='acquired' WHERE id=%s", (legacy,)
     )
+
+
+def test_recovery_captures_bound_snapshots_with_the_resource_checksum(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    item = _pair(connection)
+    ids = {str(item["http"]), str(item["https"])}
+
+    def snapshot_owners() -> dict[str, dict[str, Any]]:
+        unresolved: list[dict[str, Any]] = []
+        refs = [r for r in registered_files(connection, tmp_path, unresolved=unresolved)]
+        return {
+            owner["keys"]["id"]: {**owner, "sha256": ref.sha256, "size": ref.size}
+            for ref in refs
+            if ref.path == item["path"]
+            for owner in ref.registrations
+            if owner["table"] == "source_snapshots" and owner["keys"]["id"] in ids
+        }
+
+    before = snapshot_owners()
+    assert {owner["checksum_kind"] for owner in before.values()} == {"PATH_IDENTITY"}
+    record_bindings(
+        connection, (_binding(item["http"], item), _binding(item["https"], item)), APPROVAL
+    )
+    after = snapshot_owners()
+    assert set(after) == ids
+    for owner in after.values():
+        assert owner["checksum_kind"] == "BOUND_RESOURCE"
+        assert owner["source_resource_id"] == str(item["resource"])
+        assert (owner["sha256"], owner["size"]) == (item["digest"], 4052)

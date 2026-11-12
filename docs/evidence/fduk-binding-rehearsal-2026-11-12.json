@@ -1,0 +1,231 @@
+{
+ "contract": "FdukManifestBindingRehearsalV1",
+ "recorded_at": "2026-11-12T14:57:09.191645+00:00",
+ "purpose": "Rehearse migrations 202611120300 and 202611120400 and the 47 Football-Data.co.uk raw-file bindings on an isolated restored copy of the operating database before asking for authorization. Not an owner decision and not operating verification.",
+ "operating_database": {
+  "name": "football",
+  "goose_version": 202611120200,
+  "pending_migrations": [
+   "202611120300_source_manifest_raw_file_bindings",
+   "202611120400_source_snapshot_path_digest_guard"
+  ],
+  "source_manifest_raw_file_bindings_exists": false,
+  "checked_after_rehearsal": true
+ },
+ "restored_copy": {
+  "name": "football_fduk_binding_rehearsal_20261112",
+  "method": "pg_dump -Fc of football piped to pg_restore --exit-on-error in the same cluster",
+  "dump_started_at": "2026-11-12T13:39:22Z",
+  "restore_finished_at": "2026-11-12T14:09:12Z"
+ },
+ "code_commit_sha": "6ed7cf71c66ef7d61e4d75be043a4665ad4eb262",
+ "rehearsal_decision_reference": "REHEARSAL_ONLY_NOT_AN_OWNER_DECISION",
+ "approved_evidence": {
+  "path": "docs/evidence/fduk-manifest-path-digests-2026-11-12.json",
+  "sha256": "e912287d773cdad3ff2098a3fdd88a68d1184db5395a5cdc6c3ac1085f197da2"
+ },
+ "source_files_rehashed": {
+  "snapshots": 47,
+  "distinct_files": 45,
+  "bytes_match_bound_resource": 47,
+  "registered_sha256_is_path_digest": 47
+ },
+ "migration_method": "goose up-by-one once per migration; goose status listed only these two as pending",
+ "version_before": 202611120200,
+ "version_after_0300": 202611120300,
+ "version_after_0400": 202611120400,
+ "steps": [
+  {
+   "step": "goose up-by-one",
+   "output": [
+    "2026/11/12 15:09:59 OK   202611120300_source_manifest_raw_file_bindings.sql (37.21ms)"
+   ]
+  },
+  {
+   "step": "apply",
+   "result": {
+    "inserted": 47,
+    "verified_existing": 0
+   }
+  },
+  {
+   "step": "retry same decision",
+   "result": {
+    "inserted": 0,
+    "verified_existing": 47
+   }
+  },
+  {
+   "step": "retry different decision",
+   "result": "source manifest binding conflicts with immutable history"
+  },
+  {
+   "step": "goose up-by-one",
+   "output": [
+    "2026/11/12 15:09:59 OK   202611120400_source_snapshot_path_digest_guard.sql (9.12ms)"
+   ]
+  }
+ ],
+ "binding_rows": {
+  "rows": 47,
+  "distinct_resources": 45,
+  "sibling_bound": 2,
+  "matching_resource_and_registration": 47
+ },
+ "probes_rolled_back": [
+  {
+   "probe": "new path-digest snapshot",
+   "result": "source snapshot manifest checksum is the digest of its path"
+  },
+  {
+   "probe": "new manifest-v1 snapshot with byte checksum",
+   "result": "ACCEPTED (rolled back)"
+  },
+  {
+   "probe": "status update on a legacy path-digest snapshot",
+   "result": "ACCEPTED (rolled back)"
+  },
+  {
+   "probe": "re-point a legacy snapshot to another path digest",
+   "result": "source snapshot manifest checksum is the digest of its path"
+  },
+  {
+   "probe": "delete a binding",
+   "result": "dependency lineage is append-only"
+  },
+  {
+   "probe": "update a binding",
+   "result": "dependency lineage is append-only"
+  },
+  {
+   "probe": "never-written correction for a bound snapshot",
+   "result": "source manifest is already bound to a raw resource file"
+  }
+ ],
+ "dependent_rows_of_the_47": {
+  "provider_mapping_history": 242514,
+  "match_provider_mappings": 241442,
+  "product_team_match_history": 235923,
+  "team_provider_mappings": 1028,
+  "product_identity_admissions": 927,
+  "source_resources": 45,
+  "competition_provider_mappings": 44,
+  "product_source_result_conflicts": 8,
+  "total": 721931
+ },
+ "dependent_rows_unchanged": true,
+ "preservation_hashes": {
+  "method": "count(*) and md5(string_agg(row::text ORDER BY row::text)) per table",
+  "before": {
+   "source_snapshots": {
+    "rows": 85841,
+    "md5": "90e89ab561cda0b651fe3745804c4787"
+   },
+   "source_resources": {
+    "rows": 87649,
+    "md5": "b41d544bd01aa079787511eae32b582d"
+   },
+   "source_manifest_corrections": {
+    "rows": 1,
+    "md5": "7838e7ecad6e2b1ed02fd5b28d94e6d6"
+   },
+   "recovery_scope_retirements": {
+    "rows": 160,
+    "md5": "c82b94367d4958d695ad7dc992b0dc44"
+   },
+   "provider_mapping_history": {
+    "rows": 584003,
+    "md5": "4710785936444c8c1866bec883df3924"
+   },
+   "match_provider_mappings": {
+    "rows": 558076,
+    "md5": "8f8631196c1bfe97ff9cba9275afaa4b"
+   },
+   "product_team_match_history": {
+    "rows": 528994,
+    "md5": "be2654ddc25887867d6d04ac61ce4fda"
+   },
+   "team_provider_mappings": {
+    "rows": 22371,
+    "md5": "c5efcfc924529550944cba4c0254d7c8"
+   },
+   "product_identity_admissions": {
+    "rows": 23600,
+    "md5": "f1f4b96138df654a3d17be21cdcc058f"
+   },
+   "competition_provider_mappings": {
+    "rows": 2039,
+    "md5": "8286831fa132975ebec556678678378f"
+   },
+   "product_source_result_conflicts": {
+    "rows": 1845,
+    "md5": "1b4a8b70fcaedc77c1005bf573135fbe"
+   }
+  },
+  "after": {
+   "source_snapshots": {
+    "rows": 85841,
+    "md5": "90e89ab561cda0b651fe3745804c4787"
+   },
+   "source_resources": {
+    "rows": 87649,
+    "md5": "b41d544bd01aa079787511eae32b582d"
+   },
+   "source_manifest_corrections": {
+    "rows": 1,
+    "md5": "7838e7ecad6e2b1ed02fd5b28d94e6d6"
+   },
+   "recovery_scope_retirements": {
+    "rows": 160,
+    "md5": "c82b94367d4958d695ad7dc992b0dc44"
+   },
+   "provider_mapping_history": {
+    "rows": 584003,
+    "md5": "4710785936444c8c1866bec883df3924"
+   },
+   "match_provider_mappings": {
+    "rows": 558076,
+    "md5": "8f8631196c1bfe97ff9cba9275afaa4b"
+   },
+   "product_team_match_history": {
+    "rows": 528994,
+    "md5": "be2654ddc25887867d6d04ac61ce4fda"
+   },
+   "team_provider_mappings": {
+    "rows": 22371,
+    "md5": "c5efcfc924529550944cba4c0254d7c8"
+   },
+   "product_identity_admissions": {
+    "rows": 23600,
+    "md5": "f1f4b96138df654a3d17be21cdcc058f"
+   },
+   "competition_provider_mappings": {
+    "rows": 2039,
+    "md5": "8286831fa132975ebec556678678378f"
+   },
+   "product_source_result_conflicts": {
+    "rows": 1845,
+    "md5": "1b4a8b70fcaedc77c1005bf573135fbe"
+   }
+  },
+  "unchanged": true
+ },
+ "recovery_reference": {
+  "before": {
+   "snapshot_checksum_kinds": {
+    "PATH_IDENTITY": 47
+   },
+   "distinct_files": 45,
+   "files_verified_against_captured_checksum": 45,
+   "unresolved_for_the_47": []
+  },
+  "after": {
+   "snapshot_checksum_kinds": {
+    "BOUND_RESOURCE": 47
+   },
+   "distinct_files": 45,
+   "files_verified_against_captured_checksum": 45,
+   "unresolved_for_the_47": []
+  }
+ }
+}
