@@ -986,6 +986,8 @@ def test_legacy_registration_remains_unverified_and_unchanged(tmp_path: Path) ->
     with psycopg.connect(DATABASE_URL) as connection, connection.transaction(force_rollback=True):
         _history(connection, tmp_path)
         legacy_path = "raw/season.csv"
+        # Model a pre-guard legacy registration; new path digests are rejected by a trigger.
+        connection.execute("SET LOCAL session_replication_role = replica")
         connection.execute(
             """UPDATE football.source_snapshots SET source_identity = %s,
                source_revision = 'legacy',
@@ -998,6 +1000,7 @@ def test_legacy_registration_remains_unverified_and_unchanged(tmp_path: Path) ->
                 hashlib.sha256(legacy_path.encode()).hexdigest(),
             ),
         )
+        connection.execute("SET LOCAL session_replication_role = origin")
         registration = connection.execute(
             "SELECT to_jsonb(s) FROM football.source_snapshots s"
         ).fetchall()
