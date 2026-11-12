@@ -31,6 +31,7 @@ from scripts.capture_architecture_v2_baseline import (
     write_json,
 )
 from scripts.capture_architecture_v2_baseline import file_sha256 as digest_file
+from scripts.recovery_dispositions import disposition_records
 from scripts.recovery_files import (
     capture_files,
     registered_files,
@@ -40,12 +41,24 @@ from scripts.recovery_files import (
 )
 from scripts.recovery_scope import (
     EMPTY_SHA256,
+    GOVERNED_SCOPE,
     inventory,
     load_plan,
     require_inventory_database,
+    selected_governed_inventory,
     selected_inventory,
     validate_gaps,
+    validate_governed,
 )
+
+# Capture status -> recorded recovery scope. FULL_RECOVERY ("CAPTURED") has none.
+CAPTURE_SCOPES: dict[str, str | None] = {
+    "CAPTURED": None,
+    "CAPTURED_RECOVERABLE": "RECOVERABLE_ONLY",
+    "CAPTURED_GOVERNED": GOVERNED_SCOPE,
+}
+# Only registrations retired as synthetic lineage may fail their reader in a governed restore.
+READER_TABLES = {"DATASET": "dataset_versions", "MODEL_ARTIFACT": "model_artifacts"}
 
 
 def global_fingerprint() -> str:
@@ -82,6 +95,7 @@ def recovery_estimate(
     recovery_plan: dict[str, Any] | None = None,
     *,
     use_reviewed_estimate: bool = False,
+    governed: bool = False,
 ) -> dict[str, int]:
     with psycopg.connect(
         os.environ["DATABASE_URL"],
@@ -102,7 +116,8 @@ def recovery_estimate(
             )
             referenced_files = len(refs)
         else:
-            selected = selected_inventory(connection, data_root, recovery_plan)
+            select = selected_governed_inventory if governed else selected_inventory
+            selected = select(connection, data_root, recovery_plan)
             referenced_files = len(selected["references"])
             referenced_bytes = selected["logical_bytes"]
         connection.rollback()
@@ -114,8 +129,14 @@ def recovery_estimate(
 
 
 def capture_recovery(
-    output: Path, data_root: Path, recovery_plan: dict[str, Any] | None = None
+    output: Path,
+    data_root: Path,
+    recovery_plan: dict[str, Any] | None = None,
+    *,
+    governed: bool = False,
 ) -> dict[str, Any]:
+    if governed and recovery_plan is None:
+        raise ValueError("a governed capture needs the owner-reviewed inventory")
     output.mkdir(parents=True, exist_ok=False, mode=0o700)
     report: dict[str, Any] = {
         "version": 1,
@@ -213,16 +234,21 @@ def capture_recovery(
                 if recovery_plan is None:
                     refs = registered_files(connection, data_root)
                 else:
-                    selected = selected_inventory(connection, data_root, recovery_plan)
+                    # Exclusions only cover registrations whose files are missing; every
+                    # present original is still captured and checksummed.
+                    select = selected_governed_inventory if governed else selected_inventory
+                    selected = select(connection, data_root, recovery_plan)
                     refs = selected["references"]
                     report["recovery_scope"] = {
-                        "scope": "RECOVERABLE_ONLY",
+                        "scope": GOVERNED_SCOPE if governed else "RECOVERABLE_ONLY",
                         "full_recovery": False,
                         "unavailable": selected["unavailable"],
                         "unavailable_sha256": selected["unavailable_sha256"],
                         "excluded": selected["excluded"],
                         "excluded_sha256": selected["excluded_sha256"],
                     }
+                    if governed:
+                        report["recovery_scope"]["governed_sha256"] = selected["governed_sha256"]
                 report["files"] = capture_files(
                     refs, {"data": data_root, "repository": ROOT}, output
                 )
@@ -253,24 +279,43 @@ def capture_recovery(
     }
     report["duration_seconds"] = time.monotonic() - started
     if report["files"]["status"] == "COMPLETE":
-        report["status"] = "CAPTURED_RECOVERABLE" if recovery_plan is not None else "CAPTURED"
+        report["status"] = (
+            "CAPTURED_GOVERNED"
+            if governed
+            else "CAPTURED_RECOVERABLE"
+            if recovery_plan is not None
+            else "CAPTURED"
+        )
     report["restore_verified"] = False
     write_json(output / "recovery.json", report)
     return report
 
 
-def verify_capture(root: Path, *, allow_recoverable: bool = False) -> dict[str, Any]:
+def _verify_capture_scope(report: dict[str, Any]) -> None:
+    scope = report.get("recovery_scope")
+    if CAPTURE_SCOPES[report["status"]] != (scope["scope"] if scope is not None else None):
+        raise ValueError("recovery scope does not match capture status")
+    if scope is None:
+        return
+    validate_gaps(scope, scope["scope"])
+    if scope["full_recovery"] is not False:
+        raise ValueError("a scoped capture cannot claim full recovery")
+    if scope["scope"] == GOVERNED_SCOPE:
+        validate_governed(scope)
+
+
+def verify_capture(
+    root: Path, *, allow_recoverable: bool = False, allow_governed: bool = False
+) -> dict[str, Any]:
     report: dict[str, Any] = json.loads(regular_file(root, "recovery.json").read_text())
-    accepted = {"CAPTURED", "CAPTURED_RECOVERABLE"} if allow_recoverable else {"CAPTURED"}
+    accepted = {"CAPTURED"}
+    if allow_recoverable:
+        accepted.add("CAPTURED_RECOVERABLE")
+    if allow_governed:
+        accepted.add("CAPTURED_GOVERNED")
     if report["version"] != 1 or report["status"] not in accepted:
         raise ValueError("incomplete or unsupported recovery capture")
-    scope = report.get("recovery_scope")
-    if (report["status"] == "CAPTURED_RECOVERABLE") != (scope is not None):
-        raise ValueError("recovery scope does not match capture status")
-    if scope is not None:
-        validate_gaps(scope)
-        if scope["full_recovery"] is not False:
-            raise ValueError("recoverable capture cannot claim full recovery")
+    _verify_capture_scope(report)
     if verify_files(root):
         raise ValueError("recovery file verification failed")
     required = {"database.dump", "globals.sql", "application.tar", "recovery-files.json"}
@@ -361,9 +406,15 @@ def verify_artifact_readers(connection: psycopg.Connection[Any], data_root: Path
 
 
 def verify_restore(
-    root: Path, destination: Path, *, allow_recoverable: bool = False
+    root: Path,
+    destination: Path,
+    *,
+    allow_recoverable: bool = False,
+    allow_governed: bool = False,
 ) -> dict[str, Any]:
-    report = verify_capture(root, allow_recoverable=allow_recoverable)
+    report = verify_capture(
+        root, allow_recoverable=allow_recoverable, allow_governed=allow_governed
+    )
     require_restore_storage(report, root, destination)
     destination.mkdir(parents=True, exist_ok=False, mode=0o700)
     restore_files(root, {"data": destination / "data", "repository": destination / "repository"})
@@ -422,16 +473,24 @@ def verify_restore(
             control.execute(
                 sql.SQL("DROP DATABASE {} WITH (FORCE)").format(sql.Identifier(database))
             )
+    scope = report.get("recovery_scope") or {}
     result = {
-        "status": "PASS_RECOVERABLE" if report.get("recovery_scope") else "PASS",
+        "status": {
+            None: "PASS",
+            "RECOVERABLE_ONLY": "PASS_RECOVERABLE",
+            GOVERNED_SCOPE: "PASS_GOVERNED_SCOPE",
+        }[scope.get("scope")],
         "full_recovery": False,
-        "unavailable_dependencies": len(report.get("recovery_scope", {}).get("unavailable", [])),
+        "unavailable_dependencies": len(scope.get("unavailable", [])),
         "database_isolated": True,
         "duration_seconds": time.monotonic() - started,
         "verified_at": datetime.now(UTC).isoformat(),
         "global_role_restore": "NOT_RUN: apply globals only to a new isolated cluster",
         "registered_artifact_readers": artifact_readers,
     }
+    if scope.get("scope") == GOVERNED_SCOPE:
+        result["excluded_dependencies"] = len(scope["excluded"])
+        result["governed_sha256"] = scope["governed_sha256"]
     write_json(destination / "verification.json", result)
     return result
 
@@ -603,6 +662,8 @@ def verify_restored_dependencies(
 ) -> dict[str, Any]:
     locations = relocated or {}
     scope = report.get("recovery_scope")
+    if scope is not None and scope["scope"] == GOVERNED_SCOPE:
+        return verify_governed_dependencies(connection, destination, report, locations)
     if scope is not None:
         selected = inventory(
             connection, destination / "data", destination / "repository", locations
@@ -633,6 +694,48 @@ def verify_restored_dependencies(
     return verify_artifact_readers(connection, destination / "data")
 
 
+def verify_governed_dependencies(
+    connection: psycopg.Connection[Any],
+    destination: Path,
+    report: dict[str, Any],
+    locations: dict[str, str],
+) -> dict[str, Any]:
+    """Restored governed scope: no gap, the same approved exclusions, every original intact."""
+    scope = report["recovery_scope"]
+    roots = {"data": destination / "data", "repository": destination / "repository"}
+    selected = inventory(connection, roots["data"], roots["repository"], locations)
+    if (
+        selected["unavailable"]
+        or selected["excluded_sha256"] != scope["excluded_sha256"]
+        or selected["governed_sha256"] != scope["governed_sha256"]
+    ):
+        raise ValueError("restored governed scope differs from the captured approvals")
+    verified = capture_files(selected["references"], roots, destination / "reference-check")
+    if verified["status"] != "COMPLETE":
+        raise ValueError("restored snapshot-to-file verification failed")
+    readers = artifact_reader_results(connection, roots["data"])
+    if readers != report["artifact_reader_results"]:
+        raise ValueError("restored artifact reader results differ from the captured results")
+    retired = {
+        key
+        for key, record in disposition_records(connection).items()
+        if record["disposition"] == "SYNTHETIC_TEST_LINEAGE"
+    }
+    for result in readers:
+        table = READER_TABLES[str(result["artifact_kind"])]
+        if result["status"] != "PASS" and (table, str(result["artifact_id"])) not in retired:
+            raise ValueError(
+                "a restored artifact outside the governed exclusions failed its reader"
+            )
+    return {
+        "results": readers,
+        "full_recovery": False,
+        "verified_files": len(selected["references"]),
+        "excluded_dependencies": len(selected["excluded"]),
+        "governed_sha256": selected["governed_sha256"],
+    }
+
+
 def require_restore_storage(report: dict[str, Any], root: Path, destination: Path) -> None:
     configured = Path(os.environ.get("FOOTBALL_DATA_ROOT", str(ROOT / ".local/football-data")))
     if destination.resolve().is_relative_to(configured.resolve()):
@@ -657,20 +760,26 @@ def main() -> None:
     capture.add_argument("--output", type=Path, required=True)
     capture.add_argument("--data-root", type=Path, required=True)
     capture.add_argument("--recoverable-inventory", type=Path)
+    capture.add_argument("--governed", action="store_true")
     restore = sub.add_parser("verify-restore")
     restore.add_argument("--capture", type=Path, required=True)
     restore.add_argument("--destination", type=Path, required=True)
     restore.add_argument("--allow-recoverable", action="store_true")
+    restore.add_argument("--allow-governed", action="store_true")
     args = parser.parse_args()
     result = (
         capture_recovery(
             args.output,
             args.data_root,
             load_plan(args.recoverable_inventory) if args.recoverable_inventory else None,
+            governed=args.governed,
         )
         if args.action == "capture"
         else verify_restore(
-            args.capture, args.destination, allow_recoverable=args.allow_recoverable
+            args.capture,
+            args.destination,
+            allow_recoverable=args.allow_recoverable,
+            allow_governed=args.allow_governed,
         )
     )
     print(json.dumps({"status": result["status"]}))

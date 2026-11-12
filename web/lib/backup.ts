@@ -1,12 +1,19 @@
 import { parseSyncRun, type SyncRun } from "@/lib/contracts";
 
-export type BackupScope = "FULL_RECOVERY" | "RECOVERABLE_ONLY";
+export type BackupScope = "FULL_RECOVERY" | "GOVERNED_SCOPE" | "RECOVERABLE_ONLY";
+const SCOPE_LABELS: Record<BackupScope, string> = {
+  FULL_RECOVERY: "Full recovery",
+  GOVERNED_SCOPE: "Governed scope (approved exclusions)",
+  RECOVERABLE_ONLY: "Recoverable only",
+};
 export const backupScopeLabel = (scope: unknown) =>
-  scope === "FULL_RECOVERY" ? "Full recovery" : scope === "RECOVERABLE_ONLY" ? "Recoverable only" : "Scope unrecorded";
+  typeof scope === "string" && scope in SCOPE_LABELS ? SCOPE_LABELS[scope as BackupScope] : "Scope unrecorded";
+export const restoreLabel = (scope: unknown, fullRecovery: unknown) =>
+  fullRecovery === true ? "Full recovery verified" : scope === "GOVERNED_SCOPE" ? "Every original verified; approved exclusions absent" : "Recoverable data verified";
 
 type BackupPoint = { scope: BackupScope; snapshot_id: string; captured_at: string; verified_at: string; full_recovery: boolean; unavailable_dependencies: number; logical_bytes: number; data_added_packed_bytes: number; repository_file_bytes: number; volume_free_space_change_bytes?: number };
 type BackupDrive = { volume_uuid: string; filesystem: string; filesystem_encrypted: boolean; free_bytes: number; capacity_bytes: number };
-export type BackupAvailability = { scope?: BackupScope; known_unavailable_dependencies: number | null; prior_verified: BackupPoint | null; unavailable_sha256: string | null; state: string; message: string; drive?: BackupDrive; repository_unlocked: boolean; referenced_files: number; referenced_bytes: number; estimated_staging_bytes: number; impact: string };
+export type BackupAvailability = { scope?: BackupScope; known_unavailable_dependencies: number | null; prior_verified: BackupPoint | null; unavailable_sha256: string | null; governed_sha256: string | null; excluded_dependencies: number | null; state: string; message: string; drive?: BackupDrive; repository_unlocked: boolean; referenced_files: number; referenced_bytes: number; estimated_staging_bytes: number; impact: string };
 export type BackupView = { availability: BackupAvailability; runs: SyncRun[]; last_verified: SyncRun | null; last_full_recovery: SyncRun | null; next_due_at: string | null; backup_age_seconds: number | null; reminder_due: boolean; safe_to_eject: boolean };
 
 function object(value: unknown): Record<string, unknown> {
@@ -30,7 +37,7 @@ function parseDrive(value: unknown): BackupDrive {
 }
 
 function parseScope(value: unknown): BackupScope | undefined {
-  if (value === undefined || value === "FULL_RECOVERY" || value === "RECOVERABLE_ONLY") return value;
+  if (value === undefined || value === "FULL_RECOVERY" || value === "GOVERNED_SCOPE" || value === "RECOVERABLE_ONLY") return value;
   throw new Error("Unknown backup scope");
 }
 
@@ -51,13 +58,26 @@ function parsePrior(value: unknown): BackupPoint | null {
   };
 }
 
-function parseCoverage(item: Record<string, unknown>, state: string): Pick<BackupAvailability, "scope" | "known_unavailable_dependencies" | "unavailable_sha256"> {
+const SHA256 = /^[0-9a-f]{64}$/;
+function optionalDigest(value: unknown): string | null {
+  if (value === null || value === undefined) return null;
+  const digest = text(value);
+  if (!SHA256.test(digest)) throw new Error("Invalid recovery binding");
+  return digest;
+}
+
+function parseCoverage(item: Record<string, unknown>, state: string): Pick<BackupAvailability, "scope" | "known_unavailable_dependencies" | "unavailable_sha256" | "governed_sha256" | "excluded_dependencies"> {
   const scope = parseScope(item.scope);
   const unavailable = item.known_unavailable_dependencies === null ? null : count(item.known_unavailable_dependencies);
-  const digest = item.unavailable_sha256 === null ? null : text(item.unavailable_sha256);
-  if (digest !== null && !/^[0-9a-f]{64}$/.test(digest)) throw new Error("Invalid unavailable-dependency manifest");
-  if ((digest === null) !== (unavailable === null) || (scope === "RECOVERABLE_ONLY" && state === "READY" && digest === null)) throw new Error("Missing recovery inventory");
-  return { scope, known_unavailable_dependencies: unavailable, unavailable_sha256: digest };
+  const digest = optionalDigest(item.unavailable_sha256);
+  const governed = optionalDigest(item.governed_sha256);
+  const excluded = item.excluded_dependencies === null || item.excluded_dependencies === undefined ? null : count(item.excluded_dependencies);
+  const scoped = scope === "RECOVERABLE_ONLY" || scope === "GOVERNED_SCOPE";
+  if ((digest === null) !== (unavailable === null) || (scoped && state === "READY" && digest === null)) throw new Error("Missing recovery inventory");
+  // A governed scope has no unexplained gap and binds at least one approved exclusion.
+  if (scope === "GOVERNED_SCOPE" && state === "READY" && (governed === null || unavailable !== 0 || !excluded)) throw new Error("Missing governed recovery approvals");
+  if (scope !== "GOVERNED_SCOPE" && governed !== null) throw new Error("Unexpected governed recovery binding");
+  return { scope, known_unavailable_dependencies: unavailable, unavailable_sha256: digest, governed_sha256: governed, excluded_dependencies: excluded };
 }
 
 function parseAvailability(value: unknown): BackupAvailability {

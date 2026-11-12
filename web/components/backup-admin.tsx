@@ -6,21 +6,22 @@ import { TableScroll } from "@/components/table-scroll";
 import type { SyncRun } from "@/lib/contracts";
 import { DISPLAY_TIME_ZONE } from "@/lib/display-date";
 import { api, ApiError } from "@/lib/api";
-import { backupScopeLabel, type BackupAvailability, type BackupScope, type BackupView } from "@/lib/backup";
+import { backupScopeLabel, restoreLabel, type BackupAvailability, type BackupScope, type BackupView } from "@/lib/backup";
 
 const button = "rounded-sm border border-[var(--outline)] px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--secondary)] disabled:cursor-not-allowed disabled:opacity-50";
 const panel = "rounded-sm border border-[var(--highest)] bg-[var(--lowest)] p-5";
 const bytes = (value: unknown) => typeof value === "number" && Number.isFinite(value) ? `${(value / 1_000_000_000).toLocaleString("en-GB", { maximumFractionDigits: 2 })} GB` : "Not measured";
 const date = (value: unknown) => typeof value === "string" && Number.isFinite(Date.parse(value)) ? new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: DISPLAY_TIME_ZONE }).format(new Date(value)) : "Not recorded";
 
-type ConfirmedBackup = { id: string; scope: BackupScope; digest: string | null };
+type ConfirmedBackup = { id: string; scope: BackupScope; digest: string | null; governed: string | null };
 
 function confirmationRequest(availability: BackupAvailability, prior: ConfirmedBackup | null): ConfirmedBackup | null {
   const { scope } = availability;
   if (!scope) return null;
-  const digest = scope === "RECOVERABLE_ONLY" ? availability.unavailable_sha256 : null;
-  if (prior?.scope === scope && prior.digest === digest) return prior;
-  return { id: crypto.randomUUID(), scope, digest };
+  const digest = scope === "FULL_RECOVERY" ? null : availability.unavailable_sha256;
+  const governed = scope === "GOVERNED_SCOPE" ? availability.governed_sha256 : null;
+  if (prior?.scope === scope && prior.digest === digest && prior.governed === governed) return prior;
+  return { id: crypto.randomUUID(), scope, digest, governed };
 }
 
 function useBackupState(initial: BackupView | null, initialError: string | null) {
@@ -74,7 +75,7 @@ function useBackupState(initial: BackupView | null, initialError: string | null)
     setBusy(true); setActionError(null); controller.current?.abort(); ++generation.current;
     const signal = new AbortController(); controller.current = signal;
     try {
-      const run = await api.startBackup(confirmed.id, confirmed.scope, confirmed.digest, signal.signal);
+      const run = await api.startBackup(confirmed.id, confirmed.scope, confirmed.digest, signal.signal, confirmed.governed);
       if (signal.signal.aborted) return;
       request.current = null; setConfirm(false);
       focusResult.current = true;
@@ -142,6 +143,7 @@ function BackupCoverage({ view }: { view: BackupView | null }) {
     <h2 id="backup-coverage">Recovery policy</h2>
     <p>{scope ? backupScopeLabel(scope) : "Recovery policy could not be checked."}</p>
     {scope && <p>{unavailable === null ? "No reviewed inventory is configured." : `${unavailable.toLocaleString("en-GB")} unavailable dependencies in the reviewed inventory.`}</p>}
+    {scope === "GOVERNED_SCOPE" && <p>{`${(view.availability.excluded_dependencies ?? 0).toLocaleString("en-GB")} missing synthetic dependencies are excluded under recorded owner approvals. They are not recovered.`}</p>}
     {(scope || fullVerified) && <p>{fullVerified ? `Last full recovery verified ${date(fullVerified)}.` : "Full recovery has yet to pass isolated verification."}</p>}
   </section>;
 }
@@ -164,9 +166,9 @@ function BackupLatestPanel({ view }: { view: BackupView | null }) {
   const age = view?.backup_age_seconds;
   const {
     verified_at, captured_at, logical_bytes, data_added_packed_bytes, repository_file_bytes,
-    volume_free_space_change_bytes, full_recovery,
+    volume_free_space_change_bytes, full_recovery, scope,
   } = summary ?? {};
-  const restore = full_recovery ? "Full recovery verified" : "Recoverable data verified";
+  const restore = restoreLabel(scope, full_recovery);
   return <section className={panel} aria-labelledby="backup-latest">
     <h2 id="backup-latest">Last verified backup for this policy</h2>
     {view ? <dl className="space-y-2">
@@ -192,15 +194,17 @@ function BackupConfirmation({ state }: { state: BackupState }) {
   const availability = state.view?.availability;
   if (!confirm || !availability?.scope) return null;
   const recoverable = availability.scope === "RECOVERABLE_ONLY";
+  const governed = availability.scope === "GOVERNED_SCOPE";
   return <section className={panel} aria-labelledby="backup-confirm">
     <h2 id="backup-confirm" tabIndex={-1} ref={confirmation}>Confirm manual backup</h2>
     <p><strong>{backupScopeLabel(availability.scope)}</strong></p>
     {recoverable && <p>Confirm that this recovery point excludes the {availability.known_unavailable_dependencies?.toLocaleString("en-GB")} declared unavailable dependencies. Complete historical and model artifact recovery remains unverified.</p>}
+    {governed && <p>Every present original is captured and verified. {availability.excluded_dependencies?.toLocaleString("en-GB")} missing synthetic dependencies are excluded under recorded owner approvals and are not recovered. This is not full recovery.</p>}
     <p>{availability.impact}</p>
     <p>Estimated files {availability.referenced_files.toLocaleString("en-GB")} · {bytes(availability.referenced_bytes)}. Estimated staging {bytes(availability.estimated_staging_bytes)}. Actual size can grow during export.</p>
     <p>Earlier verified recovery points are retained.</p>
     <div className="flex flex-wrap gap-3">
-      <button tabIndex={0} className={button} onClick={() => void submit()} disabled={busy}>{recoverable ? "Confirm recoverable-only backup" : "Confirm full recovery backup"}</button>
+      <button tabIndex={0} className={button} onClick={() => void submit()} disabled={busy}>{recoverable ? "Confirm recoverable-only backup" : governed ? "Confirm governed-scope backup" : "Confirm full recovery backup"}</button>
       <button tabIndex={0} className={button} disabled={busy} onClick={dismissConfirmation}>Go back</button>
     </div>
   </section>;
@@ -217,6 +221,6 @@ function BackupHistory({ view }: { view: BackupView | null }) {
 
 function BackupHistoryRow({ run }: { run: SyncRun }) {
   const verified = run.status === "SUCCEEDED" && run.summary.verified === true;
-  const unavailable = run.summary.unavailable_dependencies;
-  return <tr><th scope="row">{date(run.requested_at)}</th><td>{backupScopeLabel(run.parameters.scope)}</td><td>{verified ? (run.parameters.scope ? "Isolated restore verified" : "Legacy byte verification") : run.status}{typeof unavailable === "number" && unavailable > 0 && <p>{unavailable.toLocaleString("en-GB")} unavailable</p>}</td><td className="max-w-56 break-all">{typeof run.summary.snapshot_id === "string" ? run.summary.snapshot_id : "Not available"}</td><td>{bytes(run.summary?.data_added_packed_bytes)}</td><td>{typeof run.summary.message === "string" ? run.summary.message : run.error_message ?? ""}</td></tr>;
+  const { unavailable_dependencies: unavailable, excluded_dependencies: excluded } = run.summary;
+  return <tr><th scope="row">{date(run.requested_at)}</th><td>{backupScopeLabel(run.parameters.scope)}</td><td>{verified ? (run.parameters.scope ? "Isolated restore verified" : "Legacy byte verification") : run.status}{typeof unavailable === "number" && unavailable > 0 && <p>{unavailable.toLocaleString("en-GB")} unavailable</p>}{run.parameters.scope === "GOVERNED_SCOPE" && typeof excluded === "number" && excluded > 0 && <p>{excluded.toLocaleString("en-GB")} excluded under approvals</p>}</td><td className="max-w-56 break-all">{typeof run.summary.snapshot_id === "string" ? run.summary.snapshot_id : "Not available"}</td><td>{bytes(run.summary?.data_added_packed_bytes)}</td><td>{typeof run.summary.message === "string" ? run.summary.message : run.error_message ?? ""}</td></tr>;
 }

@@ -33,22 +33,33 @@ from scripts.backup_recovery import (
 )
 from scripts.capture_architecture_v2_baseline import ROOT, write_json
 from scripts.recovery_files import RecoveryReferenceError, regular_file
-from scripts.recovery_scope import load_plan
+from scripts.recovery_scope import GOVERNED_SCOPE, load_plan, validate_governed
 
 FULL_RECOVERY = "FULL_RECOVERY"
 RECOVERABLE_ONLY = "RECOVERABLE_ONLY"
 
 
+SCOPED = (RECOVERABLE_ONLY, GOVERNED_SCOPE)
+
+
+def governed_plan(path: Path) -> dict[str, Any]:
+    plan = load_plan(path)
+    validate_governed(plan)
+    return plan
+
+
 def admin_policy() -> tuple[str, dict[str, Any] | None]:
     scope = os.environ.get("MATCHFORGE_BACKUP_SCOPE", FULL_RECOVERY)
-    if scope not in (FULL_RECOVERY, RECOVERABLE_ONLY):
+    if scope not in (FULL_RECOVERY, *SCOPED):
         raise BackupError("UNCONFIGURED", "Configure a valid backup recovery policy.")
     inventory_path = os.environ.get("MATCHFORGE_BACKUP_RECOVERABLE_INVENTORY")
     try:
         plan = load_plan(Path(inventory_path)) if inventory_path else None
+        if scope == GOVERNED_SCOPE and plan is not None:
+            validate_governed(plan)
     except (OSError, ValueError, TypeError, KeyError) as error:
         raise BackupError("UNCONFIGURED", "The protected recovery inventory is invalid.") from error
-    if scope == RECOVERABLE_ONLY and plan is None:
+    if scope in SCOPED and plan is None:
         raise BackupError("UNCONFIGURED", "Configure the owner-reviewed recovery inventory first.")
     return scope, plan
 
@@ -58,6 +69,8 @@ def policy_details(scope: str, plan: dict[str, Any] | None) -> dict[str, Any]:
         "scope": scope,
         "known_unavailable_dependencies": len(plan["unavailable"]) if plan else None,
         "unavailable_sha256": plan["unavailable_sha256"] if plan else None,
+        "excluded_dependencies": len(plan.get("excluded", [])) if plan else None,
+        "governed_sha256": plan["governed_sha256"] if plan and scope == GOVERNED_SCOPE else None,
     }
 
 
@@ -121,11 +134,12 @@ def preview(
     recovery_plan: dict[str, Any] | None = None,
     *,
     use_reviewed_estimate: bool = False,
+    governed: bool = False,
 ) -> dict[str, Any]:
     _, volume = destination(config)
     data_root = Path(os.environ.get("FOOTBALL_DATA_ROOT", str(ROOT / ".local/football-data")))
     estimate = recovery_estimate(
-        data_root, recovery_plan, use_reviewed_estimate=use_reviewed_estimate
+        data_root, recovery_plan, use_reviewed_estimate=use_reviewed_estimate, governed=governed
     )
     estimated = estimate["estimated_staging_bytes"]
     low_external = require_capacity(volume["free_bytes"], estimated, volume["capacity_bytes"])
@@ -179,7 +193,10 @@ def backup(
     restore_destination: Path | None = None,
     *,
     admin: bool = False,
+    governed: bool = False,
 ) -> dict[str, Any]:
+    if governed and recovery_plan is None:
+        raise BackupError("UNCONFIGURED", "Configure the owner-reviewed recovery inventory first.")
     if restore_destination is None and not admin:
         raise BackupError(
             "INCOMPLETE",
@@ -187,7 +204,7 @@ def backup(
         )
     if os.environ.get("MATCHFORGE_SYNC_RUN_ID") and not admin:
         raise BackupError("INCOMPLETE", "Admin backup jobs require a confirmed policy.")
-    plan = preview(config, recovery_plan)
+    plan = preview(config, recovery_plan, governed=governed)
     progress("Capturing consistent database snapshot and original files")
     staging = ROOT / ".local/backup-staging"
     staging.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -195,8 +212,9 @@ def backup(
         root = Path(temporary)
         payload = root / "payload"
         data_root = Path(os.environ.get("FOOTBALL_DATA_ROOT", str(ROOT / ".local/football-data")))
-        captured = capture_recovery(payload, data_root, recovery_plan)
-        if captured["status"] not in ("CAPTURED", "CAPTURED_RECOVERABLE"):
+        captured = capture_recovery(payload, data_root, recovery_plan, governed=governed)
+        expected = "CAPTURED_GOVERNED" if governed else "CAPTURED_RECOVERABLE"
+        if captured["status"] != ("CAPTURED" if recovery_plan is None else expected):
             print(
                 json.dumps(
                     {
@@ -260,7 +278,9 @@ def backup(
         progress("Verification complete; recording recovery point")
         inspect_volume(config)
         verified_tag = (
-            "matchforge-recoverable-verified"
+            "matchforge-governed-verified"
+            if governed
+            else "matchforge-recoverable-verified"
             if recovery_plan is not None
             else "matchforge-verified"
         )
@@ -275,13 +295,28 @@ def backup(
             for path in restic.repository.rglob("*")
             if path.is_file() and not path.is_symlink()
         )
+        scope = (
+            GOVERNED_SCOPE
+            if governed
+            else RECOVERABLE_ONLY
+            if recovery_plan is not None
+            else FULL_RECOVERY
+        )
         return {
             "backup": True,
-            "scope": RECOVERABLE_ONLY if recovery_plan is not None else FULL_RECOVERY,
+            "scope": scope,
             "repository_id": config.repository_id,
             "volume_uuid": config.volume_uuid,
             "unavailable_sha256": recovery_plan["unavailable_sha256"] if recovery_plan else None,
-            "status": "VERIFIED_RECOVERABLE" if recovery_plan is not None else "VERIFIED",
+            "governed_sha256": recovery_plan["governed_sha256"]
+            if governed and recovery_plan
+            else None,
+            "excluded_dependencies": len(recovery_plan.get("excluded", [])) if recovery_plan else 0,
+            "status": {
+                FULL_RECOVERY: "VERIFIED",
+                RECOVERABLE_ONLY: "VERIFIED_RECOVERABLE",
+                GOVERNED_SCOPE: "VERIFIED_GOVERNED_SCOPE",
+            }[scope],
             "verified": True,
             "full_recovery": recovery_plan is None,
             "unavailable_dependencies": len(recovery_plan["unavailable"]) if recovery_plan else 0,
@@ -305,9 +340,12 @@ def restore_readback(
     root: Path, isolated: Path, captured: dict[str, Any], *, admin: bool
 ) -> dict[str, Any]:
     recoverable = captured["status"] == "CAPTURED_RECOVERABLE"
+    governed = captured["status"] == "CAPTURED_GOVERNED"
     progress("Restoring the database and verifying restored dependencies")
     try:
-        restoration = verify_restore(root, isolated, allow_recoverable=recoverable)
+        restoration = verify_restore(
+            root, isolated, allow_recoverable=recoverable, allow_governed=governed
+        )
     except (OSError, ValueError, psycopg.Error, subprocess.SubprocessError) as error:
         raise BackupError(
             "VERIFICATION_FAILED",
@@ -317,7 +355,9 @@ def restore_readback(
     if not recoverable:
         progress("Verifying globals and ownership in a network-isolated cluster")
         restoration["global_role_restore"] = verify_cluster_restore(root, captured)
-        restoration["full_recovery"] = True
+        # A governed scope is restored as strictly as full recovery, but it still has
+        # approved exclusions, so it never reports full recovery.
+        restoration["full_recovery"] = not governed
         if not admin:
             write_json(isolated / "verification.json", restoration)
     if admin:
@@ -334,20 +374,22 @@ def admin_action(args: argparse.Namespace, details: dict[str, Any]) -> dict[str,
     config = BackupConfig.load()
     if args.action == "status":
         return backup_status(config)
-    plan = inventory if scope == RECOVERABLE_ONLY else None
+    plan = inventory if scope in SCOPED else None
+    governed = scope == GOVERNED_SCOPE
     if scope == FULL_RECOVERY and inventory and inventory["unavailable"]:
         raise BackupError(
             "MISSING_FILES", "Full recovery is blocked by the declared unavailable dependencies."
         )
     if args.action == "preview":
-        return preview(config, plan, use_reviewed_estimate=True)
+        return preview(config, plan, use_reviewed_estimate=True, governed=governed)
     if not os.environ.get("MATCHFORGE_SYNC_RUN_ID") or (
         args.scope != scope
         or args.unavailable_sha256 != (plan["unavailable_sha256"] if plan else None)
+        or args.governed_sha256 != (plan["governed_sha256"] if governed and plan else None)
     ):
         raise BackupError("INCOMPLETE", "Recovery scope changed. Run preflight and confirm again.")
     os.nice(10)
-    return backup(config, plan, admin=True)
+    return backup(config, plan, admin=True, governed=governed)
 
 
 def backup_status(config: BackupConfig) -> dict[str, Any]:
@@ -363,14 +405,20 @@ def backup_status(config: BackupConfig) -> dict[str, Any]:
 def cli_action(args: argparse.Namespace) -> dict[str, Any]:
     if os.environ.get("MATCHFORGE_SYNC_RUN_ID"):
         raise BackupError("INCOMPLETE", "Admin backup jobs require a confirmed policy.")
-    plan = load_plan(args.recoverable_inventory) if args.recoverable_inventory else None
+    if args.governed and not args.recoverable_inventory:
+        raise BackupError("UNCONFIGURED", "A governed scope needs --recoverable-inventory.")
+    load = governed_plan if args.governed else load_plan
+    try:
+        plan = load(args.recoverable_inventory) if args.recoverable_inventory else None
+    except (OSError, ValueError, TypeError, KeyError) as error:
+        raise BackupError("UNCONFIGURED", "The protected recovery inventory is invalid.") from error
     config = BackupConfig.load()
     if args.action == "status":
         return backup_status(config)
     if args.action == "preview":
-        return preview(config, plan)
+        return preview(config, plan, governed=args.governed)
     os.nice(10)
-    return backup(config, plan, args.restore_destination)
+    return backup(config, plan, args.restore_destination, governed=args.governed)
 
 
 def interrupt(_signum: int, _frame: Any) -> None:
@@ -384,8 +432,14 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=("status", "preview", "run"))
     parser.add_argument("--admin", action="store_true")
-    parser.add_argument("--scope", choices=(FULL_RECOVERY, RECOVERABLE_ONLY))
+    parser.add_argument("--scope", choices=(FULL_RECOVERY, *SCOPED))
     parser.add_argument("--unavailable-sha256")
+    parser.add_argument("--governed-sha256")
+    parser.add_argument(
+        "--governed",
+        action="store_true",
+        help="command line: capture the reviewed governed scope (VERIFIED_GOVERNED_SCOPE)",
+    )
     parser.add_argument("--recoverable-inventory", type=Path)
     parser.add_argument("--restore-destination", type=Path)
     args = parser.parse_args()

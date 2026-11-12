@@ -200,6 +200,45 @@ def record_dispositions(
     return counts
 
 
+def disposition_records(connection: Connection[Any]) -> dict[tuple[str, str], dict[str, str]]:
+    """Every recorded disposition with the evidence and approval it is bound to.
+
+    A governed recovery scope binds these exact records, so a backup taken under one
+    approval cannot be presented as covered by a different or later one.
+    """
+    present = connection.execute(
+        "SELECT to_regclass('football.recovery_scope_retirements') IS NOT NULL"
+    ).fetchone()
+    if not present or not present[0]:
+        return {}
+    result: dict[tuple[str, str], dict[str, str]] = {}
+    for row in connection.execute(
+        "SELECT 'source_snapshots',source_snapshot_id,correction,registered_path,"
+        "registered_sha256,evidence_reference,evidence_sha256,decision_reference,code_commit_sha "
+        "FROM football.source_manifest_corrections "
+        "UNION ALL SELECT registration_table,registration_id,reason,registered_path,"
+        "registered_sha256,evidence_reference,evidence_sha256,decision_reference,code_commit_sha "
+        "FROM football.recovery_scope_retirements"
+    ):
+        table, identity, *values = map(str, row)
+        result[(table, identity)] = dict(
+            zip(
+                (
+                    "disposition",
+                    "registered_path",
+                    "registered_sha256",
+                    "evidence_reference",
+                    "evidence_sha256",
+                    "decision_reference",
+                    "code_commit_sha",
+                ),
+                values,
+                strict=True,
+            )
+        )
+    return result
+
+
 def recorded_dispositions(connection: Connection[Any]) -> dict[tuple[str, str], tuple[str, str]]:
     """Map (registration table, id) to (disposition, bound checksum); empty before migration."""
     present = connection.execute(

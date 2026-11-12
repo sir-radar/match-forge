@@ -71,6 +71,7 @@ type SyncRequest struct {
 	ManualRequestID         string   `json:"-"`
 	BackupScope             string   `json:"-"`
 	BackupUnavailableSHA256 string   `json:"-"`
+	BackupGovernedSHA256    string   `json:"-"`
 }
 
 type SyncRun struct {
@@ -283,7 +284,8 @@ func (runner *CommandSyncRunner) existingBackup(ctx context.Context, request Syn
 	if err != nil {
 		return nil, err
 	}
-	input := backupRequest{Scope: request.BackupScope, UnavailableSHA256: request.BackupUnavailableSHA256}
+	input := backupRequest{Scope: request.BackupScope, UnavailableSHA256: request.BackupUnavailableSHA256,
+		GovernedSHA256: request.BackupGovernedSHA256}
 	if previous.Type != SyncManualBackup || !input.matches(previous) {
 		return nil, errWorkControlConflict
 	}
@@ -400,6 +402,7 @@ func syncParameters(request SyncRequest) map[string]interface{} {
 		"competition": request.Competition, "country": request.Country,
 		"retry_of_run_id": request.RetryOf, "provider": request.HistoryProvider,
 		"scope": request.BackupScope, "unavailable_sha256": request.BackupUnavailableSHA256,
+		"governed_sha256": request.BackupGovernedSHA256,
 	} {
 		if value != "" {
 			parameters[key] = value
@@ -575,7 +578,7 @@ func syncCompletion(summary map[string]interface{}, request SyncRequest) (string
 	}
 	if request.Type == SyncManualBackup {
 		payload, err := json.Marshal(summary)
-		if err != nil || !validBackupSummary(payload, request.BackupScope, request.BackupUnavailableSHA256) {
+		if err != nil || !validBackupSummary(payload, request.BackupScope, request.BackupUnavailableSHA256, request.BackupGovernedSHA256) {
 			message := "backup verification evidence is incomplete; check the repository and retry manually"
 			return "FAILED", &message
 		}
@@ -1137,12 +1140,15 @@ func syncCommandArgs(request SyncRequest) ([]string, error) {
 	}
 }
 func backupCommandArgs(request SyncRequest) ([]string, error) {
-	if !validBackupScope(request.BackupScope, request.BackupUnavailableSHA256) {
+	if !validBackupScope(request.BackupScope, request.BackupUnavailableSHA256, request.BackupGovernedSHA256) {
 		return nil, errWorkControlConflict
 	}
 	args := []string{".tools/bin/uv", "run", "--locked", "python", "-m", "scripts.manual_backup", "run", "--admin", "--scope", request.BackupScope}
 	if request.BackupUnavailableSHA256 != "" {
 		args = append(args, "--unavailable-sha256", request.BackupUnavailableSHA256)
+	}
+	if request.BackupGovernedSHA256 != "" {
+		args = append(args, "--governed-sha256", request.BackupGovernedSHA256)
 	}
 	return args, nil
 }

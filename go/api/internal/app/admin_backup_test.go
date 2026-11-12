@@ -112,7 +112,7 @@ func TestBackupSummaryRequiresIndependentVerificationFields(t *testing.T) {
 			good := verifiedBackupSummary(scope, time.Now())
 			digest := stringParameter(good, "unavailable_sha256")
 			payload, _ := json.Marshal(good)
-			if !validBackupSummary(payload, scope, digest) {
+			if !validBackupSummary(payload, scope, digest, "") {
 				t.Fatal("valid verified summary rejected")
 			}
 			for _, field := range []string{"verified", "snapshot_id", "verified_at", "captured_at", "full_operating_restore_drill", "full_recovery", "unavailable_dependencies", "scope"} {
@@ -123,7 +123,7 @@ func TestBackupSummaryRequiresIndependentVerificationFields(t *testing.T) {
 					}
 				}
 				payload, _ = json.Marshal(changed)
-				if validBackupSummary(payload, scope, digest) {
+				if validBackupSummary(payload, scope, digest, "") {
 					t.Fatalf("missing %s accepted", field)
 				}
 			}
@@ -134,13 +134,13 @@ func TestBackupSummaryRequiresIndependentVerificationFields(t *testing.T) {
 func TestBackupReceiptCannotCrossScopesOrOmitGlobals(t *testing.T) {
 	good := verifiedBackupSummary(backupRecoverableOnly, time.Now())
 	payload, _ := json.Marshal(good)
-	if validBackupSummary(payload, backupFullRecovery, "") || validBackupSummary(payload, backupRecoverableOnly, strings.Repeat("c", 64)) {
+	if validBackupSummary(payload, backupFullRecovery, "", "") || validBackupSummary(payload, backupRecoverableOnly, strings.Repeat("c", 64), "") {
 		t.Fatal("receipt accepted for another policy or inventory")
 	}
 	good = verifiedBackupSummary(backupFullRecovery, time.Now())
 	good["full_operating_restore_drill"].(map[string]any)["global_role_restore"] = "NOT_RUN"
 	payload, _ = json.Marshal(good)
-	if validBackupSummary(payload, backupFullRecovery, "") {
+	if validBackupSummary(payload, backupFullRecovery, "", "") {
 		t.Fatal("full recovery accepted without globals and ownership verification")
 	}
 }
@@ -229,5 +229,93 @@ func TestBackupPrivateDiagnosticsStayInProtectedLog(t *testing.T) {
 	}
 	if strings.Contains(string(payload), "/private/") {
 		t.Fatal("protected dependency path leaked in API summary")
+	}
+}
+
+func governedBackupSummary(verifiedAt time.Time) map[string]any {
+	summary := verifiedBackupSummary(backupFullRecovery, verifiedAt)
+	governed := strings.Repeat("d", 64)
+	summary["scope"], summary["status"], summary["full_recovery"] = backupGovernedScope, "VERIFIED_GOVERNED_SCOPE", false
+	summary["unavailable_sha256"], summary["governed_sha256"], summary["excluded_dependencies"] = backupNoUnavailableSHA256, governed, 159
+	drill := summary["full_operating_restore_drill"].(map[string]any)
+	drill["status"], drill["full_recovery"], drill["excluded_dependencies"], drill["governed_sha256"] = "PASS_GOVERNED_SCOPE", false, 159, governed
+	return summary
+}
+
+func TestGovernedBackupSummaryIsStrictAndNeverFullRecovery(t *testing.T) {
+	governed := strings.Repeat("d", 64)
+	payload, _ := json.Marshal(governedBackupSummary(time.Now()))
+	if !validBackupSummary(payload, backupGovernedScope, backupNoUnavailableSHA256, governed) {
+		t.Fatal("valid governed summary rejected")
+	}
+	if validBackupSummary(payload, backupFullRecovery, "", "") ||
+		validBackupSummary(payload, backupRecoverableOnly, backupNoUnavailableSHA256, "") ||
+		validBackupSummary(payload, backupGovernedScope, backupNoUnavailableSHA256, strings.Repeat("e", 64)) {
+		t.Fatal("governed receipt accepted for another policy or approval binding")
+	}
+	for name, change := range map[string]func(map[string]any, map[string]any){
+		"claims full recovery":    func(s, d map[string]any) { s["full_recovery"], d["full_recovery"] = true, true },
+		"has an unexplained gap":  func(s, d map[string]any) { s["unavailable_dependencies"], d["unavailable_dependencies"] = 1, 1 },
+		"has no exclusion":        func(s, d map[string]any) { s["excluded_dependencies"], d["excluded_dependencies"] = 0, 0 },
+		"restored other excluded": func(_, d map[string]any) { d["excluded_dependencies"] = 158 },
+		"restored other approval": func(_, d map[string]any) { d["governed_sha256"] = strings.Repeat("e", 64) },
+		"skipped globals":         func(_, d map[string]any) { d["global_role_restore"] = "NOT_RUN" },
+		"recoverable status":      func(s, _ map[string]any) { s["status"] = "VERIFIED_RECOVERABLE" },
+		"recoverable restore":     func(_, d map[string]any) { d["status"] = "PASS_RECOVERABLE" },
+		"no exclusion count":      func(s, _ map[string]any) { delete(s, "excluded_dependencies") },
+	} {
+		summary := governedBackupSummary(time.Now())
+		change(summary, summary["full_operating_restore_drill"].(map[string]any))
+		payload, _ := json.Marshal(summary)
+		if validBackupSummary(payload, backupGovernedScope, backupNoUnavailableSHA256, governed) {
+			t.Fatalf("governed summary that %s accepted", name)
+		}
+	}
+	// A FULL_RECOVERY receipt never carries a governed binding.
+	full := verifiedBackupSummary(backupFullRecovery, time.Now())
+	full["governed_sha256"] = governed
+	payload, _ = json.Marshal(full)
+	if validBackupSummary(payload, backupFullRecovery, "", "") {
+		t.Fatal("full recovery accepted with a governed binding")
+	}
+}
+
+func TestGovernedBackupConfirmationBindsGapAndApprovals(t *testing.T) {
+	governed := strings.Repeat("d", 64)
+	empty := backupNoUnavailableSHA256
+	runner := &backupRunnerStub{availability: BackupAvailability{
+		State: "READY", Scope: backupGovernedScope, UnavailableSHA256: &empty, GovernedSHA256: &governed,
+	}}
+	runner.getErr = errSyncRunNotFound
+	application := newAdminTestApp(runner)
+	for _, item := range []struct {
+		unavailable, governed string
+		status                int
+	}{
+		{empty, "", 400},
+		{strings.Repeat("b", 64), governed, 400},
+		{empty, strings.Repeat("e", 64), 409},
+		{empty, governed, 202},
+	} {
+		body, _ := json.Marshal(backupRequest{
+			RequestID: "10000000-0000-4000-8000-000000000002", Confirmed: true,
+			Scope: backupGovernedScope, UnavailableSHA256: item.unavailable, GovernedSHA256: item.governed,
+		})
+		request := httptest.NewRequest(http.MethodPost, "http://127.0.0.1:8080/v1/admin/backup", strings.NewReader(string(body)))
+		request.RemoteAddr = "127.0.0.1:12345"
+		request.Header.Set("Origin", "http://127.0.0.1:3000")
+		request.Header.Set("Content-Type", "application/json")
+		response := httptest.NewRecorder()
+		application.Handler().ServeHTTP(response, request)
+		if response.Code != item.status {
+			t.Fatalf("got %d want %d: %s", response.Code, item.status, response.Body)
+		}
+	}
+	if len(runner.started) != 1 || runner.started[0].BackupGovernedSHA256 != governed {
+		t.Fatal("submission was not bound to the confirmed approvals")
+	}
+	args, err := backupCommandArgs(runner.started[0])
+	if err != nil || strings.Join(args, " ") != ".tools/bin/uv run --locked python -m scripts.manual_backup run --admin --scope GOVERNED_SCOPE --unavailable-sha256 "+empty+" --governed-sha256 "+governed {
+		t.Fatalf("worker arguments %v %v", args, err)
 	}
 }
