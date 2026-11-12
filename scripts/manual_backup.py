@@ -410,6 +410,17 @@ def main() -> None:
             "no complete backup was recorded.",
         }
     except (OSError, ValueError, psycopg.Error, subprocess.SubprocessError, RuntimeError) as error:
+        # The public message stays generic; the protected run log keeps the cause.
+        print(
+            json.dumps(
+                {
+                    "status": "RECOVERY_DIAGNOSTIC",
+                    "private_failure_type": type(error).__name__,
+                    "private_failure_detail": str(error)[:2000],
+                }
+            ),
+            file=sys.stderr,
+        )
         code = "MISSING_FILES" if isinstance(error, FileNotFoundError) else "SNAPSHOT_FAILED"
         result = {
             "backup": True,
