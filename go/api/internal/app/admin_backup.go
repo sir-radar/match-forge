@@ -443,9 +443,14 @@ func (summary backupVerification) validRestore() bool {
 	case backupGovernedScope:
 		return summary.validGovernedRestore()
 	}
+	return summary.validFullRestore()
+}
+
+func (summary backupVerification) validFullRestore() bool {
+	restore := summary.Restore
 	return summary.Status == "VERIFIED" && restore.Status == "PASS" &&
 		*summary.FullRecovery && *summary.UnavailableDependencies == 0 &&
-		validGlobalRestore(restore.Globals)
+		summary.GovernedSHA256 == "" && validGlobalRestore(restore.Globals)
 }
 
 // A governed scope is restored as strictly as full recovery (globals, ownership, every
