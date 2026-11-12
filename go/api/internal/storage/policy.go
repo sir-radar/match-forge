@@ -37,6 +37,8 @@ type Policy struct {
 	// LifecycleCleanup enables the owner-approved five-hour cleanup of completed
 	// disposable test databases and merged worktrees. Absent means disabled.
 	LifecycleCleanup *LifecyclePolicy `json:"lifecycle_cleanup,omitempty"`
+	// Maintenance enables the read-only daily, weekly and monthly reports.
+	Maintenance *MaintenancePolicy `json:"maintenance,omitempty"`
 }
 
 // ManagedRoot declares a MatchForge-owned directory whose direct children are
@@ -102,6 +104,11 @@ func (p Policy) validateManagement() error {
 	}
 	for _, a := range p.AutomaticCleanup {
 		if err := p.validateAutomatic(a); err != nil {
+			return err
+		}
+	}
+	if p.Maintenance != nil {
+		if err := p.Maintenance.validate(); err != nil {
 			return err
 		}
 	}

@@ -29,5 +29,10 @@
     },
     "approved_by": "owner",
     "approval_record": "docs/evidence/owner-decision-<approval-of-the-five-hour-policy>.json"
+  },
+  "maintenance": {
+    "growth_warning_bytes_per_day": 5000000000,
+    "max_non_operating_databases": 4,
+    "stale_after_days": 30
   }
 }

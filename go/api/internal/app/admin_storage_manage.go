@@ -179,6 +179,19 @@ func (application *App) storageLifecycle(response http.ResponseWriter, request *
 	application.respondOperation(response, status, err)
 }
 
+// storageMaintenance returns the latest daily, weekly and monthly reports.
+func (application *App) storageMaintenance(response http.ResponseWriter, request *http.Request) {
+	if !application.requireStorage(response, request) {
+		return
+	}
+	reports, err := application.storage.MaintenanceHistory(request.Context(), 60)
+	var policy *storage.MaintenancePolicy
+	if application.storage.Policy != nil {
+		policy = application.storage.Policy.Maintenance
+	}
+	application.respondOperation(response, map[string]any{"policy": policy, "reports": reports}, err)
+}
+
 func (application *App) cancelStorageBatch(response http.ResponseWriter, request *http.Request) {
 	if !application.requireStorage(response, request) {
 		return

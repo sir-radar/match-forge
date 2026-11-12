@@ -264,6 +264,32 @@ deadlines and blockers, the last 100 events and the unregistered databases.
 Failed or blocked deletions are logged as errors and recorded as
 `DELETE_FAILED` or `REJECTED` events.
 
+### Scheduled maintenance
+
+Migration `202611130200_storage_maintenance_runs` stores one report per cadence
+and slot (`DAILY` by UTC date, `WEEKLY` by ISO week, `MONTHLY` by month). The
+unique slot admits one worker; a report still `RUNNING` after an hour is retried,
+at most ten times. Finished reports are immutable. The policy's `maintenance`
+block sets the thresholds:
+
+```json
+"maintenance": { "growth_warning_bytes_per_day": 5000000000, "max_non_operating_databases": 4, "stale_after_days": 30 }
+```
+
+| Cadence | Checks |
+| --- | --- |
+| Daily | Host free space against `warning_free_bytes` and `reserve_bytes`; the PostgreSQL cluster against its budgets; growth per day since the previous daily report; unregistered test databases, lifecycle resources stuck in `BLOCKED`, and more non-operating databases than allowed; the latest verified backup against `backup_interval_seconds`, and failed attempts after it |
+| Weekly | Managed-root children unchanged for `stale_after_days` (logs, caches, generated artifacts) with their class; verified bytes reclaimed in the last seven days |
+| Monthly | Verified backups with isolated restore in the last month and their recorded status; every non-operating database with its classification, evidence and disposition |
+
+Reports only measure and alert. `WARNING` and `CRITICAL` findings are logged as
+errors and shown in Storage Management. Deletion still happens only through the
+approved `automatic_cleanup` rules, the five-hour policy, or a resource-specific
+owner approval. A backup status is reported exactly as recorded; maintenance never
+turns `VERIFIED_GOVERNED_SCOPE` into `FULL_RECOVERY`.
+`GET /v1/admin/storage/maintenance` returns the thresholds and the latest 60 reports.
+Storage Management shows both views as the "Five-hour cleanup" and "Maintenance" tabs.
+
 ## Recovery and approval
 
 For each existing resource, record its exact identity, dependencies, active use,
