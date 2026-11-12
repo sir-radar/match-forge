@@ -61,6 +61,7 @@ DATABASE_URL="$TEST_DATABASE_URL" FOOTBALL_DATA_ROOT="$TEST_DATA_ROOT" \
 uv run pytest -q tests/integration/test_database_isolation.py \
 	tests/integration/test_canonical_storage.py \
 	tests/integration/test_recovery_dispositions.py \
+	tests/integration/test_source_manifest_bindings.py \
 	tests/integration/test_fixture_lane_history.py \
 	tests/integration/test_form_policy_source.py \
 	tests/integration/test_market_capability_report.py \
