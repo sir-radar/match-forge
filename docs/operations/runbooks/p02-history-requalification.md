@@ -1,6 +1,6 @@
 # Runbook: apply P02 form policy, reconcile and re-qualify history
 
-**Status: PROPOSED.** The owner runs this on the operating database after recording approval. Nothing in this repository has applied it there. It was rehearsed twice on restored copies of the operating database on 11 November 2026 (see [Rehearsal results](#rehearsal-results)).
+**Status: APPLIED on 12 November 2026** under owner decision `AUTHORIZE_P02_OPERATING_ROLLOUT_V1` ([operating evidence](../../evidence/p02-operating-rollout-2026-11-12.json)). The admin backup failed, so the owner chose the verified logical dump of step 1.2–1.3 as the rollback point. Before that it was rehearsed twice on restored copies of the operating database on 11 November 2026 (see [Rehearsal results](#rehearsal-results)).
 
 **Scope:** migration `202611110100_form_policy_source.sql`; a one-time replay (`p02-history-requalification-v2`) of every retained, checksum-verified API-Football fixture response that (1) reconciles overdue fixtures whose retained response after kickoff shows a terminal status and (2) offers finished regulation-time results to history qualification (defect D-01 in [P02](../../architecture/unified-redesign-2026-11-10/roadmap.md)); then a paced rebuild of context reports. The runbook does not change forecasts, forecast artifacts, published read reports, models or provider acquisition.
 
