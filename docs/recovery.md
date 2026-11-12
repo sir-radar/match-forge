@@ -311,9 +311,9 @@ migration at a time on a restored copy on 12 November 2026
 ([evidence](evidence/fduk-binding-rehearsal-2026-11-12.json)): 47 rows inserted and
 re-verified, a conflicting decision rejected, new path-digest snapshots rejected while
 `manifest-v1:` snapshots and legacy status updates were accepted, registrations and the
-721,931 dependent rows unchanged, and all 47 snapshots captured as `BOUND_RESOURCE`. They
-are not applied to the operating database until separate owner decisions authorize each
-migration and the binding insert.
+721,931 dependent rows unchanged, and all 47 snapshots captured as `BOUND_RESOURCE`. Each
+migration and the binding insert needs its own owner decision; current operating state is
+in the [status summary](status/current-state.md).
 
 ## Recovery when original dependencies are unavailable
 

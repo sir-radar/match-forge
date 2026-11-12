@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-12T07:10:00Z",
+  "updated_at": "2026-11-12T15:05:00Z",
   "unified_architecture_investigation": {
     "status": "PASS_WITH_WARNINGS",
     "scope": "CURRENT_TASK.md revision 3; architecture investigation/planning only",
@@ -88,7 +88,8 @@
     "AUTHORIZE_STORAGE_OPERATING_ROLLOUT_V1",
     "APPROVE_STORAGE_CANDIDATE_DATABASE_DELETION_V1",
     "RATIFY_RECOVERY_SCOPE_MIGRATION_AS_APPLIED_V1",
-    "APPLY_RECOVERY_SCOPE_DISPOSITIONS_V1"
+    "APPLY_RECOVERY_SCOPE_DISPOSITIONS_V1",
+    "APPLY_SOURCE_MANIFEST_BINDING_MIGRATION_V1"
   ],
   "closed_routes": [
     {
@@ -4112,6 +4113,23 @@
         "databases_deleted": 10,
         "reclaimed_bytes_measured": 43923338390,
         "postgres_volume_freed_bytes": 44405219328
+      },
+      "source_manifest_bindings": {
+        "migration_decision_id": "APPLY_SOURCE_MANIFEST_BINDING_MIGRATION_V1",
+        "migration_decision_ref": "docs/evidence/owner-decision-apply-source-manifest-binding-migration-2026-11-12.json",
+        "rehearsal_ref": "docs/evidence/fduk-binding-rehearsal-2026-11-12.json",
+        "migration": "202611120300_source_manifest_raw_file_bindings",
+        "migration_status": "APPLIED",
+        "applied_at": "2026-11-12T15:03:16Z",
+        "goose_version": 202611120300,
+        "pending_migrations_after": [
+          "202611120400_source_snapshot_path_digest_guard"
+        ],
+        "bindings_authorized": false,
+        "bindings_recorded": 0,
+        "path_digest_guard_authorized": false,
+        "preservation": "UNCHANGED",
+        "full_recovery_verified": false
       }
     },
     "recovery_scope_migration": {
@@ -4141,6 +4159,6 @@
       "backup": "VERIFIED_LOGICAL_DUMP_RESTORE_CHECK",
       "full_recovery_verified": false
     },
-    "required_next_action": "Diagnose the failing admin backup. The 161 recovery-scope dispositions are applied (0 unavailable, 159 excluded); FULL_RECOVERY still needs a fresh Admin backup and isolated restore verification. The 26 rehearsal databases, football_v4_integration_20261110 and the StatsBomb and P02 databases stay until separately reviewed."
+    "required_next_action": "Separate owner decisions are needed to insert the 47 Football-Data.co.uk raw-file bindings and then to apply migration 202611120400; migration 202611120300 is applied. Diagnose the failing admin backup; FULL_RECOVERY still needs a fresh Admin backup and isolated restore verification. The rehearsal databases, football_v4_integration_20261110 and the StatsBomb and P02 databases stay until separately reviewed."
   }
 }
