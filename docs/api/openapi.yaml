@@ -177,6 +177,143 @@ paths:
         '400': { $ref: '#/components/responses/BadRequest' }
         '403': { $ref: '#/components/responses/AdminDenied' }
         '409': { description: Review identity, manifest or resources do not match }
+  /v1/admin/storage/resources:
+    get:
+      operationId: storageResources
+      summary: Live classified inventory of databases, worktrees and policy-managed files
+      description: Each resource carries a server-computed classification (PROTECTED, REVIEW_REQUIRED, ELIGIBLE), reasons, remediation and the actions currently allowed. The authoritative operating database is bound by cluster system identifier and OID and never exposes an action. refresh=1 re-measures directory trees.
+      security: [ { AdminCLI: [] }, { AdminBrowserOrigin: [] } ]
+      parameters:
+        - { name: refresh, in: query, required: false, schema: { enum: ['1'] } }
+      responses:
+        '200': { description: Inventory, summary, warnings and queued database comparisons }
+        '403': { $ref: '#/components/responses/AdminDenied' }
+        '409': { description: Storage management migration has not been deployed }
+  /v1/admin/storage/actions/preview:
+    post:
+      operationId: previewStorageAction
+      summary: Exact plan for DELETE, QUARANTINE, RESTORE or PURGE of up to 50 resources
+      description: Returns executable items, individually blocked items with reasons, unique expected savings (nested and duplicate resources counted once), consequences, a typed confirmation phrase for irreversible actions and the plan digest. Read-only.
+      security: [ { AdminCLI: [] }, { AdminBrowserOrigin: [] } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [action, resource_ids]
+              properties:
+                action: { enum: [DELETE, QUARANTINE, RESTORE, PURGE] }
+                resource_ids: { type: array, minItems: 1, maxItems: 50, items: { type: string, pattern: '^[0-9a-f]{64}$' } }
+      responses:
+        '200': { description: Plan }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/AdminDenied' }
+  /v1/admin/storage/actions:
+    post:
+      operationId: executeStorageAction
+      summary: Execute an approved plan on eligible resources
+      description: Requires the owner credential as a Bearer token in addition to local Admin access. The server recomputes the plan and rejects any difference, any blocked item, a missing or wrong typed confirmation, and any protected identity (also enforced by a database trigger). Operations run in the background one at a time, are revalidated immediately before execution and record measured reclaimed bytes.
+      security: [ { AdminCLI: [] } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [action, resource_ids, plan_sha256, confirmation, confirmed]
+              properties:
+                action: { enum: [DELETE, QUARANTINE, RESTORE, PURGE] }
+                resource_ids: { type: array, minItems: 1, maxItems: 50, items: { type: string, pattern: '^[0-9a-f]{64}$' } }
+                plan_sha256: { type: string, pattern: '^[0-9a-f]{64}$' }
+                confirmation: { type: string }
+                confirmed: { const: true }
+      responses:
+        '202': { description: Batch accepted with its identity and operation count }
+        '400': { description: Invalid request or typed confirmation mismatch }
+        '403': { description: Owner credential missing or a resource is protected }
+        '409': { description: Plan changed since preview or another operation is open for a resource }
+  /v1/admin/storage/operations:
+    get:
+      operationId: storageOperations
+      summary: Latest 200 storage operations with state, expected and verified reclaimed bytes
+      security: [ { AdminCLI: [] }, { AdminBrowserOrigin: [] } ]
+      responses:
+        '200': { description: Operation history }
+        '403': { $ref: '#/components/responses/AdminDenied' }
+  /v1/admin/storage/operations/{batch_id}/cancel:
+    post:
+      operationId: cancelStorageBatch
+      summary: Cancel pending operations of a batch; a running operation finishes or fails
+      security: [ { AdminCLI: [] }, { AdminBrowserOrigin: [] } ]
+      parameters:
+        - { name: batch_id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Number of cancelled operations }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /v1/admin/storage/compare:
+    post:
+      operationId: compareStorageDatabases
+      summary: Queue read-only comparisons of databases against the authoritative database
+      description: Records append-only evidence of canonical identities absent from the operating database. Refused when the authoritative identity is unverified.
+      security: [ { AdminCLI: [] }, { AdminBrowserOrigin: [] } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [resource_ids]
+              properties:
+                resource_ids: { type: array, minItems: 1, maxItems: 50, items: { type: string, pattern: '^[0-9a-f]{64}$' } }
+      responses:
+        '202': { description: Number of comparisons queued }
+        '409': { description: Authoritative identity unverified or migration missing }
+  /v1/admin/storage/dispositions:
+    post:
+      operationId: recordStorageDisposition
+      summary: Owner decision on a review-required resource, bound to its exact evidence digest
+      description: UNIQUE_DATA_NOT_REQUIRED can make a review-required resource eligible; PRESERVE protects it. Neither can lift a hard protection. New evidence invalidates the decision automatically.
+      security: [ { AdminCLI: [] } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [resource_id, evidence_sha256, disposition, rationale]
+              properties:
+                resource_id: { type: string, pattern: '^[0-9a-f]{64}$' }
+                evidence_sha256: { type: string, pattern: '^[0-9a-f]{64}$' }
+                disposition: { enum: [UNIQUE_DATA_NOT_REQUIRED, PRESERVE] }
+                rationale: { type: string, minLength: 20, maxLength: 4000 }
+      responses:
+        '200': { description: Recorded }
+        '403': { description: Owner credential required }
+        '409': { description: Evidence changed since review }
+  /v1/admin/storage/protections:
+    post:
+      operationId: protectStorageResource
+      summary: Add an append-only owner protection; protection cannot be removed through Storage Management
+      security: [ { AdminCLI: [] } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [resource_id, reason]
+              properties:
+                resource_id: { type: string, pattern: '^[0-9a-f]{64}$' }
+                reason: { type: string, minLength: 5, maxLength: 2000 }
+      responses:
+        '200': { description: Recorded }
+        '403': { description: Owner credential required }
   /v1/admin/backup:
     get:
       operationId: backupStatus
