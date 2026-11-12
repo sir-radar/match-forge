@@ -308,6 +308,33 @@ the database name/OID and exact unavailable registrations. Explicit retained-fil
 locations are accepted only when the original registered checksum and size match;
 original files and database registrations are never repaired in place.
 
+### Recovery-scope dispositions
+
+Two append-only tables can take an unavailable dependency out of the recovery scope
+without deleting or editing its registration and without supplying a file or checksum:
+
+- `recovery_scope_retirements` records that one registration is synthetic test lineage.
+  The database accepts a row only when the registration exists, its path and checksum
+  equal the row, and its lineage reaches only `example/open-data` snapshots with a
+  repeated-character placeholder manifest checksum. A model artifact needs every input
+  snapshot to qualify. A baseline forecast or Sprint 2 evaluation also needs its existing
+  `TEST_ONLY_HARD_GATE_EXCLUSION` artifact retirement event.
+- `source_manifest_corrections` records that a snapshot's manifest checksum is the
+  SHA-256 of its path and no manifest file was written. The database checks that digest
+  and rejects `manifest-v1:` revisions. The snapshot's resources stay in scope.
+
+Each row binds its evidence file and SHA-256, the owner decision reference and the code
+commit. The recovery inventory moves a gap to `excluded` only when every registration
+owning that path has a disposition bound to the same registered checksum, and it binds
+the excluded list with `excluded_sha256`. Exclusion never makes a capture `CAPTURED`:
+`RECOVERABLE_ONLY` captures still report `full_recovery: false`.
+
+`python -m scripts.recovery_dispositions --decision-reference <ref> --code-commit-sha <sha>`
+validates the pinned evidence (`docs/evidence/storage-recovery-gaps-2026-11-12.json`
+and its shared-owner supplement) and prints the counts. Adding `--apply` writes to
+`DATABASE_URL`, which for the operating database needs its own owner decision. A retry
+with the same decision verifies the existing rows; a different one fails.
+
 Set `MATCHFORGE_BACKUP_RECOVERABLE_INVENTORY` to the protected inventory path
 inside the service checkout. Use `--recoverable-inventory` for an explicitly
 authorized CLI operation. Admin preview uses the reviewed inventory size and
