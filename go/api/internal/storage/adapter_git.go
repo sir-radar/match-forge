@@ -15,7 +15,7 @@ import (
 // that Git ignores (for example `.local` task evidence) needs owner review.
 var regenerableIgnored = []string{
 	"node_modules/", "web/node_modules/", ".venv/", "target/", ".next/", "web/.next/",
-	".pytest_cache/", ".mypy_cache/", ".ruff_cache/", "__pycache__/", ".tools/",
+	".pytest_cache/", ".mypy_cache/", ".ruff_cache/", "__pycache__/", ".tools/", ".hypothesis/",
 	".local/bin/", ".local/dist/", "web/test-results/", "web/playwright-report/",
 	"web/tsconfig.tsbuildinfo", "web/next-env.d.ts", ".coverage",
 }

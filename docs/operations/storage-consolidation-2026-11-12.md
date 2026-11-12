@@ -256,3 +256,31 @@ outside the primary checkout, and `.local/backup-staging`), class `disposable`,
 with the 9 November audit's evidence directories listed as `protected_paths`.
 The evidence trees under `.local` (about 131 GB) should be a `review` root so
 each directory needs its own owner disposition.
+
+## Stage G — reclamation manifest
+
+Prepared, not executed ([manifest](../evidence/storage-reclamation-manifest-2026-11-12.json)).
+This task had no resource-specific owner approval, and the deletion controls are
+not deployed to the operating API yet, so **no existing resource was deleted and
+no physical space was reclaimed**. Physical space actually freed by this task:
+0 bytes. The only deletions were this task's own disposable test databases and
+temporary directories.
+
+| Resource class | Observed | Eligible now | Expected savings | Blocker |
+| --- | ---: | ---: | ---: | --- |
+| Databases | 43 non-operating | 10 | 43.9 GB (+9.4 GB for `football_v4_integration_20261110` on owner decision) | Owner approval per database |
+| Databases needing review | 26 | 0 | up to 73.5 GB | Owner disposition on rehearsal-generated rows |
+| Databases needing reconciliation | 2 | 0 | 2.8 GB | Decide whether StatsBomb history belongs in operating storage |
+| Worktrees | 12 (11 non-primary) | 0 | about 16 GB on disk | Dirty, locked, active, or holding `.env` copies and `.local` task evidence |
+| Database dumps | 20 | 0 | 27.0 GB | Recovery points; P02 and v4 dumps protected; others need rollback windows closed |
+
+The database volume lives inside the Docker VM. Dropping a database frees its
+files inside the volume immediately (measured as `pg_database_size`); the host
+regains space only when the VM returns freed blocks, which the operation record
+captures as host free space before and after.
+
+Execution order once authorized: deploy (Stage E steps), Compare each of the 10
+databases again in Storage Management (evidence older than 7 days is stale by
+design), select them, preview, approve with the owner credential and
+`DELETE 10`, then verify operating functionality and record the measured
+savings. Process at most a few databases per batch while other workloads run.

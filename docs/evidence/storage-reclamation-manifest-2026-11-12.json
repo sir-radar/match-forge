@@ -1,0 +1,133 @@
+{
+ "observed_at": "2026-11-12",
+ "phase": "Stage G reclamation manifest",
+ "executed": false,
+ "note": "No resource listed here was deleted. Each needs resource-specific owner approval through Storage Management after the storage migrations are deployed; the server re-verifies eligibility before execution.",
+ "databases": [
+  {
+   "database": "football_v4_integration_20261110",
+   "oid": 96462594,
+   "size_bytes": 9391486655,
+   "created_at": "2026-11-10T05:15:09+00:00",
+   "identity_key": "postgres:7679328148388241450:96462594",
+   "classification": "DISPOSABLE_PENDING_OWNER",
+   "action": "DELETE",
+   "approval": "required (resource-specific, via Storage Management)"
+  },
+  {
+   "database": "football_fr_teamname_restore_20261110",
+   "oid": 93318648,
+   "size_bytes": 8917423807,
+   "created_at": "2026-11-10T00:12:40+00:00",
+   "identity_key": "postgres:7679328148388241450:93318648",
+   "classification": "DISPOSABLE",
+   "action": "DELETE",
+   "approval": "required (resource-specific, via Storage Management)"
+  },
+  {
+   "database": "football_fr_context_restore_20261109",
+   "oid": 91748077,
+   "size_bytes": 8793233087,
+   "created_at": "2026-11-09T22:53:15+00:00",
+   "identity_key": "postgres:7679328148388241450:91748077",
+   "classification": "DISPOSABLE",
+   "action": "DELETE",
+   "approval": "required (resource-specific, via Storage Management)"
+  },
+  {
+   "database": "football_fr_scope_restore_20261109",
+   "oid": 88809348,
+   "size_bytes": 8720365247,
+   "created_at": "2026-11-09T18:25:25+00:00",
+   "identity_key": "postgres:7679328148388241450:88809348",
+   "classification": "DISPOSABLE",
+   "action": "DELETE",
+   "approval": "required (resource-specific, via Storage Management)"
+  },
+  {
+   "database": "football_fr_native_reference_20261109",
+   "oid": 87002662,
+   "size_bytes": 8637331135,
+   "created_at": "2026-11-09T12:37:40+00:00",
+   "identity_key": "postgres:7679328148388241450:87002662",
+   "classification": "DISPOSABLE",
+   "action": "DELETE",
+   "approval": "required (resource-specific, via Storage Management)"
+  },
+  {
+   "database": "football_architecture_v2_phase0_20261016",
+   "oid": 5267901,
+   "size_bytes": 4455790271,
+   "created_at": "2026-10-16T11:00:46+00:00",
+   "identity_key": "postgres:7679328148388241450:5267901",
+   "classification": "DISPOSABLE",
+   "action": "DELETE",
+   "approval": "required (resource-specific, via Storage Management)"
+  },
+  {
+   "database": "football_r3_final_baseline_20261015",
+   "oid": 5000368,
+   "size_bytes": 4338300607,
+   "created_at": "2026-10-16T00:23:06+00:00",
+   "identity_key": "postgres:7679328148388241450:5000368",
+   "classification": "DISPOSABLE",
+   "action": "DELETE",
+   "approval": "required (resource-specific, via Storage Management)"
+  },
+  {
+   "database": "football_v4_qualification_r02_20261101",
+   "oid": 50918750,
+   "size_bytes": 17618623,
+   "created_at": "2026-11-01T18:58:00+00:00",
+   "identity_key": "postgres:7679328148388241450:50918750",
+   "classification": "DISPOSABLE",
+   "action": "DELETE",
+   "approval": "required (resource-specific, via Storage Management)"
+  },
+  {
+   "database": "football_r3_geography_guard_20261014",
+   "oid": 3853672,
+   "size_bytes": 15759039,
+   "created_at": "2026-10-14T06:03:24+00:00",
+   "identity_key": "postgres:7679328148388241450:3853672",
+   "classification": "DISPOSABLE",
+   "action": "DELETE",
+   "approval": "required (resource-specific, via Storage Management)"
+  },
+  {
+   "database": "football_r3_status_test_20261015",
+   "oid": 4741551,
+   "size_bytes": 15505087,
+   "created_at": "2026-10-15T14:57:14+00:00",
+   "identity_key": "postgres:7679328148388241450:4741551",
+   "classification": "DISPOSABLE",
+   "action": "DELETE",
+   "approval": "required (resource-specific, via Storage Management)"
+  },
+  {
+   "database": "football_pretraining_test",
+   "oid": 1619206,
+   "size_bytes": 13620927,
+   "created_at": "2026-10-03T19:29:18+00:00",
+   "identity_key": "postgres:7679328148388241450:1619206",
+   "classification": "DISPOSABLE",
+   "action": "DELETE",
+   "approval": "required (resource-specific, via Storage Management)"
+  }
+ ],
+ "databases_expected_bytes": {
+  "disposable": 43924947830,
+  "disposable_pending_owner": 9391486655
+ },
+ "worktrees": {
+  "observed": 12,
+  "eligible": 0,
+  "reason": "Every non-primary worktree is dirty, locked, the active task, or holds ignored files other than regenerable output (.env copies, .local task evidence, caches such as .hypothesis and .fallow). Each needs inspection and an owner disposition."
+ },
+ "dumps": {
+  "observed": 20,
+  "bytes": 26970000000,
+  "eligible": 0,
+  "reason": "Pre-change operating dumps are recovery points. The two P02 dumps protect the running rollout; the v4 integration dump and its P0 copy are protected by the 11 November decision; the rest need an owner decision that their rollback windows are closed and that the external Restic snapshots supersede them."
+ }
+}
