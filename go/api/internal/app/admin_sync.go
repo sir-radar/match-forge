@@ -53,10 +53,12 @@ const (
 	SyncPitchAPI            SyncType = "PITCHAPI_SYNC"
 	SyncAllData             SyncType = "ALL_DATA"
 	SyncManualBackup        SyncType = "MANUAL_BACKUP"
+	SyncStorageLifecycle    SyncType = "STORAGE_LIFECYCLE"
 )
 
 type SyncRequest struct {
 	Type                    SyncType `json:"sync_type"`
+	StorageScheduleSlot     string   `json:"-"`
 	Date                    string   `json:"date,omitempty"`
 	FromDate                string   `json:"from_date,omitempty"`
 	Season                  string   `json:"season,omitempty"`
@@ -258,6 +260,9 @@ func (runner *CommandSyncRunner) Start(ctx context.Context, request SyncRequest)
 }
 
 func syncRequestID(request SyncRequest) (string, error) {
+	if request.StorageScheduleSlot != "" {
+		return storageScheduleID(request.Type, request.StorageScheduleSlot), nil
+	}
 	if request.Type != SyncManualBackup {
 		return newUUID()
 	}
@@ -381,6 +386,9 @@ func syncLane(syncType SyncType) string {
 
 func syncParameters(request SyncRequest) map[string]interface{} {
 	parameters := map[string]interface{}{}
+	if request.StorageScheduleSlot != "" {
+		parameters["storage_schedule_slot"] = request.StorageScheduleSlot
+	}
 	if request.ScheduledHistory {
 		parameters["scheduled_history"] = true
 	}
@@ -465,7 +473,7 @@ func (runner *CommandSyncRunner) execute(
 		return
 	}
 	defer logFile.Close()
-	summary, err := runner.runCommand(ctx, runID, args, logFile, request.Type == SyncManualBackup)
+	summary, err := runner.executeAction(ctx, runID, args, logFile, request)
 	if err != nil {
 		if runner.cancelIfRequested(ctx, runID) {
 			return
@@ -499,6 +507,13 @@ func (runner *CommandSyncRunner) execute(
 	); err != nil {
 		runner.logger.Error("finish sync run", "run_id", runID, "error", err)
 	}
+}
+
+func (runner *CommandSyncRunner) executeAction(ctx context.Context, runID string, args []string, logFile *os.File, request SyncRequest) (map[string]interface{}, error) {
+	if request.Type == SyncStorageLifecycle {
+		return runner.storageReview(ctx, runID)
+	}
+	return runner.runCommand(ctx, runID, args, logFile, request.Type == SyncManualBackup)
 }
 
 func (runner *CommandSyncRunner) markRunning(ctx context.Context, runID string) bool {
@@ -1112,16 +1127,26 @@ func scanSyncRun(row rowScanner) (SyncRun, error) {
 }
 
 func syncCommandArgs(request SyncRequest) ([]string, error) {
-	if request.Type == SyncManualBackup {
-		if !validBackupScope(request.BackupScope, request.BackupUnavailableSHA256) {
-			return nil, errWorkControlConflict
-		}
-		args := []string{".tools/bin/uv", "run", "--locked", "python", "-m", "scripts.manual_backup", "run", "--admin", "--scope", request.BackupScope}
-		if request.BackupUnavailableSHA256 != "" {
-			args = append(args, "--unavailable-sha256", request.BackupUnavailableSHA256)
-		}
-		return args, nil
+	switch request.Type {
+	case SyncStorageLifecycle:
+		return nil, nil
+	case SyncManualBackup:
+		return backupCommandArgs(request)
+	default:
+		return providerSyncCommandArgs(request)
 	}
+}
+func backupCommandArgs(request SyncRequest) ([]string, error) {
+	if !validBackupScope(request.BackupScope, request.BackupUnavailableSHA256) {
+		return nil, errWorkControlConflict
+	}
+	args := []string{".tools/bin/uv", "run", "--locked", "python", "-m", "scripts.manual_backup", "run", "--admin", "--scope", request.BackupScope}
+	if request.BackupUnavailableSHA256 != "" {
+		args = append(args, "--unavailable-sha256", request.BackupUnavailableSHA256)
+	}
+	return args, nil
+}
+func providerSyncCommandArgs(request SyncRequest) ([]string, error) {
 	command := map[SyncType]string{
 		SyncMVP:                 "sync",
 		SyncOpenFootball:        "backfill-openfootball",

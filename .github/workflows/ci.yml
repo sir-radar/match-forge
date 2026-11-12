@@ -10,8 +10,9 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Only newer revisions of the same PR can supersede a run.
+  group: ci-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   changes:
@@ -22,7 +23,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 1
 
@@ -40,7 +41,8 @@ jobs:
           fi
 
           if ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
-            git fetch --no-tags --depth=1 origin "$BASE_SHA"
+            git fetch --no-tags --depth=1 origin "$BASE_SHA" ||
+              printf '::warning::Comparison commit unavailable; running full CI.\n'
           fi
 
       - name: Check diff and classify files
@@ -60,6 +62,8 @@ jobs:
             git diff --check "$BASE_SHA" HEAD
 
             code_changed=false
+            changed_paths="$(mktemp)"
+            git diff --name-only --no-renames -z "$BASE_SHA" HEAD > "$changed_paths"
             while IFS= read -r -d '' path; do
               case "$path" in
                 *.md|*.mdx|*.rst)
@@ -69,15 +73,43 @@ jobs:
                   break
                   ;;
               esac
-            done < <(git diff --name-only -z "$BASE_SHA" HEAD)
+            done < "$changed_paths"
+            rm "$changed_paths"
+          fi
+
+          if [[ "$GITHUB_EVENT_NAME" != pull_request ]]; then
+            code_changed=true
           fi
 
           printf 'code_changed=%s\n' "$code_changed" >> "$GITHUB_OUTPUT"
 
-  check:
+  python-unit:
     needs: changes
     if: needs.changes.outputs.code_changed == 'true'
-    name: Deterministic checks
+    name: Python unit and coverage
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up locked Python environment
+        uses: ./.github/actions/setup-python
+        with:
+          save-cache: 'false'
+
+      - name: Run Python unit tests and enforce coverage
+        env:
+          PYTEST_ADDOPTS: --durations=10
+        run: make test-coverage
+
+  full:
+    needs: changes
+    if: needs.changes.outputs.code_changed == 'true'
+    name: Build, integration and browser checks
     runs-on: ubuntu-24.04
     timeout-minutes: 45
 
@@ -92,12 +124,12 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          fetch-depth: 1
+          persist-credentials: false
 
       - name: Install Go 1.27.3
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
         with:
           go-version: '1.27.3'
           # The project cache below owns these paths, including tool builds.
@@ -184,29 +216,8 @@ jobs:
           shared-key: rust-1.97.1
           cache-on-failure: true
 
-      - name: Install uv 0.12.1
-        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
-        with:
-          version: 0.12.1
-          enable-cache: true
-          cache-python: true
-          # Keep this aligned with scripts/toolchain.sh / Makefile.
-          cache-local-path: ${{ github.workspace }}/.local/uv-cache
-          cache-dependency-glob: |
-            pyproject.toml
-            uv.lock
-
-      - name: Install locked Python dependencies
-        shell: bash
-        run: |
-          set -euo pipefail
-          # Background workers use the same repository-local path as bootstrap.
-          uv_binary="$(command -v uv)"
-          mkdir -p .tools/bin
-          ln -s "$uv_binary" .tools/bin/uv
-          .tools/bin/uv --version
-          uv python install 3.13.14
-          uv sync --locked
+      - name: Set up locked Python environment
+        uses: ./.github/actions/setup-python
 
       # Same policy as the frontend inventory below: advisories are recorded and
       # surfaced as warnings; only a failed audit run stops the job.
@@ -227,12 +238,12 @@ jobs:
           jq -c '.summary' .local/dependency-audit/python.json
 
       - name: Install pnpm 10.19.0
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
         with:
           version: 10.19.0
 
       - name: Install Node.js 24
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
           cache: pnpm
@@ -267,22 +278,49 @@ jobs:
 
       - name: Retain dependency advisory inventory
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: dependency-audit
           path: .local/dependency-audit
           retention-days: 7
 
+      - name: Check format, lint, architecture and project status
+        run: make format-check lint architecture-check project-status-check web-lint
+
+      - name: Run Rust, Go and frontend unit tests
+        run: make test-native web-test
+
+      - name: Build Python, Rust, Go and frontend
+        run: make build web-build
+
+      - name: Install Playwright system packages
+        # Keep slow but progressing downloads within the observed success range.
+        timeout-minutes: 15
+        working-directory: web
+        run: |
+          # Fail on incomplete indexes instead of waiting on stale mirrors.
+          sudo tee /etc/apt/apt.conf.d/99-matchforge-ci >/dev/null <<'APT'
+          Acquire::Retries "1";
+          Acquire::http::Timeout "20";
+          Acquire::https::Timeout "20";
+          APT::Update::Error-Mode "any";
+          APT
+          pnpm exec playwright install-deps chromium webkit
+
       - name: Install Playwright browsers
-        run: cd web && pnpm exec playwright install --with-deps chromium webkit
+        timeout-minutes: 4
+        working-directory: web
+        run: pnpm exec playwright install --only-shell chromium webkit
 
       - name: Create ephemeral CI environment
+        id: integration-env
         shell: bash
         run: |
           set -euo pipefail
           umask 077
 
           postgres_password="$(openssl rand -hex 24)"
+          printf '::add-mask::%s\n' "$postgres_password"
           {
             printf 'POSTGRES_DB=football_ci\n'
             printf 'POSTGRES_USER=football_ci\n'
@@ -294,11 +332,39 @@ jobs:
             printf 'REDIS_ADDR=127.0.0.1:56379\n'
           } > .env
 
-      # One invocation runs shared phony prerequisites only once: check and
-      # integration share build; check and web-e2e share web-build.
-      - name: Run deterministic, integration, E2E and accessibility checks
-        run: make check integration web-e2e
+      - name: Run isolated database integration and live browser checks
+        env:
+          PYTEST_ADDOPTS: --durations=10
+        run: make integration-check
 
       - name: Tear down integration services
-        if: always()
+        if: always() && steps.integration-env.outcome == 'success'
         run: docker compose down --volumes
+
+      - name: Run standalone browser and accessibility checks
+        working-directory: web
+        run: pnpm test:e2e
+
+  check:
+    name: Deterministic checks
+    needs: [changes, python-unit, full]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Verify required jobs
+        shell: bash
+        env:
+          CLASSIFICATION: ${{ needs.changes.result }}
+          CODE_CHANGED: ${{ needs.changes.outputs.code_changed }}
+          PYTHON_RESULT: ${{ needs.python-unit.result }}
+          FULL_RESULT: ${{ needs.full.result }}
+        run: |
+          if [[ "$CLASSIFICATION" != success ]]; then
+            exit 1
+          fi
+          case "$CODE_CHANGED" in
+            true)  [[ "$PYTHON_RESULT" == success && "$FULL_RESULT" == success ]] ;;
+            false) [[ "$PYTHON_RESULT" == skipped && "$FULL_RESULT" == skipped ]] ;;
+            *)     exit 1 ;;
+          esac

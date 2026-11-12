@@ -81,6 +81,16 @@ Normal operational provider sync retains its existing operating behavior.
 regressions. Its databases and the additional databases created by those tests
 are disposable. Role markers used by tests are written only to their own targets.
 
+### Managed disposable rehearsal databases
+
+Use the storage lifecycle fixture launcher for new dated/ad-hoc disposable databases;
+see [storage lifecycle operations](operations/storage-lifecycle.md). It requires an
+active producing-job lease, capacity admission and explicit fixture inputs, records
+ownership and tears down only the newly created target after success or failure.
+It does not adopt old databases or authorize acquisition or evaluation. Keep unique
+source bytes and durable evidence outside disposable targets. Existing integration
+and backup restore helpers retain their scoped teardown and recovery checks.
+
 ### Unit tests
 
 Use for:

@@ -1,0 +1,302 @@
+{
+  "$id": "https://matchforge.local/contracts/storage-status.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "state",
+    "message",
+    "destructive_cleanup_enabled",
+    "latest",
+    "work_id",
+    "manifest_sha256",
+    "history",
+    "approvals"
+  ],
+  "properties": {
+    "state": {
+      "enum": [
+        "READY",
+        "EMPTY",
+        "MIGRATION_PENDING"
+      ]
+    },
+    "message": {
+      "type": "string"
+    },
+    "destructive_cleanup_enabled": {
+      "const": false
+    },
+    "latest": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/review"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "work_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "manifest_sha256": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "history": {
+      "type": "array",
+      "maxItems": 30,
+      "items": {
+        "$ref": "#/$defs/review"
+      }
+    },
+    "approvals": {
+      "type": "array",
+      "maxItems": 30,
+      "items": {
+        "type": "object"
+      }
+    }
+  },
+  "$defs": {
+    "resource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resource_id",
+        "backend",
+        "location",
+        "kind",
+        "subsystem",
+        "owner",
+        "logical_bytes",
+        "allocated_bytes",
+        "protected",
+        "complete",
+        "state",
+        "blockers"
+      ],
+      "properties": {
+        "resource_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "backend": {
+          "enum": [
+            "filesystem",
+            "postgres",
+            "git"
+          ]
+        },
+        "location": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "subsystem": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "logical_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "allocated_bytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "protected": {
+          "type": "boolean"
+        },
+        "references": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lease_until": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "retain_until": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "recovery_verified": {
+          "type": "boolean"
+        },
+        "reconstructable": {
+          "type": "boolean"
+        },
+        "complete": {
+          "type": "boolean"
+        },
+        "state": {
+          "enum": [
+            "PROTECTED",
+            "ACTIVE",
+            "ELIGIBLE",
+            "VERIFIED",
+            "QUARANTINED",
+            "DELETED"
+          ]
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "details": {
+          "type": "object"
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observed_at",
+        "capacity",
+        "resources",
+        "alerts",
+        "dry_run",
+        "reclaimed_bytes",
+        "policy_sha256"
+      ],
+      "properties": {
+        "observed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "capacity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "total_bytes",
+            "free_bytes"
+          ],
+          "properties": {
+            "total_bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "free_bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "device": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/resource"
+          }
+        },
+        "alerts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dry_run": {
+          "const": true
+        },
+        "reclaimed_bytes": {
+          "const": 0
+        },
+        "policy_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "actions": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "object",
+            "required": [
+              "resource_id",
+              "action",
+              "blockers",
+              "earliest_deletion_at",
+              "expected_physical_savings",
+              "recovery_coverage",
+              "rollback"
+            ],
+            "properties": {
+              "resource_id": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "action": {
+                "enum": [
+                  "PRESERVE",
+                  "QUARANTINE_REVIEW_REQUIRED"
+                ]
+              },
+              "blockers": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "earliest_deletion_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              },
+              "expected_physical_savings": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "recovery_coverage": {
+                "type": "string"
+              },
+              "rollback": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "policy": {
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}

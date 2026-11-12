@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-11T09:40:00Z",
+  "updated_at": "2026-11-11T21:13:48.578137Z",
   "unified_architecture_investigation": {
     "status": "PASS_WITH_WARNINGS",
     "scope": "CURRENT_TASK.md revision 3; architecture investigation/planning only",
@@ -4034,5 +4034,32 @@
       "provider walkovers reported as ordinary full-time scores cannot be detected (P08-01)",
       "10086 forecasts since 2026-10-01 were issued with incomplete team history (upper-bound estimate); no re-evaluation authorized"
     ]
+  },
+  "storage_lifecycle": {
+    "status": "PASS_WITH_WARNINGS",
+    "phase": "P0",
+    "phase_scope": "Emergency evidence and recovery protection only",
+    "branch": "ft/storage-lifecycle",
+    "report_ref": "docs/operations/storage-protection-2026-11-11.md",
+    "evidence_ref": "docs/evidence/storage-protection-2026-11-11.json",
+    "lifecycle_implementation_complete": false,
+    "full_recovery": false,
+    "declared_unavailable_dependencies": 159,
+    "inventory_observed_at": "2026-11-11T14:33:01.469610+00:00",
+    "independent_v4_restore": "PASS",
+    "independent_operating_snapshot_restore": "PASS_RECOVERABLE",
+    "existing_resources_removed": 0,
+    "reclaimed_existing_resource_bytes": 0,
+    "automatic_backups_implemented": false,
+    "destructive_cleanup_enabled": false,
+    "later_phases": {
+      "P1": "NOT_STARTED",
+      "P2": "NOT_STARTED",
+      "P3": "NOT_STARTED",
+      "P4": "NOT_STARTED",
+      "P5": "NOT_STARTED",
+      "P6": "NOT_STARTED"
+    },
+    "required_next_action": "Owner P0 phase-gate handoff. P1 exact resource-by-resource reclamation manifest is next; deletion requires resource-specific approval. P2\u2013P6 lifecycle implementation remains pending."
   }
 }

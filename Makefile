@@ -15,7 +15,7 @@ DEPENDENCY_LOCK_SHA256 ?= $(shell shasum -a 256 uv.lock | cut -d ' ' -f 1)
 BUILD_WORKTREE_STATE := $(shell test -z "$$(git status --porcelain)" && echo clean || echo dirty)
 export UV_CACHE_DIR := $(CURDIR)/.local/uv-cache
 
-.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test test-coverage build integration check project-status-check identity-check entity-crosswalk-review entity-crosswalk-apply canonical-history-audit pretraining-snapshot-check pretraining-check postgres-restore-test sprint2-evaluate h2h-context-evaluate full-coverage-v2-reevaluate full-coverage-v2-replacement-evaluate v2-final-readiness v2-final-evaluate model-fit model-forecast model-evaluate probability-benchmark dev dev-go dev-python dev-rust mvp-sync fotmob-sync pitchapi-sync openfootball-sync football-data-uk-sync history-backfill forecast-refresh all-data-sync external-predictions web-install web-lint web-test web-build web-e2e \
+.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test test-coverage test-native build integration integration-check check project-status-check identity-check entity-crosswalk-review entity-crosswalk-apply canonical-history-audit pretraining-snapshot-check pretraining-check postgres-restore-test sprint2-evaluate h2h-context-evaluate full-coverage-v2-reevaluate full-coverage-v2-replacement-evaluate v2-final-readiness v2-final-evaluate model-fit model-forecast model-evaluate probability-benchmark dev dev-go dev-python dev-rust mvp-sync fotmob-sync pitchapi-sync openfootball-sync football-data-uk-sync history-backfill forecast-refresh all-data-sync external-predictions web-install web-lint web-test web-build web-e2e \
 	prototype-bootstrap prototype-up prototype-down prototype-test prototype-run \
 	prototype-gate-a prototype-clean codex-luna codex-terra codex-sol architecture-check
 
@@ -62,7 +62,9 @@ lint:
 	@$(TOOL_ENV); goose -dir $(MIGRATIONS_DIR) validate
 	@sh -n scripts/bootstrap.sh scripts/doctor.sh scripts/integration.sh scripts/storage-integration.sh scripts/toolchain.sh scripts/code-intelligence.sh
 
-test: test-coverage
+test: test-coverage test-native
+
+test-native:
 	@$(TOOL_ENV); cargo test --workspace --all-targets --all-features
 	@$(TOOL_ENV); cd go/api && go test ./...
 
@@ -76,8 +78,12 @@ build:
 	@$(TOOL_ENV); UV_CACHE_DIR="$${TMPDIR:-/tmp}/football-forecasting-uv-build-cache" uv build --no-build-isolation --out-dir .local/dist
 	@$(TOOL_ENV); cargo build --workspace --all-targets --all-features
 	@$(TOOL_ENV); cd go/api && go build -ldflags "-X football-forecasting/go/api/internal/app.buildCommitSHA=$(CODE_COMMIT_SHA) -X football-forecasting/go/api/internal/app.buildDependencyLockSHA256=$(DEPENDENCY_LOCK_SHA256) -X football-forecasting/go/api/internal/app.buildWorktreeState=$(BUILD_WORKTREE_STATE)" -o $(CURDIR)/.local/bin/football-api ./cmd/api
+	@$(TOOL_ENV); cd go/api && go build -o $(CURDIR)/.local/bin/matchforge-storage ./cmd/storage
 
 integration: build
+
+# CI times build separately; local integration still builds its prerequisites.
+integration integration-check:
 	docker compose up -d --wait
 	./scripts/storage-integration.sh
 	./scripts/integration.sh
