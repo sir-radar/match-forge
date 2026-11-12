@@ -298,6 +298,23 @@ The 47 Football-Data.co.uk snapshots with path digests, a proposed append-only b
 their resource checksums and a guard against new path digests are described in
 [Football-Data.co.uk manifest path digests](operations/fduk-manifest-path-digests-2026-11-12.md).
 
+When `source_manifest_raw_file_bindings` holds a row for a snapshot, recovery capture
+records that snapshot's `manifest_path` with the bound resource checksum and size
+(`checksum_kind = BOUND_RESOURCE`, with the `source_resource_id`) instead of a path
+identity, so the copied bytes are verified against the snapshot's own binding. The binding
+must still match the registration, its revision and the current resource row; a binding
+that differs is reported as unresolved rather than ignored. Snapshots without a binding,
+and databases before migration `202611120300`, keep the `PATH_IDENTITY` behaviour.
+
+Migrations `202611120300` and `202611120400` and the 47 bindings were rehearsed one
+migration at a time on a restored copy on 12 November 2026
+([evidence](evidence/fduk-binding-rehearsal-2026-11-12.json)): 47 rows inserted and
+re-verified, a conflicting decision rejected, new path-digest snapshots rejected while
+`manifest-v1:` snapshots and legacy status updates were accepted, registrations and the
+721,931 dependent rows unchanged, and all 47 snapshots captured as `BOUND_RESOURCE`. They
+are not applied to the operating database until separate owner decisions authorize each
+migration and the binding insert.
+
 ## Recovery when original dependencies are unavailable
 
 `MATCHFORGE_BACKUP_SCOPE=FULL_RECOVERY` is the default. It fails closed if
