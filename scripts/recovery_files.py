@@ -221,6 +221,9 @@ def _require_classified_columns(connection: Connection[Any]) -> None:
         ("product_history_sync_attempts", "last_resolution_path"),  # Inline decision history.
         ("product_sync_runs", "log_path"),  # Diagnostic stream; authoritative state is in the DB.
         ("product_model_evaluations", "report_uri"),
+        # Dispositions copy the path of the registration they name; not a dependency.
+        ("recovery_scope_retirements", "registered_path"),
+        ("source_manifest_corrections", "registered_path"),
     }
     actual = set(
         connection.execute(

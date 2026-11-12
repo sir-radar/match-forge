@@ -15,6 +15,7 @@ import psycopg
 from psycopg import Connection
 
 from scripts.capture_architecture_v2_baseline import ROOT, file_sha256
+from scripts.recovery_dispositions import recorded_dispositions
 from scripts.recovery_files import FileReference, registered_files, regular_file
 
 
@@ -82,10 +83,41 @@ def inventory(
         connection, data_root, unresolved=unresolved, repository_root=repository_root
     )
     result = inspect_references(refs, {"data": data_root, "repository": repository_root}, locations)
-    result["unavailable"].extend(unresolved)
+    result["unavailable"], result["excluded"] = exclude_disposed(
+        [*result["unavailable"], *unresolved], recorded_dispositions(connection)
+    )
     result["registered_references"] = len(refs) + len(unresolved)
     result["unavailable_sha256"] = unavailable_hash(result["unavailable"])
+    result["excluded_sha256"] = unavailable_hash(result["excluded"])
     return result
+
+
+def _disposition(
+    owner: Mapping[str, Any] | None, recorded: Mapping[tuple[str, str], tuple[str, str]]
+) -> str | None:
+    if not owner or not isinstance(owner.get("keys"), dict) or "id" not in owner["keys"]:
+        return None
+    found = recorded.get((str(owner["table"]), str(owner["keys"]["id"])))
+    if found is None or found[1] != owner.get("registered_sha256"):
+        return None
+    return found[0]
+
+
+def exclude_disposed(
+    issues: list[dict[str, Any]], recorded: Mapping[tuple[str, str], tuple[str, str]]
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Move an unavailable dependency out of scope only when every registration owning it
+    has a recorded disposition bound to the same registered checksum."""
+    unavailable: list[dict[str, Any]] = []
+    excluded: list[dict[str, Any]] = []
+    for item in issues:
+        owners = list(item.get("registrations") or [item.get("registration")])
+        dispositions = [_disposition(owner, recorded) for owner in owners]
+        if all(dispositions):
+            excluded.append({**item, "dispositions": dispositions})
+        else:
+            unavailable.append(item)
+    return unavailable, excluded
 
 
 def unavailable_hash(issues: list[dict[str, Any]]) -> str:
@@ -118,15 +150,21 @@ def selected_inventory(
 ) -> dict[str, Any]:
     require_inventory_database(connection, plan)
     result = inventory(connection, data_root, ROOT, plan["locations"])
-    if result["unavailable_sha256"] != plan["unavailable_sha256"]:
+    if result["unavailable_sha256"] != plan["unavailable_sha256"] or result[
+        "excluded_sha256"
+    ] != plan.get("excluded_sha256", EMPTY_SHA256):
         raise ValueError("unavailable dependencies changed; inspect a fresh recovery inventory")
     return result
+
+
+EMPTY_SHA256 = unavailable_hash([])
 
 
 def validate_gaps(value: dict[str, Any]) -> None:
     if (
         value["scope"] != "RECOVERABLE_ONLY"
         or unavailable_hash(value["unavailable"]) != value["unavailable_sha256"]
+        or unavailable_hash(value.get("excluded", [])) != value.get("excluded_sha256", EMPTY_SHA256)
     ):
         raise ValueError("recovery plan scope or unavailable bindings are invalid")
 
@@ -171,6 +209,8 @@ def main() -> None:
         "locations": locations,
         "unavailable": result["unavailable"],
         "unavailable_sha256": result["unavailable_sha256"],
+        "excluded": result["excluded"],
+        "excluded_sha256": result["excluded_sha256"],
         "logical_bytes": result["logical_bytes"],
         "available_files": len(result["references"]),
         "registered_references": result["registered_references"],
@@ -184,7 +224,11 @@ def main() -> None:
                 key: plan[key]
                 for key in ("scope", "logical_bytes", "available_files", "registered_references")
             }
-            | {"unavailable": len(plan["unavailable"])}
+            | {
+                "unavailable": len(plan["unavailable"]),
+                "excluded": len(plan["excluded"]),
+                "full_recovery": False,
+            }
         )
     )
 
