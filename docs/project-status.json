@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-11T09:40:00Z",
+  "updated_at": "2026-11-12T03:30:00Z",
   "unified_architecture_investigation": {
     "status": "PASS_WITH_WARNINGS",
     "scope": "CURRENT_TASK.md revision 3; architecture investigation/planning only",
@@ -83,7 +83,8 @@
     "AUTHORIZE_CANONICAL_HISTORY_REPAIR_AND_V2_FINAL_REPLACEMENT_EVALUATION_V1",
     "AUTHORIZE_PUBLIC_DEVELOPMENT_DATA_ACQUISITION_V1",
     "ALLOW_FLASH_RESEARCH_SOURCE_ELIGIBILITY_EXCEPTION_R03",
-    "AUTHORIZE_UNIFIED_P02_DATA_INTEGRITY_IMPLEMENTATION_V1"
+    "AUTHORIZE_UNIFIED_P02_DATA_INTEGRITY_IMPLEMENTATION_V1",
+    "AUTHORIZE_P02_OPERATING_ROLLOUT_V1"
   ],
   "closed_routes": [
     {
@@ -4017,7 +4018,7 @@
     "baseline_git_sha": "b578e9890bf370caa5674bd5df11cac17a003987",
     "implementation_status": "COMPLETE_AUTHORIZED_SCOPE_PR_OPEN",
     "operating_mutations_by_this_task": 0,
-    "operating_migrations_applied": false,
+    "operating_migrations_applied": true,
     "provider_acquisition": false,
     "identity_admissions": 0,
     "model_promotions": 0,
@@ -4030,9 +4031,31 @@
       "not_audited_domains": 6
     },
     "warnings": [
-      "fixture-lane results stored before the fix stay unqualified until an authorized operating re-qualification (P03-02)",
+      "an earlier scheduled run of branch code wrote 1,181 history decisions to the operating database on 2026-11-11 before authorization (append-only, recorded in the rollout evidence)",
+      "the admin backup failed before the rollout and left a repository lock; the rollout used a verified logical dump",
+      "487 API-Football results wait for identity review as duplicate identities; 1,413 results are overdue and need new provider observations (P09-01)",
       "provider walkovers reported as ordinary full-time scores cannot be detected (P08-01)",
-      "10086 forecasts since 2026-10-01 were issued with incomplete team history (upper-bound estimate); no re-evaluation authorized"
-    ]
+      "10,887 published forecasts used team history that lacked results known before their cutoff; no re-evaluation authorized (Option B proposed)"
+    ],
+    "operating_rollout": {
+      "decision_id": "AUTHORIZE_P02_OPERATING_ROLLOUT_V1",
+      "decision_ref": "docs/evidence/owner-decision-authorize-p02-operating-rollout-2026-11-11.json",
+      "evidence_ref": "docs/evidence/p02-operating-rollout-2026-11-12.json",
+      "status": "APPLIED",
+      "migration": "202611110100_form_policy_source",
+      "requalification_version": "p02-history-requalification-v2",
+      "fixtures_reconciled": 949,
+      "results_qualified": 14542,
+      "context_reports_rebuilt": 254980,
+      "preservation": "UNCHANGED",
+      "backup": "VERIFIED_LOGICAL_DUMP_RESTORE_CHECK; admin backup FAILED"
+    },
+    "audit_after_rollout": {
+      "audit_version": "p02-integrity-audit-v4",
+      "fixtures_audited": 257823,
+      "complete": true,
+      "served_form_untraceable": 0,
+      "not_audited_domains": 6
+    }
   }
 }
