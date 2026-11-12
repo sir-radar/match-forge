@@ -86,7 +86,8 @@
     "AUTHORIZE_UNIFIED_P02_DATA_INTEGRITY_IMPLEMENTATION_V1",
     "AUTHORIZE_P02_OPERATING_ROLLOUT_V1",
     "AUTHORIZE_STORAGE_OPERATING_ROLLOUT_V1",
-    "APPROVE_STORAGE_CANDIDATE_DATABASE_DELETION_V1"
+    "APPROVE_STORAGE_CANDIDATE_DATABASE_DELETION_V1",
+    "RATIFY_RECOVERY_SCOPE_MIGRATION_AS_APPLIED_V1"
   ],
   "closed_routes": [
     {
@@ -4112,6 +4113,19 @@
         "postgres_volume_freed_bytes": 44405219328
       }
     },
-    "required_next_action": "Diagnose the failing admin backup. Recovery-gap remediation needs a governed retirement and correction mechanism for registrations other than forecasts and evaluations. The 26 rehearsal databases, football_v4_integration_20261110 and the StatsBomb and P02 databases stay until separately reviewed."
+    "recovery_scope_migration": {
+      "decision_id": "RATIFY_RECOVERY_SCOPE_MIGRATION_AS_APPLIED_V1",
+      "decision_ref": "docs/evidence/owner-decision-ratify-recovery-scope-migration-2026-11-12.json",
+      "status": "APPLIED_RATIFIED",
+      "migration": "202611120200_recovery_scope_retirements",
+      "applied_at": "2026-11-12T07:50:48Z",
+      "applied_by": "make dev (dev target depends on migrate); not an authorized rollout",
+      "rehearsed_before_apply": false,
+      "pending_migrations_after": 0,
+      "recovery_scope_retirements_rows": 0,
+      "source_manifest_corrections_rows": 0,
+      "dispositions_authorized": false
+    },
+    "required_next_action": "Diagnose the failing admin backup. Migration 202611120200 is on the operating database and ratified as applied; applying the 161 recovery-scope dispositions needs its own owner decision. The 26 rehearsal databases, football_v4_integration_20261110 and the StatsBomb and P02 databases stay until separately reviewed."
   }
 }
