@@ -73,6 +73,7 @@ uv run pytest -q tests/integration/test_canonical_storage.py \
 	tests/integration/test_complete_recovery.py \
 	tests/integration/test_restic_backup.py \
 	tests/integration/test_manual_backup_work.py \
+	tests/integration/test_storage_lifecycle.py \
 	tests/integration/test_team_elo.py \
 	tests/integration/test_product_historical_backfill.py \
 	tests/integration/test_product_history_queue.py \
@@ -107,5 +108,7 @@ uv run pytest -q tests/integration/test_canonical_storage.py \
     tests/integration/test_external_prediction_recovery.py \
     tests/integration/test_remediation_browser.py \
     tests/integration/test_serving_limits.py
+
+(cd go/api && go test ./internal/storage ./internal/app -run "TestDatabase|TestStorageDatabase|TestStorageAdmin")
 
 printf 'Fresh-database migration and canonical storage invariants passed\n'

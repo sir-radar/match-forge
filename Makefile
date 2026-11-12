@@ -76,6 +76,7 @@ build:
 	@$(TOOL_ENV); UV_CACHE_DIR="$${TMPDIR:-/tmp}/football-forecasting-uv-build-cache" uv build --no-build-isolation --out-dir .local/dist
 	@$(TOOL_ENV); cargo build --workspace --all-targets --all-features
 	@$(TOOL_ENV); cd go/api && go build -ldflags "-X football-forecasting/go/api/internal/app.buildCommitSHA=$(CODE_COMMIT_SHA) -X football-forecasting/go/api/internal/app.buildDependencyLockSHA256=$(DEPENDENCY_LOCK_SHA256) -X football-forecasting/go/api/internal/app.buildWorktreeState=$(BUILD_WORKTREE_STATE)" -o $(CURDIR)/.local/bin/football-api ./cmd/api
+	@$(TOOL_ENV); cd go/api && go build -o $(CURDIR)/.local/bin/matchforge-storage ./cmd/storage
 
 integration: build
 	docker compose up -d --wait

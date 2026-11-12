@@ -68,6 +68,9 @@ func NewWithSyncRunner(
 	mux.HandleFunc("POST /v1/admin/work/{work_id}/cancel", application.controlWork("cancel"))
 	mux.HandleFunc("POST /v1/admin/work/{work_id}/retry", application.controlWork("retry"))
 	mux.HandleFunc("GET /v1/admin/sync-runs", application.listSyncRuns)
+	mux.HandleFunc("GET /v1/admin/storage", application.storageView)
+	mux.HandleFunc("POST /v1/admin/storage/reviews", application.startStorageReview)
+	mux.HandleFunc("POST /v1/admin/storage/approvals", application.reviewStorageApproval)
 	mux.HandleFunc("GET /v1/admin/backup", application.backupView(false))
 	mux.HandleFunc("POST /v1/admin/backup/preview", application.backupView(true))
 	mux.HandleFunc("POST /v1/admin/backup", application.startBackup)
@@ -106,6 +109,7 @@ func (application *App) Run(ctx context.Context) error {
 	if _, ok := application.syncRunner.(pendingPublicReportsRunner); ok {
 		go application.runPublicReportSchedule(ctx)
 	}
+	go application.runStorageSchedule(ctx)
 	stopRecovery := application.startResolutionRecovery(ctx)
 	defer stopRecovery()
 	server := application.httpServer()
