@@ -1,0 +1,19 @@
+{
+  "roots": [
+    {
+      "path": "/absolute/path/to/matchforge/.local",
+      "subsystem": "task_data_evidence_and_caches",
+      "warning_bytes": 0,
+      "critical_bytes": 0
+    }
+  ],
+  "reserve_bytes": 0,
+  "warning_free_bytes": 0,
+  "max_entries": 10000,
+  "scan_seconds": 60,
+  "interval_seconds": 86400,
+  "backup_interval_seconds": 2592000,
+  "quarantine_seconds": 2592000,
+  "database_warning_bytes": 0,
+  "database_critical_bytes": 0
+}

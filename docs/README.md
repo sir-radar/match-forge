@@ -59,6 +59,7 @@ Every file marked *proposed* under `docs/` is a proposal, not an approval. A sta
 - [OpenAPI for the MVP API](api/openapi.yaml), [compatibility/privacy](api/compatibility-policy.md), [superseded original API illustration](api/future-api-illustration.md), [frontend API requirements](frontend/api-requirements.md)
 - [Capabilities and enablement](operations/capability-registry.md), [rollback](operations/rollback-policy.md), [monitoring](operations/forecast-monitoring.md)
 - [P0 storage protection and recovery evidence](operations/storage-protection-2026-11-11.md)
+- [Storage lifecycle operations, capacity policy and approval-only resource manifest](operations/storage-lifecycle.md)
 
 ## Engineering standards
 

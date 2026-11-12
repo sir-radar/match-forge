@@ -145,6 +145,13 @@ _WORKER_SOURCE_CONTRACTS = {
         "WorkRegistry(connection)",
         "WorkClaim",
     ),
+    "go/api/internal/app/admin_storage.go": (
+        "runner.Start(ctx, request)",
+        "SyncStorageLifecycle",
+        "SyncManualBackup",
+        "storage.Publish(",
+        "storageScheduleID(",
+    ),
     "go/api/internal/app/app.go": ("syncRunner.Start(ctx, SyncRequest{",),
     "go/api/internal/app/admin_sync.go": (
         "football.product_sync_runs",

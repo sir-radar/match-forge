@@ -1,0 +1,19 @@
+{
+  "state": "READY", "message": "Dry-run lifecycle review. Cleanup disabled.",
+  "destructive_cleanup_enabled": false,
+  "work_id": "10000000-0000-4000-8000-000000000001",
+  "manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "latest": {
+    "observed_at": "2025-01-02T12:00:00Z", "dry_run": true, "reclaimed_bytes": 0,
+    "capacity": {"total_bytes": 1000000000000, "free_bytes": 250000000000},
+    "resources": [{
+      "resource_id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "backend": "postgres", "location": "cluster/football_rehearsal", "kind": "database",
+      "subsystem": "postgres", "owner": "", "logical_bytes": 12000000000,
+      "allocated_bytes": null, "protected": true, "complete": true,
+      "state": "PROTECTED", "blockers": ["Current post-rehearsal recovery is unverified"]
+    }], "alerts": ["WARNING: free capacity below audited baseline"],
+    "policy_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
+  "history": [], "approvals": []
+}
