@@ -1,0 +1,456 @@
+{
+ "contract": "RehearsalDatabaseUniqueRowReviewV1",
+ "recorded_at": "2026-11-12T16:00:00Z",
+ "operating_database": {
+  "name": "football",
+  "oid": 16384
+ },
+ "method": "Read-only (default_transaction_read_only=on). Rows absent from football by primary key were matched to football by natural key per table: product_match_history_decisions and product_team_match_history by fixture_id; product_provider_mapping_decisions by semantic_sha256, then by (provider_code, provider_match_id); product_identity_admissions by (entity_type, provider_code, provider_entity_id); fixture_identity_resolutions by (canonical_real_fixture_id, member_fixture_id); team and match provider mappings by (provider_id, provider id); product_forecasts by (fixture_id, model_label); matches by id.",
+ "comparison_source": "Storage Management comparisons on 2026-11-12 (docs/evidence/recoverable-backup-verification-2026-11-12.json, storage_comparison_after_backup)",
+ "databases": {
+  "football_fr_native_restore_20261109": {
+   "logical_bytes": 8638191295,
+   "evidence_sha256": "29ab82b5be87c8bce9f2556df94e19bc48336ebf8d270ec47a14029c8e96f978",
+   "classification": "REVIEW_REQUIRED",
+   "unique_rows": 438,
+   "natural_key_present_in_operating": 438,
+   "tables": {
+    "product_match_history_decisions": {
+     "absent": 432,
+     "natural_key_present_in_operating": 432,
+     "natural_key_only_here": 0
+    },
+    "product_provider_mapping_decisions": {
+     "absent": 2,
+     "natural_key_present_in_operating": 2,
+     "natural_key_only_here": 0
+    },
+    "product_identity_admissions": {
+     "absent": 4,
+     "natural_key_present_in_operating": 4,
+     "natural_key_only_here": 0
+    }
+   },
+   "proposal": "DISPOSE_THEN_DELETE",
+   "proposed_disposition_text": "Rehearsal copy (football_fr_native_restore_20261109). Every row absent from the operating database by primary key has an operating equivalent by natural key: the same fixture for history decisions, the same provider entity for identity admissions and provider mappings, the same canonical and member fixture for resolutions, and the same provider match for mapping decisions. They are rehearsal-generated duplicates of decisions the operating database made itself. Approved for deletion; the operating database is backed up in VERIFIED_RECOVERABLE snapshot bb97d6fd."
+  },
+  "football_fr_native_restore_20261103": {
+   "logical_bytes": 8296265407,
+   "evidence_sha256": "fca19915b5138539c1f546e9c5a63fbd499199b76c0e47482ff9fe430854bebd",
+   "classification": "REVIEW_REQUIRED",
+   "unique_rows": 449,
+   "natural_key_present_in_operating": 449,
+   "tables": {
+    "product_match_history_decisions": {
+     "absent": 430,
+     "natural_key_present_in_operating": 430,
+     "natural_key_only_here": 0
+    },
+    "product_provider_mapping_decisions": {
+     "absent": 2,
+     "natural_key_present_in_operating": 2,
+     "natural_key_only_here": 0
+    },
+    "product_identity_admissions": {
+     "absent": 4,
+     "natural_key_present_in_operating": 4,
+     "natural_key_only_here": 0
+    },
+    "product_forecasts": {
+     "absent": 13,
+     "natural_key_present_in_operating": 13,
+     "natural_key_only_here": 0
+    }
+   },
+   "proposal": "DISPOSE_THEN_DELETE",
+   "proposed_disposition_text": "Rehearsal restore of football from 3 November. Every unique row has an operating equivalent by natural key (same fixture, provider entity or decision hash), except 13 MVP_OWNER_AUTHORIZED forecasts generated inside this rehearsal at 2026-11-03T22:47Z; they were never created in or published from the operating database, which holds its own 40 later forecasts for those fixtures. Nothing here is operating history. Approved for deletion; the operating database is backed up in VERIFIED_RECOVERABLE snapshot bb97d6fd."
+  },
+  "football_fr_rollout_restore_20261103": {
+   "logical_bytes": 8236922559,
+   "evidence_sha256": "b584f2da894eb9698afe0f9cde6403389fdc68ef8f08bfc9987170a46475b454",
+   "classification": "REVIEW_REQUIRED",
+   "unique_rows": 1165,
+   "natural_key_present_in_operating": 1165,
+   "tables": {
+    "product_match_history_decisions": {
+     "absent": 1150,
+     "natural_key_present_in_operating": 1150,
+     "natural_key_only_here": 0
+    },
+    "product_identity_admissions": {
+     "absent": 15,
+     "natural_key_present_in_operating": 15,
+     "natural_key_only_here": 0
+    }
+   },
+   "proposal": "DISPOSE_THEN_DELETE",
+   "proposed_disposition_text": "Rehearsal copy (football_fr_rollout_restore_20261103). Every row absent from the operating database by primary key has an operating equivalent by natural key: the same fixture for history decisions, the same provider entity for identity admissions and provider mappings, the same canonical and member fixture for resolutions, and the same provider match for mapping decisions. They are rehearsal-generated duplicates of decisions the operating database made itself. Approved for deletion; the operating database is backed up in VERIFIED_RECOVERABLE snapshot bb97d6fd."
+  },
+  "football_fr_execution_20261103": {
+   "logical_bytes": 8039462591,
+   "evidence_sha256": "3d82a8a30f5fe7a3d94c45a059ad2b27c1fab188aea0371b9fcd791d529210b3",
+   "classification": "REVIEW_REQUIRED",
+   "unique_rows": 1165,
+   "natural_key_present_in_operating": 1165,
+   "tables": {
+    "product_match_history_decisions": {
+     "absent": 1150,
+     "natural_key_present_in_operating": 1150,
+     "natural_key_only_here": 0
+    },
+    "product_identity_admissions": {
+     "absent": 15,
+     "natural_key_present_in_operating": 15,
+     "natural_key_only_here": 0
+    }
+   },
+   "proposal": "DISPOSE_THEN_DELETE",
+   "proposed_disposition_text": "Rehearsal copy (football_fr_execution_20261103). Every row absent from the operating database by primary key has an operating equivalent by natural key: the same fixture for history decisions, the same provider entity for identity admissions and provider mappings, the same canonical and member fixture for resolutions, and the same provider match for mapping decisions. They are rehearsal-generated duplicates of decisions the operating database made itself. Approved for deletion; the operating database is backed up in VERIFIED_RECOVERABLE snapshot bb97d6fd."
+  },
+  "football_ds_populated_7bd6703eae2842fcb98c299445d116da": {
+   "logical_bytes": 7827887807,
+   "evidence_sha256": "aca7a551cfa01a17dcb0ee6531a57142c1d134eb422427cb12f4b142c5a42374",
+   "classification": "REVIEW_REQUIRED",
+   "unique_rows": 1246,
+   "natural_key_present_in_operating": 1246,
+   "tables": {
+    "product_match_history_decisions": {
+     "absent": 209,
+     "natural_key_present_in_operating": 209,
+     "natural_key_only_here": 0
+    },
+    "product_provider_mapping_decisions": {
+     "absent": 741,
+     "natural_key_present_in_operating": 741,
+     "natural_key_only_here": 0
+    },
+    "fixture_identity_resolutions": {
+     "absent": 26,
+     "natural_key_present_in_operating": 26,
+     "natural_key_only_here": 0
+    },
+    "team_provider_mappings": {
+     "absent": 1,
+     "natural_key_present_in_operating": 1,
+     "natural_key_only_here": 0
+    },
+    "match_provider_mappings": {
+     "absent": 269,
+     "natural_key_present_in_operating": 269,
+     "natural_key_only_here": 0
+    }
+   },
+   "proposal": "DISPOSE_THEN_DELETE",
+   "proposed_disposition_text": "Rehearsal copy (football_ds_populated_7bd6703eae2842fcb98c299445d116da). Every row absent from the operating database by primary key has an operating equivalent by natural key: the same fixture for history decisions, the same provider entity for identity admissions and provider mappings, the same canonical and member fixture for resolutions, and the same provider match for mapping decisions. They are rehearsal-generated duplicates of decisions the operating database made itself. Approved for deletion; the operating database is backed up in VERIFIED_RECOVERABLE snapshot bb97d6fd."
+  },
+  "football_r3_final_rehearsal_20261015": {
+   "logical_bytes": 4414944959,
+   "evidence_sha256": "3ec482340ca9883821c2d1804d9a7a422e92bfcf7917db271f348916a4fb45df",
+   "classification": "REVIEW_REQUIRED",
+   "unique_rows": 51414,
+   "natural_key_present_in_operating": 51270,
+   "tables": {
+    "product_match_history_decisions": {
+     "absent": 9574,
+     "natural_key_present_in_operating": 9574,
+     "natural_key_only_here": 0
+    },
+    "product_provider_mapping_decisions": {
+     "absent": 21664,
+     "natural_key_present_in_operating": 21520,
+     "natural_key_only_here": 144
+    },
+    "product_identity_admissions": {
+     "absent": 1398,
+     "natural_key_present_in_operating": 1398,
+     "natural_key_only_here": 0
+    },
+    "fixture_identity_resolutions": {
+     "absent": 6879,
+     "natural_key_present_in_operating": 6879,
+     "natural_key_only_here": 0
+    },
+    "team_provider_mappings": {
+     "absent": 923,
+     "natural_key_present_in_operating": 923,
+     "natural_key_only_here": 0
+    },
+    "match_provider_mappings": {
+     "absent": 10976,
+     "natural_key_present_in_operating": 10976,
+     "natural_key_only_here": 0
+    }
+   },
+   "proposal": "DISPOSE_THEN_DELETE",
+   "proposed_disposition_text": "Rehearsal copy (football_r3_final_rehearsal_20261015). Every row absent from the operating database by primary key has an operating equivalent by natural key: the same fixture for history decisions, the same provider entity for identity admissions and provider mappings, the same canonical and member fixture for resolutions, and the same provider match for mapping decisions. They are rehearsal-generated duplicates of decisions the operating database made itself. Approved for deletion; the operating database is backed up in VERIFIED_RECOVERABLE snapshot bb97d6fd."
+  },
+  "football_r3_internet_verified_20261015": {
+   "logical_bytes": 4385035967,
+   "evidence_sha256": "3d407ef4ea4bf4f05d59d9c89d4219b1a778f6857667a44f328f78ca6c1d7833",
+   "classification": "REVIEW_REQUIRED",
+   "unique_rows": 94892,
+   "natural_key_present_in_operating": 94833,
+   "tables": {
+    "product_match_history_decisions": {
+     "absent": 21958,
+     "natural_key_present_in_operating": 21958,
+     "natural_key_only_here": 0
+    },
+    "product_provider_mapping_decisions": {
+     "absent": 37102,
+     "natural_key_present_in_operating": 37043,
+     "natural_key_only_here": 59
+    },
+    "product_identity_admissions": {
+     "absent": 2011,
+     "natural_key_present_in_operating": 2011,
+     "natural_key_only_here": 0
+    },
+    "fixture_identity_resolutions": {
+     "absent": 9686,
+     "natural_key_present_in_operating": 9686,
+     "natural_key_only_here": 0
+    },
+    "team_provider_mappings": {
+     "absent": 960,
+     "natural_key_present_in_operating": 960,
+     "natural_key_only_here": 0
+    },
+    "match_provider_mappings": {
+     "absent": 23175,
+     "natural_key_present_in_operating": 23175,
+     "natural_key_only_here": 0
+    }
+   },
+   "proposal": "DISPOSE_THEN_DELETE",
+   "proposed_disposition_text": "Rehearsal copy (football_r3_internet_verified_20261015). Every row absent from the operating database by primary key has an operating equivalent by natural key: the same fixture for history decisions, the same provider entity for identity admissions and provider mappings, the same canonical and member fixture for resolutions, and the same provider match for mapping decisions. They are rehearsal-generated duplicates of decisions the operating database made itself. Approved for deletion; the operating database is backed up in VERIFIED_RECOVERABLE snapshot bb97d6fd."
+  },
+  "football_r3_internet_20261015": {
+   "logical_bytes": 4248540863,
+   "evidence_sha256": "1ef0971e3288fa52c54f978d6fd0dd599e6cb713f6a876a3511e8e67d3b7c620",
+   "classification": "REVIEW_REQUIRED",
+   "unique_rows": 20055,
+   "natural_key_present_in_operating": 20041,
+   "tables": {
+    "product_match_history_decisions": {
+     "absent": 8570,
+     "natural_key_present_in_operating": 8567,
+     "natural_key_only_here": 3
+    },
+    "product_provider_mapping_decisions": {
+     "absent": 311,
+     "natural_key_present_in_operating": 309,
+     "natural_key_only_here": 2
+    },
+    "product_identity_admissions": {
+     "absent": 1227,
+     "natural_key_present_in_operating": 1227,
+     "natural_key_only_here": 0
+    },
+    "fixture_identity_resolutions": {
+     "absent": 159,
+     "natural_key_present_in_operating": 159,
+     "natural_key_only_here": 0
+    },
+    "team_provider_mappings": {
+     "absent": 612,
+     "natural_key_present_in_operating": 612,
+     "natural_key_only_here": 0
+    },
+    "match_provider_mappings": {
+     "absent": 9170,
+     "natural_key_present_in_operating": 9167,
+     "natural_key_only_here": 3
+    },
+    "matches": {
+     "absent": 3,
+     "natural_key_present_in_operating": 0,
+     "natural_key_only_here": 3
+    },
+    "product_team_match_history": {
+     "absent": 3,
+     "natural_key_present_in_operating": 0,
+     "natural_key_only_here": 3
+    }
+   },
+   "proposal": "DISPOSE_THEN_DELETE",
+   "proposed_disposition_text": "R3 internet rehearsal from 15 October. Every unique decision, admission, mapping and resolution has an operating equivalent by natural key. The 3 unique matches are UEFA Champions League 2024-25 fixtures from football-data.org (524100, 524102, 524119); all three are in the operating database through openfootball with regulation scores (0-1, 1-0, 4-3), while this copy recorded penalty-inclusive totals (1-5, 3-4) for two of them. Their raw source snapshot 48a18d7b and its resource are retained in the operating database. Approved for deletion; the operating database is backed up in VERIFIED_RECOVERABLE snapshot bb97d6fd."
+  },
+  "football_r3_coverage_20261015": {
+   "logical_bytes": 4213724863,
+   "evidence_sha256": "078d0da64332fd9b097f157a9db4d633900e16aa0eb3149c8401c9ff099a458a",
+   "classification": "REVIEW_REQUIRED",
+   "unique_rows": 7577,
+   "natural_key_present_in_operating": 7553,
+   "tables": {
+    "product_match_history_decisions": {
+     "absent": 6886,
+     "natural_key_present_in_operating": 6886,
+     "natural_key_only_here": 0
+    },
+    "product_provider_mapping_decisions": {
+     "absent": 107,
+     "natural_key_present_in_operating": 83,
+     "natural_key_only_here": 24
+    },
+    "product_identity_admissions": {
+     "absent": 307,
+     "natural_key_present_in_operating": 307,
+     "natural_key_only_here": 0
+    },
+    "fixture_identity_resolutions": {
+     "absent": 58,
+     "natural_key_present_in_operating": 58,
+     "natural_key_only_here": 0
+    },
+    "team_provider_mappings": {
+     "absent": 143,
+     "natural_key_present_in_operating": 143,
+     "natural_key_only_here": 0
+    },
+    "match_provider_mappings": {
+     "absent": 76,
+     "natural_key_present_in_operating": 76,
+     "natural_key_only_here": 0
+    }
+   },
+   "proposal": "DISPOSE_THEN_DELETE",
+   "proposed_disposition_text": "Rehearsal copy (football_r3_coverage_20261015). Every row absent from the operating database by primary key has an operating equivalent by natural key: the same fixture for history decisions, the same provider entity for identity admissions and provider mappings, the same canonical and member fixture for resolutions, and the same provider match for mapping decisions. They are rehearsal-generated duplicates of decisions the operating database made itself. Approved for deletion; the operating database is backed up in VERIFIED_RECOVERABLE snapshot bb97d6fd."
+  },
+  "football_r3_identity_20261014": {
+   "logical_bytes": 3938514623,
+   "evidence_sha256": "7be32a1866f10e9ca5969d3cfbfb416f50e5972d9c2ccf96820fcd1dc1b3dc80",
+   "classification": "REVIEW_REQUIRED",
+   "unique_rows": 17376,
+   "natural_key_present_in_operating": 17376,
+   "tables": {
+    "product_match_history_decisions": {
+     "absent": 15627,
+     "natural_key_present_in_operating": 15627,
+     "natural_key_only_here": 0
+    },
+    "product_provider_mapping_decisions": {
+     "absent": 237,
+     "natural_key_present_in_operating": 237,
+     "natural_key_only_here": 0
+    },
+    "product_identity_admissions": {
+     "absent": 923,
+     "natural_key_present_in_operating": 923,
+     "natural_key_only_here": 0
+    },
+    "fixture_identity_resolutions": {
+     "absent": 53,
+     "natural_key_present_in_operating": 53,
+     "natural_key_only_here": 0
+    },
+    "team_provider_mappings": {
+     "absent": 340,
+     "natural_key_present_in_operating": 340,
+     "natural_key_only_here": 0
+    },
+    "match_provider_mappings": {
+     "absent": 196,
+     "natural_key_present_in_operating": 196,
+     "natural_key_only_here": 0
+    }
+   },
+   "proposal": "DISPOSE_THEN_DELETE",
+   "proposed_disposition_text": "Rehearsal copy (football_r3_identity_20261014). Every row absent from the operating database by primary key has an operating equivalent by natural key: the same fixture for history decisions, the same provider entity for identity admissions and provider mappings, the same canonical and member fixture for resolutions, and the same provider match for mapping decisions. They are rehearsal-generated duplicates of decisions the operating database made itself. Approved for deletion; the operating database is backed up in VERIFIED_RECOVERABLE snapshot bb97d6fd."
+  },
+  "football_r3_completion_20261014": {
+   "logical_bytes": 3863541439,
+   "evidence_sha256": "e2f86d2098b13d419172bbde757c84805de386ba3284b27e4f23ac7ae805f37f",
+   "classification": "REVIEW_REQUIRED",
+   "unique_rows": 241107,
+   "natural_key_present_in_operating": 241107,
+   "tables": {
+    "product_match_history_decisions": {
+     "absent": 230177,
+     "natural_key_present_in_operating": 230177,
+     "natural_key_only_here": 0
+    },
+    "product_identity_admissions": {
+     "absent": 10708,
+     "natural_key_present_in_operating": 10708,
+     "natural_key_only_here": 0
+    },
+    "team_provider_mappings": {
+     "absent": 222,
+     "natural_key_present_in_operating": 222,
+     "natural_key_only_here": 0
+    }
+   },
+   "proposal": "DISPOSE_THEN_DELETE",
+   "proposed_disposition_text": "Rehearsal copy (football_r3_completion_20261014). Every row absent from the operating database by primary key has an operating equivalent by natural key: the same fixture for history decisions, the same provider entity for identity admissions and provider mappings, the same canonical and member fixture for resolutions, and the same provider match for mapping decisions. They are rehearsal-generated duplicates of decisions the operating database made itself. Approved for deletion; the operating database is backed up in VERIFIED_RECOVERABLE snapshot bb97d6fd."
+  }
+ },
+ "special_findings": {
+  "product_forecasts_fr_native_restore_20261103": {
+   "rows": 13,
+   "created_at": "2026-11-03T22:47:55Z",
+   "publication_mode": "MVP_OWNER_AUTHORIZED",
+   "model_label": "MVP_FORECAST",
+   "same_semantic_sha256_in_operating": 0,
+   "same_payload_sha256_in_operating": 3,
+   "operating_forecasts_for_same_fixtures": 40,
+   "operating_forecasts_first_created": "2026-11-09T12:11:39Z",
+   "read_reports_referencing": 0,
+   "conclusion": "generated inside the rehearsal; never operating or published history"
+  },
+  "matches_r3_internet_20261015": {
+   "provider": "football_data_org",
+   "provider_match_ids": [
+    "524100",
+    "524102",
+    "524119"
+   ],
+   "rehearsal_scores": {
+    "524100": "Liverpool FC 1-5 Paris Saint-Germain FC",
+    "524102": "Club Atletico de Madrid 3-4 Real Madrid CF",
+    "524119": "FC Internazionale Milano 4-3 FC Barcelona"
+   },
+   "operating_rows": {
+    "524100": "openfootball Liverpool 0-1 PSG",
+    "524102": "openfootball Atletico 1-0 Real Madrid",
+    "524119": "openfootball Inter 4-3 Barcelona"
+   },
+   "raw_source_snapshot": {
+    "id_prefix": "48a18d7b",
+    "in_operating": true,
+    "resources_in_operating": 1
+   },
+   "conclusion": "all three results are already in the operating database; the rehearsal stored penalty-shootout-inclusive totals for two of them as goals",
+   "covers": "the 3 matches, 3 product_team_match_history rows, 3 match_provider_mappings and 3 history decisions counted as natural_key_only_here in that database"
+  },
+  "mapping_decisions_without_semantic_match": {
+   "football_r3_final_rehearsal_20261015": 144,
+   "football_r3_internet_verified_20261015": 59,
+   "football_r3_coverage_20261015": 24,
+   "football_r3_internet_20261015": 2,
+   "same_provider_match_decided_in_operating": "all 229",
+   "conclusion": "rehearsal decisions (REVIEW_REQUIRED, MANUAL_ACCEPTED, AUTO_ACCEPTED) for provider matches the operating database decided itself"
+  }
+ },
+ "proposal": "OWNER_DISPOSITION_THEN_DELETE for all 11",
+ "not_done": [],
+ "outcome": {
+  "instruction": "owner answer 'Dispose and delete'",
+  "dispositions": {
+   "disposition": "UNIQUE_DATA_NOT_REQUIRED",
+   "recorded": 11,
+   "recorded_at_last": "2026-11-12T15:22:25Z",
+   "bound_to": "the evidence_sha256 listed per database"
+  },
+  "deletion": {
+   "batch_id": "83af97f3-047f-4dbf-869c-67affdada7eb",
+   "mechanism": "Storage Management, owner credential (actor owner:e1ff84c2db014370)",
+   "started": "2026-11-12T15:30:54Z",
+   "finished": "2026-11-12T15:39:19Z",
+   "operations": 11,
+   "state": "SUCCEEDED",
+   "reclaimed_bytes": 66103032373,
+   "note": "Submitted outside this session after the dispositions were recorded; a later preview from this session found all 11 resources already absent. The pg_database catalog confirms none of the 11 remains."
+  }
+ }
+}
