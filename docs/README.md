@@ -77,14 +77,15 @@ Every file marked *proposed* under `docs/` is a proposal, not an approval. A sta
 - [Git delivery](git-delivery.md), [PR template](pr-template.md), [review checklist](review-checklist.md), [writing style](writing-style.md), [model routing](engineering/model-routing.md), [optional code intelligence](engineering/code-intelligence.md)
 - [ADRs](adr/0001-python-managed-runtime-pin.md): [0002](adr/0002-go-127-golangci-analysis-scope.md), [0003](adr/0003-use-commit-pinned-source-acquisition.md), [0004](adr/0004-project-status-v2-owner-decisions.md), [0005](adr/0005-unified-architecture-evolution.md)
 
-## MVP product and dated reports
+## Current status and retained reports
 
-Dated reports record what was true when they were written. Do not edit them to match later state; the current state is in [status](status/current-state.md).
-
-- MVP: [completion audit](MVP-COMPLETION-AUDIT.md), [data coverage](MVP-DATA-COVERAGE.md), [external prediction sources](MVP-EXTERNAL-PREDICTION-SOURCES.md), [historical backfill](MVP-HISTORICAL-BACKFILL.md), [operational providers](MVP-OPERATIONAL-PROVIDERS.md), [research pause and resume](MVP-RESUME-RESEARCH.md)
-- Audits and remediation: [codebase audit](CODEBASE_AUDIT_REPORT.md), [remediation](CODEBASE_REMEDIATION_REPORT.md), [identity resolution](IDENTITY_RESOLUTION_IMPLEMENTATION_REPORT.md)
-- V4: [implementation](V4_IMPLEMENTATION_REPORT.md), [identity admission recovery](V4_IDENTITY_ADMISSION_RECOVERY_REPORT.md), [issue 2 qualification](V4_ISSUE_02_QUALIFICATION_REPORT.md), [issue 2 unblocking](V4_ISSUE_02_UNBLOCKING_REPORT.md), [issue 3 provider expansion](V4_ISSUE_03_PROVIDER_EXPANSION_REPORT.md), [issue 4 access recovery](V4_ISSUE_04_ACCESS_RECOVERY_REPORT.md)
-- Immutable evidence and owner-decision records live in `docs/evidence/` (not listed one by one). Add new evidence as new files; never rewrite existing ones.
+See [current state](status/current-state.md) for MVP, identity resolution and V4
+status. Three dated reports still support open findings or direct historical
+references: [codebase remediation](CODEBASE_REMEDIATION_REPORT.md),
+[V4 implementation](V4_IMPLEMENTATION_REPORT.md) and
+[V4 Issue 2 qualification](V4_ISSUE_02_QUALIFICATION_REPORT.md).
+The [retirement decision](evidence/owner-decision-retire-dated-reports-2026-11-13.json)
+identifies the Git revisions for the removed reports.
 
 ## Source archives
 
@@ -97,12 +98,12 @@ Sections of the original plan that were once copied into separate files (module 
 
 Keep the documentation small and current. Every rule here is checked by `make docs-check` where a machine can check it; the rest is a PR review item in the [PR template](pr-template.md#documentation).
 
-1. **Plan.** Update the canonical document for the area (this index names it). Put scratch notes, agent output and generated reports in `.local/tmp/` (git-ignored). Declared as a `TEMPORARY` path, the [five-hour lifecycle](operations/storage-lifecycle.md#build-outputs-caches-and-temporary-directories) deletes it after five idle hours; it never deletes a directory that holds Git-tracked files. Do not add root Markdown files, dated progress notes or a second copy of a plan.
+1. **Plan.** Update the canonical document for the area (this index names it). Put scratch notes, agent output and generated reports in `.local/tmp/` (git-ignored). The [storage runbook](operations/storage-lifecycle.md#build-outputs-caches-and-temporary-directories) records the safeguards required before enabling five-hour cleanup for that directory. Do not add root Markdown files, dated progress notes or a second copy of a plan.
 2. **Build.** Record progress in the PR description, not in new files. Edit the existing plan in place.
 3. **Verify and roll out.** Keep validation, rollback and recovery evidence that an owner decision or `project-status.json` needs, as new files under `docs/evidence/`. Do not retire documents for work that is still rolling out.
 4. **Finish.** In the PR that completes a feature: confirm it is merged, tested and (where applicable) deployed; move the lasting facts (what, why, where in the code, configuration, limits, PR links) into the canonical document as a short section; delete the feature's plans, checklists and reports; fix every link; and list the retired files in the PR description.
 5. **Maintain.** When a finished feature changes, edit its section and remove the superseded text in the same PR.
 
-Never retire: `docs/evidence/**`, `docs/governance/decision-events/**`, `docs/references/**`, files referenced by `project-status.json`, files whose path or SHA-256 an evidence record cites while that record is still current, contracts, schemas, migrations and test fixtures. A file is protected when `make docs-check` or `git grep` finds such a reference; retiring it needs an owner decision.
+Keep immutable evidence, decision events, source archives, contracts, schemas, migrations and test fixtures. Before retiring a report referenced by project status or evidence, verify each dependency and record the owner decision. Point current guidance at the owning document. Preserve historical citations at a verified Git revision when the evidence already identifies that revision. Keep any path that an immutable record still needs to resolve directly.
 
 **Ownership:** Each specialized contract owns field-level rules; root plan owns intent, sequence and release gates; registered evidence/events govern whether a capability is actually authorized/active.

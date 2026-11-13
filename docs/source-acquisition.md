@@ -182,6 +182,23 @@ Provider roles use the versioned `tier_a` (event intelligence), `tier_b`
 provider may declare more than one role; roles describe supplied capability, not
 trust priority. StatsBomb Open Data is currently declared as `tier_a` only.
 
+### Operational provider transport
+
+FotMob's Python adapter uses ordinary `www.fotmob.com/api/data/` JSON endpoints.
+The MIT-licensed [FotMob-API](https://github.com/writeshh/FotMob-API) informed its
+endpoint and cache mapping. PitchAPI sends its server-side token and requests
+`status=all` for fixture listings. Live lanes have priority over bulk history.
+API-Football reads daily and minute quota from distinct response headers,
+defers on `Retry-After` and keeps missing header values unknown.
+
+Keep original download bytes and registration times. OpenFootball and
+Football-Data.co.uk use immutable `HistoricalSourceManifestV1` records for
+new imports. Football-Data.co.uk ZIP decoding accepts only bounded stored or
+deflated members, checks paths, types and declared sizes, and decodes in memory.
+Limits are controlled by the existing `MATCHFORGE_ARCHIVE_*` settings.
+Legacy path-digest evidence and the applied binding repair are documented in
+[the recovery record](operations/fduk-manifest-path-digests-2026-11-12.md).
+
 ### Research and Evaluation V2 are separate qualification levels
 
 Ordinary private research follows the provider-wide standing owner decision

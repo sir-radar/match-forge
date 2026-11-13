@@ -285,11 +285,36 @@ tracks (checked with `git ls-files`; if Git cannot answer, the path is blocked);
 otherwise it is `BLOCKED`. Tracked documentation is retired by pull request, never
 by this policy.
 
-`.local/tmp` is the place for disposable output: agent notes, generated reports and
-JSON results, ad-hoc test output. Declare it as a `TEMPORARY` path (as in
-`infrastructure/storage-policy.example.json`) to have it deleted five hours after its
-last use. The operating policy does not declare it yet; adding it is a policy change
-recorded under a new owner approval.
+`.local/tmp` is for disposable scratch output. The example shows a
+`TEMPORARY` declaration for the whole directory. The operating policy leaves it
+out. Enable it only under a new owner decision and after an isolated rehearsal:
+
+1. Inventory the exact repository-relative path and its contents. Move any
+   durable evidence to its governed store and verify its path, checksums and
+   recovery before enabling cleanup. Keep raw sources, evaluation corpora,
+   restore inputs and required reports outside this tree. Reject any overlap
+   with Git-tracked files, a protected path or a registered evidence dependency.
+2. Enumerate every producer and consumer, including subprocesses and jobs that
+   release file handles between steps. Require path ownership for the full job
+   lifetime. Validate active work and storage leases before eligibility and
+   again under a fence at deletion. A held lease, an incomplete inventory or
+   unknown ownership blocks deletion. A process scan or an expired lease alone
+   cannot establish that the directory is disposable.
+3. In an isolated repository and database, verify that open files, working
+   directories, active jobs and leases, tracked files and protected evidence
+   each prevent deletion. Check that a new writer resets the clock, a new
+   lease during the deletion attempt blocks it, and unowned disposable output
+   becomes eligible only after five idle hours. Check restart recovery and the
+   audit record for the exact directory generation.
+4. After approval, add only the exact `.local/tmp` path as `TEMPORARY`, with
+   the verified consumers and the approved policy record. Confirm the first
+   lifecycle observations before permitting deletion. To roll back, remove the
+   declaration and confirm the policy no longer offers the path for deletion.
+
+The current generic path cleaner scans processes and checks Git and protected
+paths. It does not bind jobs or work leases to this directory. Implement and
+verify that fence before proposing operating activation.
+
 Deletion re-observes the path, records a storage operation (the SQL guard rechecks
 protection), renames the directory to `<path>.matchforge-deleting-<operation>` on
 the same device, measures its allocated bytes, removes it and verifies absence.

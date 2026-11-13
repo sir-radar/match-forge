@@ -3,7 +3,7 @@
 This module supports the operational sync while preserving provider IDs and timestamps
 for the existing resolution layer. Detailed observations remain development-only.
 The upstream MIT project and operational limits are documented in
-docs/MVP-OPERATIONAL-PROVIDERS.md.
+docs/source-acquisition.md.
 """
 
 from __future__ import annotations
