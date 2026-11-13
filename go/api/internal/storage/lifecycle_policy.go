@@ -28,9 +28,9 @@ type LifecyclePolicy struct {
 	Worktrees            *WorktreeLifecycle `json:"worktrees,omitempty"`
 	// Paths are regenerable build outputs, dependency caches and temporary
 	// directories inside the repository, each deleted as a whole.
-	Paths      []DisposablePath `json:"paths,omitempty"`
-	ApprovedBy           string             `json:"approved_by"`
-	ApprovalRecord       string             `json:"approval_record"`
+	Paths          []DisposablePath `json:"paths,omitempty"`
+	ApprovedBy     string           `json:"approved_by"`
+	ApprovalRecord string           `json:"approval_record"`
 }
 
 // DisposablePath declares one regenerable directory. Consumers are process names
@@ -92,7 +92,9 @@ func validatePaths(paths []DisposablePath, protected []string) error {
 		if err := d.validate(protected); err != nil {
 			return err
 		}
-		if slices.ContainsFunc(paths[:i], func(o DisposablePath) bool { return o.Path == d.Path || within(o.Path, d.Path) || within(d.Path, o.Path) }) {
+		if slices.ContainsFunc(paths[:i], func(o DisposablePath) bool {
+			return o.Path == d.Path || within(o.Path, d.Path) || within(d.Path, o.Path)
+		}) {
 			return errors.New("disposable paths must not overlap")
 		}
 	}
