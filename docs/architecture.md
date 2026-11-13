@@ -1372,15 +1372,21 @@ team IDs. A conflicting, quarantined or ambiguous identity stays pending.
 When a verified canonical mapping becomes available, the normal mapping trigger
 queues revalidation and the append-only binding records the canonical fixture.
 
-New predictions retain available match references and displayed kickoff text.
+Imports retain match references, native IDs and displayed kickoff text as
+append-only evidence. An exact recapture can enrich the existing selection.
+Repeated evidence is deduplicated, and conflicting fixture references block
+settlement while preserving the recorded binding. Native-key changes enqueue
+affected captures through the existing settlement and comparison queues.
 A dated R2Bet link can support a binding when a unique retained API-Football
 mapping independently corroborates the native ID, competition, kickoff and
 oriented teams. Source labels alone produce no new bindings. Historical source
 pages can supply missing references for exact retained captures. Their bindings
 use the existing review history and receive no retroactive prospective credit.
 
-The continuous archive returns all retained captures matching the filters.
-The existing list and fixture APIs still return paginated current selections.
+External Predictions displays all matching captures for the selected day in
+capture order. Older days are available through the date picker and day
+navigation. The archive API also supports cross-date queries. The existing list
+and fixture APIs still return paginated current selections.
 Consensus and source statistics still use current, prospectively eligible picks.
 
 ### Operational acquisition and historical recovery outcomes

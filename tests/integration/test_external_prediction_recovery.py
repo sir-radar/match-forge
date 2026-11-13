@@ -866,3 +866,145 @@ def test_archived_r2bet_capture_recovers_verified_native_identity(report_databas
                WHERE source_code='r2bet' AND source_page=%s""",
             (page,),
         ).fetchone() == (FIXTURE,)
+
+
+def test_recapture_enriches_r2bet_revision_and_holds_conflicting_reference(report_database):
+    from football.product.external_prediction_recovery import reconcile_external_predictions
+
+    original = selection(
+        source_page="https://r2bet.com/index.php/best_football_prediction?dt=2030-01-01",
+        original_date_text="1st, Tue Jan 2030",
+        provider_code=None,
+        provider_fixture_id=None,
+    )
+    enriched = replace(
+        original,
+        fixture_reference_url="https://r2bet.com/index.php/match-details/123-free/home-vs-away",
+        source_kickoff_text="19:00",
+    )
+    observed = KICKOFF - timedelta(hours=3)
+    with psycopg.connect(report_database) as c:
+        c.execute("UPDATE football.providers SET code='api_football' WHERE id=%s", (PROVIDER,))
+        c.commit()
+        assert import_predictions(c, (original,), source_code="r2bet", collected_at=observed) == 1
+        prediction, retained = c.execute(
+            "SELECT prediction_id,to_jsonb(ep) FROM football.external_predictions ep "
+            "WHERE source_code='r2bet' AND source_page=%s",
+            (original.source_page,),
+        ).fetchone()
+        c.commit()
+        assert import_predictions(c, (enriched,), source_code="r2bet", collected_at=observed) == 0
+        assert c.execute(
+            """SELECT fixture_reference_url,source_kickoff_text,observed_at
+            FROM football.external_prediction_fixture_evidence WHERE prediction_id=%s""",
+            (prediction,),
+        ).fetchall() == [(enriched.fixture_reference_url, "19:00", observed)]
+        c.commit()
+        settle(c)
+        c.execute(
+            "UPDATE football.match_provider_mappings SET provider_match_id='123' "
+            "WHERE provider_id=%s",
+            (PROVIDER,),
+        )
+        c.commit()
+        settle(c)
+        binding = c.execute(
+            """SELECT binding_id,effective_fixture_id
+            FROM football.external_prediction_effective WHERE prediction_id=%s""",
+            (prediction,),
+        ).fetchone()
+        assert binding[1] == FIXTURE
+        assert c.execute(
+            """SELECT settlement_state FROM football.external_prediction_latest_results
+            WHERE prediction_id=%s""",
+            (prediction,),
+        ).fetchone() == ("WON",)
+        generation = c.execute(
+            "SELECT generation FROM football.external_prediction_refresh_work "
+            "WHERE prediction_id=%s",
+            (prediction,),
+        ).fetchone()
+        c.commit()
+        assert import_predictions(c, (enriched,), source_code="r2bet", collected_at=observed) == 0
+        assert (
+            c.execute(
+                "SELECT generation FROM football.external_prediction_refresh_work "
+                "WHERE prediction_id=%s",
+                (prediction,),
+            ).fetchone()
+            == generation
+        )
+        assert c.execute(
+            "SELECT to_jsonb(ep) FROM football.external_predictions ep WHERE prediction_id=%s",
+            (prediction,),
+        ).fetchall() == [(retained,)]
+        c.commit()
+        conflict = replace(
+            enriched,
+            fixture_reference_url="https://r2bet.com/index.php/match-details/456-free/home-vs-away",
+        )
+        assert import_predictions(c, (conflict,), source_code="r2bet", collected_at=observed) == 0
+        audit = reconcile_external_predictions(c, datetime.now(UTC), audit_only=True)
+        assert (
+            next(item for item in audit["predictions"] if item["prediction_id"] == str(prediction))[
+                "association"
+            ]
+            == "IDENTITY_CONFLICT"
+        )
+        assert (
+            c.execute(
+                """SELECT binding_id,effective_fixture_id
+            FROM football.external_prediction_effective WHERE prediction_id=%s""",
+                (prediction,),
+            ).fetchone()
+            == binding
+        )
+
+
+def test_concurrent_native_evidence_import_keeps_one_prediction(report_database):
+    from threading import Barrier
+
+    original = selection(provider_code=None, provider_fixture_id=None)
+    enriched = selection()
+    observed = KICKOFF - timedelta(hours=1)
+    start = Barrier(2)
+
+    def ingest(row):
+        with psycopg.connect(report_database) as c:
+            start.wait(timeout=10)
+            return import_predictions(c, (row,), collected_at=observed)
+
+    with ThreadPoolExecutor(max_workers=2) as workers:
+        assert sum(workers.map(ingest, (original, enriched))) == 1
+    with psycopg.connect(report_database) as c:
+        assert c.execute(
+            """SELECT effective_fixture_id FROM football.external_prediction_effective
+            WHERE source_code='manual_import'"""
+        ).fetchall() == [(FIXTURE,)]
+        assert c.execute(
+            """SELECT provider_code,provider_fixture_id FROM
+            football.external_prediction_fixture_evidence"""
+        ).fetchall() == [("live_context_test", "fixture-native")]
+
+
+def test_inventory_validates_source_date_before_reconciliation(report_database):
+    from football.product.external_prediction_recovery import reconcile_external_predictions
+
+    row = selection(original_date_text="1st, Tue Jan 2030")
+    with psycopg.connect(report_database) as c:
+        assert import_predictions(c, (row,), source_code="r2bet") == 1
+        c.read_only = True
+        audit = reconcile_external_predictions(c, datetime.now(UTC), audit_only=True)
+        assert audit["counts"] == {"ELIGIBLE": 2}
+        assert c.execute(
+            "SELECT count(*) FROM football.external_prediction_date_reviews "
+            "WHERE prediction_id<>%s",
+            (PREDICTION,),
+        ).fetchone() == (0,)
+        c.commit()
+        c.read_only = False
+        result = reconcile_external_predictions(c, datetime.now(UTC))
+        assert result["counts"] == {"NEWLY_SETTLED": 2}
+        assert {row["prediction_id"] for row in audit["predictions"]} == set(
+            result["changed_prediction_ids"]
+        )

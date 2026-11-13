@@ -5,19 +5,20 @@ from __future__ import annotations
 import hashlib
 from collections import Counter, defaultdict
 from collections.abc import Iterable
-from datetime import date
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 from uuid import UUID
 
 from psycopg import Connection
 
-from football.product.domain import sha256_json
 from football.product.external_prediction_recovery import bind_reviewed_prediction
 from football.product.external_prediction_sources import ParserBrokenError, parse_r2bet
 from football.product.external_predictions import (
     ImportedPrediction,
+    prediction_content_sha256,
     prediction_revision_sha256,
+    record_fixture_evidence,
     verified_r2bet_mapping,
 )
 
@@ -87,19 +88,7 @@ def _recover_page(
     recovered = []
     for digest, row in rows:
         # Pre-provider imports used the same source facts with a smaller digest.
-        legacy = sha256_json(
-            {
-                "source": "r2bet",
-                "source_page": row.source_page,
-                "prediction_date": row.prediction_date.isoformat(),
-                "original_date_text": row.original_date_text,
-                "competition": row.competition,
-                "home_team": row.home_team,
-                "away_team": row.away_team,
-                "market": row.market,
-                "selection": row.selection,
-            }
-        )
+        legacy = prediction_content_sha256("r2bet", row)
         captures = connection.execute(
             """SELECT prediction_id FROM football.external_prediction_effective
             WHERE revision_sha256 IN (%s,%s) AND source_code='r2bet'
@@ -111,10 +100,26 @@ def _recover_page(
             continue
         prediction_id: UUID = captures[0][0]
         mapping = verified_r2bet_mapping(connection, row)
+        if not audit_only:
+            record_fixture_evidence(
+                connection,
+                prediction_id,
+                "r2bet",
+                row,
+                datetime.now(UTC),
+                archive_sha256=checksum,
+            )
         disposition = "MAPPING_NOT_VERIFIED"
         if mapping is not None:
             disposition = "BINDING_ELIGIBLE"
-            if not audit_only:
+            conflicting = connection.execute(
+                """SELECT conflicting FROM football.external_prediction_fixture_identity
+                WHERE prediction_id=%s""",
+                (prediction_id,),
+            ).fetchone()
+            if conflicting and conflicting[0]:
+                disposition = "IDENTITY_CONFLICT"
+            elif not audit_only:
                 reason = f"R2Bet exact archived revision {checksum} {row.fixture_reference_url}"
                 if bind_reviewed_prediction(connection, prediction_id, mapping, reason=reason):
                     disposition = "BOUND"

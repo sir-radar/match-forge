@@ -11,7 +11,11 @@ from html.parser import HTMLParser
 from urllib.parse import urljoin, urlsplit
 
 from football.product.domain import map_external_market
-from football.product.external_predictions import ImportedPrediction, provider_fixture_reference
+from football.product.external_predictions import (
+    ImportedPrediction,
+    provider_fixture_reference,
+    r2bet_match_id,
+)
 from football.providers.base import UrllibHttpTransport
 
 FetchPage = Callable[[str], str]
@@ -195,13 +199,16 @@ def _fixture_metadata(row: ImportedPrediction, element: Element) -> ImportedPred
         and re.fullmatch(r"(?:[01]?[0-9]|2[0-3]):[0-5][0-9]", _text(child))
     }
     provider, match = next(iter(native)) if len(native) == 1 else (None, None)
+    r2bet_ids = {match_id for url in links if (match_id := r2bet_match_id(url))}
     return replace(
         row,
         provider_code=provider,
         provider_fixture_id=match,
         fixture_reference_url=next(iter(links)) if len(links) == 1 else None,
         source_kickoff_text=next(iter(displayed_times)) if len(displayed_times) == 1 else None,
-        conflicting_fixture_references=tuple(sorted(links)) if len(native) > 1 else (),
+        conflicting_fixture_references=tuple(sorted(links))
+        if len(native | {("r2bet", match_id) for match_id in r2bet_ids}) > 1
+        else (),
     )
 
 

@@ -222,7 +222,11 @@ scheduled worker and covers every retained capture. Each prediction commits
 independently. The admin run stores progress and outcome counts. A retry
 counts committed outcomes as already settled. The manual job records potential
 corrections for review and leaves finalized outcomes to the existing correction
-workflow. The CLI also reports the exact planned or changed prediction IDs.
+workflow. The CLI reports the exact changed prediction IDs. Audit-only reports
+each retained prediction's eligibility against its stored binding and applies
+the same source-date validation in memory. Run binding recovery and settlement
+on an isolated restore to preview changes that require new bindings. Compare
+binding history, date reviews and result revisions before and after the run.
 
 Before an operating rollout, keep a verified pre-change dump and compare the
 read-only audit against the isolated rehearsal. Apply the approved migration

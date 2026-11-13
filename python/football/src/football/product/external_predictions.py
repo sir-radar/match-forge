@@ -65,7 +65,7 @@ def r2bet_match_id(reference: str | None) -> str | None:
 def verified_r2bet_mapping(connection: Connection[Any], row: ImportedPrediction) -> UUID | None:
     """Corroborate the R2Bet link ID with independent native context in PostgreSQL."""
     match_id = r2bet_match_id(row.fixture_reference_url)
-    if match_id is None or row.source_kickoff_text is None:
+    if match_id is None or row.source_kickoff_text is None or row.conflicting_fixture_references:
         return None
     candidates = connection.execute(
         """SELECT mapping.id,f.kickoff_at,home.name,away.name,competition.name
@@ -135,86 +135,172 @@ def import_predictions(
     observed_at = collected_at or datetime.now(UTC)
     if observed_at.tzinfo is None or observed_at.utcoffset() is None:
         raise ValueError("collected_at must include a timezone")
-    count = 0
-    for row in rows:
-        fixture_id, match_status, provenance = _match_fixture(connection, row)
-        provenance |= {
-            key: value
-            for key, value in (
-                ("fixture_reference_url", row.fixture_reference_url),
-                ("source_kickoff_text", row.source_kickoff_text),
-            )
-            if value is not None
-        }
-        if row.conflicting_fixture_references:
-            provenance["conflicting_fixture_references"] = row.conflicting_fixture_references
-        if source_code == "r2bet" and (native_id := r2bet_match_id(row.fixture_reference_url)):
-            provenance["r2bet_match_id"] = native_id
-        revision_sha = prediction_revision_sha256(source_code, row)
-        prediction_id = stable_id("external-prediction", revision_sha)
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """
-                INSERT INTO football.external_predictions (
-                    prediction_id, revision_sha256, source_code, source_page,
-                    prediction_date, original_date_text, collected_at, fixture_id,
-                    competition_text, home_team_text, away_team_text, market,
-                    selection, match_status, source_kickoff_at, source_timezone,
-                    provider_code, provider_fixture_id, mapping_provenance
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s,
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb)
-                ON CONFLICT (revision_sha256) DO NOTHING
-                """,
-                (
-                    prediction_id,
-                    revision_sha,
-                    source_code,
-                    row.source_page,
-                    row.prediction_date,
-                    row.original_date_text,
-                    observed_at,
-                    fixture_id,
-                    row.competition,
-                    row.home_team,
-                    row.away_team,
-                    row.market,
-                    row.selection,
-                    match_status,
-                    row.kickoff_at,
-                    row.source_timezone,
-                    row.provider_code,
-                    row.provider_fixture_id,
-                    json.dumps(provenance, sort_keys=True),
-                ),
-            )
-            count += cursor.rowcount
-        from football.product.external_prediction_recovery import refresh_prediction_binding
+    from football.product.external_prediction_recovery import refresh_prediction_binding
 
+    # Serialize exact source revisions even when one request has extra fixture metadata.
+    # The same source-content order serializes overlapping import batches.
+    revisions = sorted(
+        ((prediction_content_sha256(source_code, row), row) for row in rows),
+        key=lambda item: item[0],
+    )
+    count = 0
+    for digest, row in revisions:
         connection.execute(
+            "SELECT pg_advisory_xact_lock(hashtextextended('external-pick:' || %s,0))",
+            (digest,),
+        )
+        prediction_id, inserted = _retain_prediction(connection, source_code, row, observed_at)
+        capture = connection.execute(
             """INSERT INTO football.external_prediction_captures(prediction_id,observed_at)
             VALUES(%s,%s) ON CONFLICT(prediction_id,observed_at) DO NOTHING""",
             (prediction_id, observed_at),
         )
-        connection.execute(
-            "SELECT football.enqueue_external_prediction_refresh(%s)", (prediction_id,)
-        )
-        refresh_prediction_binding(connection, prediction_id)
+        enriched = record_fixture_evidence(connection, prediction_id, source_code, row, observed_at)
+        if inserted or capture.rowcount or enriched:
+            refresh_prediction_binding(connection, prediction_id)
+        count += inserted
     connection.commit()
     return count
+
+
+def _retain_prediction(
+    connection: Connection[Any], source_code: str, row: ImportedPrediction, observed_at: datetime
+) -> tuple[UUID, int]:
+    revision = prediction_revision_sha256(source_code, row)
+    retained = connection.execute(
+        """SELECT prediction_id,revision_sha256=%s AS exact
+        FROM football.external_predictions
+        WHERE source_code=%s AND prediction_date=%s AND source_page=%s AND original_date_text=%s
+          AND competition_text=%s AND home_team_text=%s AND away_team_text=%s
+          AND market=%s AND selection=%s
+        ORDER BY exact DESC LIMIT 2""",
+        (
+            revision,
+            source_code,
+            row.prediction_date,
+            row.source_page,
+            row.original_date_text,
+            row.competition,
+            row.home_team,
+            row.away_team,
+            row.market,
+            row.selection,
+        ),
+    ).fetchall()
+    if retained and (len(retained) == 1 or retained[0][1]):
+        return cast(UUID, retained[0][0]), 0
+
+    fixture, status, provenance = _match_fixture(connection, row)
+    prediction_id = stable_id("external-prediction", revision)
+    cursor = connection.execute(
+        """INSERT INTO football.external_predictions (
+            prediction_id,revision_sha256,source_code,source_page,prediction_date,original_date_text,
+            collected_at,fixture_id,competition_text,home_team_text,away_team_text,market,selection,
+            match_status,source_kickoff_at,source_timezone,provider_code,provider_fixture_id,
+            mapping_provenance
+        ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb)
+        ON CONFLICT (revision_sha256) DO NOTHING""",
+        (
+            prediction_id,
+            revision,
+            source_code,
+            row.source_page,
+            row.prediction_date,
+            row.original_date_text,
+            observed_at,
+            fixture,
+            row.competition,
+            row.home_team,
+            row.away_team,
+            row.market,
+            row.selection,
+            status,
+            row.kickoff_at,
+            row.source_timezone,
+            row.provider_code,
+            row.provider_fixture_id,
+            json.dumps(provenance, sort_keys=True),
+        ),
+    )
+    return prediction_id, cursor.rowcount
+
+
+def record_fixture_evidence(
+    connection: Connection[Any],
+    prediction_id: UUID,
+    source_code: str,
+    row: ImportedPrediction,
+    observed_at: datetime,
+    *,
+    archive_sha256: str | None = None,
+) -> bool:
+    """Retain new fixture facts independently of the immutable pick revision."""
+    if not any(
+        (
+            row.provider_code,
+            row.fixture_reference_url,
+            row.source_kickoff_text,
+            row.kickoff_at,
+            row.conflicting_fixture_references,
+        )
+    ):
+        return False
+    native_id = r2bet_match_id(row.fixture_reference_url) if source_code == "r2bet" else None
+    evidence = {
+        "provider_code": row.provider_code,
+        "provider_fixture_id": row.provider_fixture_id,
+        "r2bet_match_id": native_id,
+        "fixture_reference_url": row.fixture_reference_url,
+        "source_kickoff_text": row.source_kickoff_text,
+        "source_kickoff_at": row.kickoff_at.isoformat() if row.kickoff_at else None,
+        "conflicting_references": sorted(row.conflicting_fixture_references),
+        "archive_sha256": archive_sha256,
+    }
+    cursor = connection.execute(
+        """INSERT INTO football.external_prediction_fixture_evidence (
+            prediction_id,evidence_sha256,observed_at,provider_code,provider_fixture_id,
+            r2bet_match_id,fixture_reference_url,source_kickoff_text,source_kickoff_at,
+            conflicting_references,archive_sha256
+        ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT DO NOTHING""",
+        (
+            prediction_id,
+            sha256_json(evidence),
+            observed_at,
+            row.provider_code,
+            row.provider_fixture_id,
+            native_id,
+            row.fixture_reference_url,
+            row.source_kickoff_text,
+            row.kickoff_at,
+            evidence["conflicting_references"],
+            archive_sha256,
+        ),
+    )
+    return cursor.rowcount == 1
+
+
+def prediction_content_sha256(source_code: str, row: ImportedPrediction) -> str:
+    return sha256_json(_prediction_content(source_code, row))
+
+
+def _prediction_content(source_code: str, row: ImportedPrediction) -> dict[str, str]:
+    return {
+        "source": source_code,
+        "source_page": row.source_page,
+        "prediction_date": row.prediction_date.isoformat(),
+        "original_date_text": row.original_date_text,
+        "competition": row.competition,
+        "home_team": row.home_team,
+        "away_team": row.away_team,
+        "market": row.market,
+        "selection": row.selection,
+    }
 
 
 def prediction_revision_sha256(source_code: str, row: ImportedPrediction) -> str:
     return sha256_json(
         {
-            "source": source_code,
-            "source_page": row.source_page,
-            "prediction_date": row.prediction_date.isoformat(),
-            "original_date_text": row.original_date_text,
-            "competition": row.competition,
-            "home_team": row.home_team,
-            "away_team": row.away_team,
-            "market": row.market,
-            "selection": row.selection,
+            **_prediction_content(source_code, row),
             "kickoff_at": row.kickoff_at.isoformat() if row.kickoff_at else None,
             "source_timezone": row.source_timezone,
             "provider_code": row.provider_code,
@@ -292,6 +378,7 @@ def _parse_row(row: Mapping[str, Any]) -> ImportedPrediction:
         provider_code=provider_code,
         provider_fixture_id=provider_fixture_id,
         fixture_reference_url=reference,
+        source_kickoff_text=_optional_text(row.get("source_kickoff_text"), "source_kickoff_text"),
     )
 
 

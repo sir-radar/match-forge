@@ -50,13 +50,10 @@ const mono = "font-mono tabular-nums";
 const control = "h-8 w-full min-w-0 rounded-sm border border-[#262a34] bg-[#1c1f29] px-2 text-[10px] text-[#dfe2ef] outline-none focus:border-[#7bd0ff]";
 
 export function PredictionsPage({ initialDate }: { initialDate: string }) {
-  const initialDay = initialDate;
-  const [day, setDay] = useState(initialDay);
+  const [day, setDay] = useState(initialDate);
   const [filters, setFilters] = useState<FacetFilters>(EMPTY_FILTERS);
-  const [allDates, setAllDates] = useState(false);
-  const date = allDates ? "" : day;
-  const predictionQuery = useMemo(() => buildPredictionQuery(date, filters), [date, filters]);
-  const sourceQuery = useMemo(() => buildSourceQuery(date, filters), [date, filters]);
+  const predictionQuery = useMemo(() => buildPredictionQuery(day, filters), [day, filters]);
+  const sourceQuery = useMemo(() => buildSourceQuery(day, filters), [day, filters]);
   const loadSources = useCallback(
     (signal: AbortSignal) => api.sources(new URLSearchParams(sourceQuery), signal),
     [sourceQuery],
@@ -91,8 +88,8 @@ export function PredictionsPage({ initialDate }: { initialDate: string }) {
 
   const sourceItems = sources.data ?? [];
   const predictionItems = useMemo(
-    () => (predictions.data?.predictions ?? []).filter((item) => !date || item.prediction_date === date),
-    [date, predictions.data],
+    () => (predictions.data?.predictions ?? []).filter((item) => item.prediction_date === day),
+    [day, predictions.data],
   );
   const consensus = predictions.data?.consensus ?? [];
   const totalSelections = predictionItems.length;
@@ -100,10 +97,6 @@ export function PredictionsPage({ initialDate }: { initialDate: string }) {
   const approved = sourceItems.filter((item) => item.adapter_status === "ENABLED").length;
   const tracked = sourceItems.reduce((sum, item) => sum + item.tracked_selections, 0);
 
-  const changeDay = (nextDay: string) => {
-    setDay(nextDay);
-    setAllDates(false);
-  };
   const updateFilter = (key: keyof FacetFilters, value: string) => {
     setFilters((current) => ({ ...current, [key]: value }));
   };
@@ -115,19 +108,17 @@ export function PredictionsPage({ initialDate }: { initialDate: string }) {
     <div className="min-h-screen bg-[#0f131c] text-[#dfe2ef] antialiased">
       <PredictionsHeader status={requestState(predictions)} />
       <main id="main" tabIndex={-1} className="min-h-[calc(100vh-3.5rem)] pt-14">
-        <Intro day={date} />
+        <Intro day={day} />
         <MetricStrip reviewed={reviewed} approved={approved} tracked={tracked} count={totalSelections} />
         <FiltersBar
           day={day}
           today={initialDate}
-          allDates={allDates}
-          onAllDatesChange={setAllDates}
           filters={filters}
           sources={sourceItems}
           count={totalSelections}
           refreshing={sources.refreshing || predictions.refreshing}
           status={requestState(predictions)}
-          onDayChange={changeDay}
+          onDayChange={setDay}
           onFilterChange={updateFilter}
           onReset={resetFilters}
           onRefresh={refresh}
@@ -137,6 +128,7 @@ export function PredictionsPage({ initialDate }: { initialDate: string }) {
         <ConsensusResource loading={predictions.loading} error={predictions.error} rows={consensus} />
 
         <PredictionTableResource
+          day={day}
           items={predictionItems}
           loading={predictions.loading}
           refreshing={predictions.refreshing}
@@ -166,7 +158,8 @@ function ConsensusResource({ loading, error, rows }: {
   return <Consensus rows={rows} />;
 }
 
-function PredictionTableResource({ items, loading, refreshing, error, retry, reset }: {
+function PredictionTableResource({ day, items, loading, refreshing, error, retry, reset }: {
+  day: string;
   items: ExternalPrediction[];
   loading: boolean;
   refreshing: boolean;
@@ -180,7 +173,7 @@ function PredictionTableResource({ items, loading, refreshing, error, retry, res
   } else if (error) {
     content = <ErrorState label="External selections unavailable" message={error} retry={retry} />;
   } else if (items.length === 0) {
-    content = <EmptyState reset={reset} />;
+    content = <EmptyState day={day} reset={reset} />;
   } else {
     content = <Results items={items} refreshing={refreshing} />;
   }
@@ -240,7 +233,7 @@ function Intro({ day }: { day: string }) {
           </div>
           <div className="flex items-baseline gap-3">
             <h1 className="text-2xl font-semibold tracking-tight">External predictions</h1>
-            <span className={`hidden text-[10px] text-[#86948a] md:inline ${mono}`}>{day ? `Daily partition ${day}` : "All retained dates"}</span>
+            <span className={`hidden text-[10px] text-[#86948a] md:inline ${mono}`}>{day}</span>
           </div>
           <p className="mt-1 max-w-3xl text-[12px] leading-5 text-[#bbcabf]">Public selections are cataloged strictly as immutable empirical evidence. They never calibrate, feed, weight, or overwrite MatchForge Poisson goal models or probability densities.</p>
         </div>
@@ -292,11 +285,9 @@ function Metric({ icon, label, value, detail, footerLabel, footerValue, accent =
   );
 }
 
-function FiltersBar({ day, today, allDates, onAllDatesChange, filters, sources, count, refreshing, status, onDayChange, onFilterChange, onReset, onRefresh }: {
+function FiltersBar({ day, today, filters, sources, count, refreshing, status, onDayChange, onFilterChange, onReset, onRefresh }: {
   day: string;
   today: string;
-  allDates: boolean;
-  onAllDatesChange: (value: boolean) => void;
   filters: FacetFilters;
   sources: ExternalSource[];
   count: number;
@@ -313,14 +304,14 @@ function FiltersBar({ day, today, allDates, onAllDatesChange, filters, sources, 
     <section className="sticky top-14 z-30 w-full border-b border-[#262a34] bg-[#0a0e17]/95 px-4 py-2 backdrop-blur" aria-label="Prediction filters">
       <div className="mx-auto flex max-w-[1720px] flex-col gap-1.5">
         <div className="grid grid-cols-2 items-center gap-1.5 sm:grid-cols-4 md:grid-cols-8 lg:grid-cols-9">
-          <div className="col-span-2 flex h-8 min-w-0 items-center rounded-sm border border-[#262a34] bg-[#1c1f29]">
-            <button type="button" onClick={() => onDayChange(addDays(day, -1))} aria-label="Previous day" disabled={allDates} className="grid h-full w-8 shrink-0 place-items-center border-r border-[#262a34] text-[#bbcabf] hover:bg-[#262a34] hover:text-[#dfe2ef]"><Icon name="chevron-left" className="h-4 w-4" /></button>
+          <div className="col-span-2 flex h-8 min-w-0 items-center rounded-sm border border-[#262a34] bg-[#1c1f29] focus-within:border-[#7bd0ff]">
+            <button type="button" onClick={() => onDayChange(addDays(day, -1))} aria-label="Previous day" className="grid h-full w-8 shrink-0 place-items-center border-r border-[#262a34] text-[#bbcabf] hover:bg-[#262a34] hover:text-[#dfe2ef]"><Icon name="chevron-left" className="h-4 w-4" /></button>
             <Icon name="calendar" className="ml-2 h-4 w-4 shrink-0 text-[#86948a]" />
             <label className="min-w-0 flex-1">
               <span className="sr-only">Prediction day</span>
-              <input aria-label="Prediction day" type="date" value={day} max={today} disabled={allDates} onChange={(event) => event.target.value && onDayChange(event.target.value)} className={`h-[30px] w-full min-w-0 border-0 bg-transparent px-2 text-[10px] text-[#dfe2ef] outline-none ${mono}`} />
+              <input aria-label="Prediction day" type="date" value={day} max={today} onChange={(event) => event.target.value && onDayChange(event.target.value)} className={`h-[30px] w-full min-w-0 border-0 bg-transparent px-2 text-[10px] text-[#dfe2ef] outline-none ${mono}`} />
             </label>
-            <button type="button" onClick={() => onDayChange(addDays(day, 1))} aria-label="Next day" disabled={allDates || day >= today} className="grid h-full w-8 shrink-0 place-items-center border-l border-[#262a34] text-[#bbcabf] hover:bg-[#262a34] hover:text-[#dfe2ef] disabled:cursor-not-allowed disabled:opacity-35"><Icon name="chevron-right" className="h-4 w-4" /></button>
+            <button type="button" onClick={() => onDayChange(addDays(day, 1))} aria-label="Next day" disabled={day >= today} className="grid h-full w-8 shrink-0 place-items-center border-l border-[#262a34] text-[#bbcabf] hover:bg-[#262a34] hover:text-[#dfe2ef] disabled:cursor-not-allowed disabled:opacity-35"><Icon name="chevron-right" className="h-4 w-4" /></button>
           </div>
 
           <select aria-label="Source" className={control} value={filters.source} onChange={(event) => onFilterChange("source", event.target.value)}><option value="">All Sources ({sources.length})</option>{sources.map((source) => <option key={source.code} value={source.code}>{source.name}</option>)}</select>
@@ -336,20 +327,19 @@ function FiltersBar({ day, today, allDates, onAllDatesChange, filters, sources, 
         </div>
 
         <div className="grid grid-cols-2 items-center gap-1.5 sm:grid-cols-4">
-          <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={allDates} onChange={(event) => onAllDatesChange(event.target.checked)} /> All dates</label>
           <input type="search" aria-label="Search predictions" placeholder="Search teams, leagues or picks" className={control} maxLength={80} value={filters.search} onChange={(event) => onFilterChange("search", event.target.value)} />
           <select aria-label="Settlement" className={control} value={filters.settlement} onChange={(event) => onFilterChange("settlement", event.target.value)}><option value="">All settlements</option><option value="PENDING">Pending</option><option value="WON">Won</option><option value="LOST">Lost</option><option value="VOID">Void</option></select>
         </div>
         <div className={`flex flex-wrap items-center justify-between gap-1.5 border-t border-[#262a34]/50 pt-1.5 text-[9px] ${mono}`}>
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="mr-1 uppercase tracking-wider text-[#86948a]">Active filters:</span>
-            <FilterPill label="Date" value={allDates ? "All dates" : day} onRemove={null} />
+            <FilterPill label="Date" value={day} onRemove={null} />
             {active.map(([key, value]) => <FilterPill key={key} label={FILTER_LABELS[key]} value={filterDisplay(key, value)} onRemove={() => onFilterChange(key, "")} />)}
             <span className="inline-flex items-center gap-1 rounded-sm border border-[#3c4a42] bg-[#1c1f29] px-2 py-0.5"><span>Isolation:</span><strong className="text-[#4edea3]">Zero Weight</strong><span aria-hidden="true">▣</span></span>
             {active.length > 0 && <button type="button" onClick={onReset} className="ml-1 text-[#86948a] underline hover:text-[#dfe2ef]">Clear all</button>}
           </div>
           <div className="ml-auto flex items-center gap-3">
-            <span className="rounded-sm border border-[#3c4a42] bg-[#1c1f29] px-2 py-0.5">Showing <strong className="text-[#4edea3]">{fmt(count)}</strong> selections{allDates ? "" : ` for ${day}`}</span>
+            <span className="rounded-sm border border-[#3c4a42] bg-[#1c1f29] px-2 py-0.5">Showing <strong className="text-[#4edea3]">{fmt(count)}</strong> selections for {day}</span>
             <span className="flex items-center gap-1 text-[#86948a]" aria-live="polite"><span className={`h-2 w-2 rounded-full ${refreshing ? "bg-[#7bd0ff]" : "bg-[#4edea3]"}`} />Records: {status}</span>
           </div>
         </div>
@@ -495,18 +485,18 @@ function Loading() {
   return <div role="status" className="space-y-3 overflow-hidden rounded-sm border border-[#262a34] bg-[#0a0e17] p-3"><span className="sr-only">Loading external selections</span><div className="flex justify-between border-b border-[#262a34] pb-2"><span className="h-4 w-48 animate-pulse rounded-sm bg-[#262a34]" /><span className="h-4 w-24 animate-pulse rounded-sm bg-[#262a34]" /></div>{Array.from({ length: 7 }, (_, index) => <div key={index} className="h-8 animate-pulse rounded-sm bg-[#181b25]" />)}</div>;
 }
 
-function EmptyState({ reset }: { reset: () => void }) {
-  return <div className="flex min-h-80 flex-col items-center justify-center rounded-sm border border-[#262a34] bg-[#0a0e17] p-12 text-center"><span className="grid h-12 w-12 place-items-center rounded-full bg-[#262a34]"><Icon name="search" className="h-7 w-7 text-[#86948a]" /></span><h2 className="mt-3 text-lg font-semibold">No approved external selections</h2><p className="mt-1 max-w-lg text-[#bbcabf]">No external selections match the current day and filters. MatchForge collects only sources whose access and reuse conditions have been reviewed.</p><div className="mt-4 flex items-center gap-1.5"><button type="button" onClick={reset} className="rounded-sm bg-[#4edea3] px-3 py-1.5 font-semibold text-[#003824]">Reset All Filters</button><a href="#source-audit" className="rounded-sm bg-[#262a34] px-3 py-1.5 hover:bg-[#353943]">Review Source Registry</a></div></div>;
+function EmptyState({ day, reset }: { day: string; reset: () => void }) {
+  return <div className="flex min-h-80 flex-col items-center justify-center rounded-sm border border-[#262a34] bg-[#0a0e17] p-12 text-center"><span className="grid h-12 w-12 place-items-center rounded-full bg-[#262a34]"><Icon name="search" className="h-7 w-7 text-[#86948a]" /></span><h2 className="mt-3 text-lg font-semibold">No approved external selections</h2><p className="mt-1 max-w-lg text-[#bbcabf]">No external selections match the filters for {day}.</p><div className="mt-4 flex items-center gap-1.5"><button type="button" onClick={reset} className="rounded-sm bg-[#4edea3] px-3 py-1.5 font-semibold text-[#003824]">Reset All Filters</button><a href="#source-audit" className="rounded-sm bg-[#262a34] px-3 py-1.5 hover:bg-[#353943]">Review Source Registry</a></div></div>;
 }
 
 function buildPredictionQuery(day: string, filters: FacetFilters) {
-  const query = new URLSearchParams(day ? { date: day } : undefined);
+  const query = new URLSearchParams({ date: day });
   appendFilters(query, filters);
   return query.toString();
 }
 
 function buildSourceQuery(day: string, filters: FacetFilters) {
-  const query = new URLSearchParams(day ? { date_from: day, date_to: day } : undefined);
+  const query = new URLSearchParams({ date_from: day, date_to: day });
   appendFilters(query, filters);
   return query.toString();
 }

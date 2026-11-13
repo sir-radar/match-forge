@@ -131,14 +131,13 @@ describe("PredictionsPage", () => {
     expect(screen.queryByRole("button", { name: "Next page" })).toBeNull();
   });
 
-  it("searches all dates and refreshes the archive and source statistics on settlement", async () => {
+  it("refreshes the selected day and source statistics with the same filters on settlement", async () => {
     render(<PredictionsPage initialDate="2026-09-28" />);
     await screen.findByRole("cell", { name: "Arsenal vs Chelsea" });
-    fireEvent.click(screen.getByLabelText("All dates"));
     fireEvent.change(screen.getByLabelText("Search predictions"), { target: { value: "Arsenal" } });
     fireEvent.change(screen.getByLabelText("Settlement"), { target: { value: "WON" } });
     await waitFor(() => expect(fetch).toHaveBeenCalledWith(
-      expect.stringMatching(/archive\?settlement=WON&search=Arsenal$/), expect.any(Object),
+      expect.stringMatching(/archive\?date=2026-09-28&settlement=WON&search=Arsenal$/), expect.any(Object),
     ));
     vi.mocked(fetch).mockClear();
     fireEvent(window, new StorageEvent("storage", { key: EXTERNAL_SETTLEMENT_CHANGED }));
@@ -147,7 +146,8 @@ describe("PredictionsPage", () => {
       expect(fetch).toHaveBeenCalledWith(expect.stringContaining("external-predictions/archive?"), expect.any(Object));
     });
     expect(screen.getByLabelText("Settlement")).toHaveValue("WON");
-    expect(screen.getByLabelText("All dates")).toBeChecked();
+    expect(screen.getByLabelText("Prediction day")).toHaveValue("2026-09-28");
+    expect(screen.queryByLabelText("All dates")).toBeNull();
   });
 
   it("moves one day at a time and keeps the table scoped to that day", async () => {
@@ -164,6 +164,7 @@ describe("PredictionsPage", () => {
       );
     });
 
+    expect(await screen.findByText("No external selections match the filters for 2026-09-27.")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Next day" }));
     expect(screen.getByLabelText("Prediction day")).toHaveValue("2026-09-28");
   });

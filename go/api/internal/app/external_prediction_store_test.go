@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"testing"
 	"time"
@@ -140,20 +141,31 @@ func TestExternalPredictionContinuousArchiveDatabase(t *testing.T) {
 	store, counter := performanceDatabaseStore(t)
 	ctx, cancel := context.WithTimeout(context.Background(), defaultHandlerTimeout)
 	defer cancel()
+	var day time.Time
+	if err := store.pool.QueryRow(ctx, "SELECT CURRENT_DATE").Scan(&day); err != nil {
+		t.Fatal(err)
+	}
 	counter.queries.Store(0)
 	started := time.Now()
-	archive, err := store.ExternalPredictions(ctx, ExternalPredictionFilters{Archive: true})
+	archive, err := store.ExternalPredictions(ctx, ExternalPredictionFilters{Archive: true, Date: day})
 	if err != nil || len(archive.Predictions) != 5001 {
-		t.Fatalf("archive rows=%d error=%v", len(archive.Predictions), err)
+		t.Fatalf("selected day rows=%d error=%v", len(archive.Predictions), err)
 	}
-	t.Logf("5001 retained selections: archive latency=%s queries=%d", time.Since(started), counter.queries.Load())
+	elapsed := time.Since(started)
+	payload, err := json.Marshal(archive.Predictions)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("5001 daily selections: store latency=%s queries=%d records_bytes=%d", elapsed, counter.queries.Load(), len(payload))
+	started = time.Now()
 	filtered, err := store.ExternalPredictions(ctx, ExternalPredictionFilters{
-		Archive: true, Search: archive.Predictions[len(archive.Predictions)-1].HomeTeam,
+		Archive: true, Date: day, Search: "Home 5000", Competition: "Synthetic",
 		Settlement: "PENDING", Source: "manual_import",
 	})
-	if err != nil || len(filtered.Predictions) == 0 || len(filtered.Predictions) >= len(archive.Predictions) {
+	if err != nil || len(filtered.Predictions) != 1 || filtered.Predictions[0].HomeTeam != "Home 5000" {
 		t.Fatalf("filtered rows=%d error=%v", len(filtered.Predictions), err)
 	}
+	t.Logf("5001 daily selections: filtered store latency=%s", time.Since(started))
 }
 
 func TestReviewedExternalAccuracyDatabase(t *testing.T) {

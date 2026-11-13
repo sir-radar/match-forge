@@ -6,7 +6,8 @@ import json
 import logging
 from collections import Counter
 from collections.abc import Callable
-from datetime import datetime
+from dataclasses import replace
+from datetime import date, datetime
 from typing import Any
 from uuid import UUID
 
@@ -41,86 +42,125 @@ def refresh_prediction_binding(connection: Connection[Any], prediction_id: UUID)
                 WHERE successor.previous_binding_id=binding.binding_id)""",
             (prediction_id,),
         ).fetchone()
-        if prediction["provider_code"] is None and (
+        identity = cursor.execute(
+            "SELECT * FROM football.external_prediction_fixture_identity WHERE prediction_id=%s",
+            (prediction_id,),
+        ).fetchone()
+        assert identity is not None
+        if identity["conflicting"]:
+            return
+        if identity["provider_code"] is None and (
             previous is None or previous["mapping_id"] is None
         ):
-            _recover_r2bet_binding(connection, prediction_id, prediction)
+            _recover_r2bet_binding(connection, cursor, prediction)
             return
-        matches = cursor.execute(
-            """SELECT mapping.id,fixture.fixture_id,
-                mapping.source_snapshot_id,mapping.mapping_method
-            FROM football.match_provider_mappings mapping
-            JOIN football.providers provider ON provider.id=mapping.provider_id
-            JOIN football.product_fixtures fixture ON fixture.fixture_id=mapping.match_id
-            WHERE ((%s::text IS NOT NULL AND provider.code=%s AND mapping.provider_match_id=%s)
-                OR (%s::text IS NULL AND mapping.id=%s))
-                AND mapping.mapping_confidence=1
-                AND mapping.mapping_method IN ('explicit_crosswalk','manual','deterministic')
-                AND fixture.identity_status='VERIFIED'
-                AND NOT EXISTS (SELECT 1 FROM football.fixture_identity_resolutions resolution
-                    WHERE resolution.member_fixture_id=fixture.fixture_id AND resolution.active
-                    AND (resolution.resolution_status NOT IN ('UNIQUE','DUPLICATE_RESOLVED')
-                         OR resolution.representative_fixture_id<>fixture.fixture_id))
-                AND (mapping.valid_from IS NULL OR mapping.valid_from<=fixture.kickoff_at)
-                AND (mapping.valid_to IS NULL OR mapping.valid_to>fixture.kickoff_at)
-                AND mapping.first_seen_at<=statement_timestamp()
-                AND (%s::timestamptz IS NULL OR fixture.kickoff_at=%s)""",
-            (
-                prediction["provider_code"],
-                prediction["provider_code"],
-                prediction["provider_fixture_id"],
-                prediction["provider_code"],
-                previous["mapping_id"] if previous else None,
-                prediction["source_kickoff_at"],
-                prediction["source_kickoff_at"],
-            ),
-        ).fetchall()
-        target = matches[0] if len(matches) == 1 else None
-        if target is None and previous is None and prediction["fixture_id"] is None:
-            return
-        fixture, mapping = (target["fixture_id"], target["id"]) if target else (None, None)
-        if previous and (previous["fixture_id"], previous["mapping_id"]) == (fixture, mapping):
-            return
-        cursor.execute(
-            """INSERT INTO football.external_prediction_bindings
-            (prediction_id,previous_binding_id,fixture_id,mapping_id,match_status,evidence)
-            VALUES(%s,%s,%s,%s,%s,%s::jsonb)""",
-            (
-                prediction_id,
-                previous["binding_id"] if previous else None,
-                fixture,
-                mapping,
-                "MATCHED" if target else "UNMATCHED",
-                json.dumps(
-                    {
-                        "method": "VERIFIED_PROVIDER_ID",
-                        "provider_code": prediction["provider_code"],
-                        "provider_fixture_id": prediction["provider_fixture_id"],
-                        "candidate_count": len(matches),
-                        "source_snapshot_id": str(target["source_snapshot_id"]) if target else None,
-                        "mapping_method": target["mapping_method"] if target else None,
-                        "reason": "verified mapping"
-                        if target
-                        else "mapping unavailable or not verified",
-                    },
-                    sort_keys=True,
-                ),
+        _refresh_native_binding(connection, cursor, prediction, previous, identity)
+
+
+def _refresh_native_binding(
+    connection: Connection[Any],
+    cursor: Cursor[dict[str, Any]],
+    prediction: dict[str, Any],
+    previous: dict[str, Any] | None,
+    identity: dict[str, Any],
+) -> None:
+    prediction_id = prediction["prediction_id"]
+    matches = cursor.execute(
+        """SELECT mapping.id,fixture.fixture_id,
+            mapping.source_snapshot_id,mapping.mapping_method
+        FROM football.match_provider_mappings mapping
+        JOIN football.providers provider ON provider.id=mapping.provider_id
+        JOIN football.product_fixtures fixture ON fixture.fixture_id=mapping.match_id
+        LEFT JOIN football.source_snapshots snapshot ON snapshot.id=mapping.source_snapshot_id
+            AND snapshot.provider_id=provider.id AND snapshot.status='validated'
+        WHERE ((%s::text IS NOT NULL AND provider.code=%s AND mapping.provider_match_id=%s)
+            OR (%s::text IS NULL AND mapping.id=%s))
+            AND mapping.mapping_confidence=1
+            AND (%s OR snapshot.id IS NOT NULL)
+            AND mapping.mapping_method IN ('explicit_crosswalk','manual','deterministic')
+            AND fixture.identity_status='VERIFIED'
+            AND NOT EXISTS (SELECT 1 FROM football.fixture_identity_resolutions resolution
+                WHERE resolution.member_fixture_id=fixture.fixture_id AND resolution.active
+                AND (resolution.resolution_status NOT IN ('UNIQUE','DUPLICATE_RESOLVED')
+                     OR resolution.representative_fixture_id<>fixture.fixture_id))
+            AND (mapping.valid_from IS NULL OR mapping.valid_from<=fixture.kickoff_at)
+            AND (mapping.valid_to IS NULL OR mapping.valid_to>fixture.kickoff_at)
+            AND mapping.first_seen_at<=statement_timestamp()
+            AND (%s::timestamptz IS NULL OR fixture.kickoff_at=%s)""",
+        (
+            identity["provider_code"],
+            identity["provider_code"],
+            identity["provider_fixture_id"],
+            identity["provider_code"],
+            previous["mapping_id"] if previous else None,
+            prediction["provider_code"] is not None,
+            identity["kickoff_at"],
+            identity["kickoff_at"],
+        ),
+    ).fetchall()
+    target = matches[0] if len(matches) == 1 else None
+    if target is None and previous is None and prediction["fixture_id"] is None:
+        return
+    fixture, mapping = (target["fixture_id"], target["id"]) if target else (None, None)
+    if previous and (previous["fixture_id"], previous["mapping_id"]) == (fixture, mapping):
+        return
+    if target and prediction["provider_code"] is None:
+        bind_reviewed_prediction(
+            connection,
+            prediction_id,
+            target["id"],
+            reason=(
+                "Retained native fixture reference: "
+                f"{identity['provider_code']}/{identity['provider_fixture_id']}"
             ),
         )
+        return
+    cursor.execute(
+        """INSERT INTO football.external_prediction_bindings
+        (prediction_id,previous_binding_id,fixture_id,mapping_id,match_status,evidence)
+        VALUES(%s,%s,%s,%s,%s,%s::jsonb)""",
+        (
+            prediction_id,
+            previous["binding_id"] if previous else None,
+            fixture,
+            mapping,
+            "MATCHED" if target else "UNMATCHED",
+            json.dumps(
+                {
+                    "method": "VERIFIED_PROVIDER_ID",
+                    "provider_code": identity["provider_code"],
+                    "provider_fixture_id": identity["provider_fixture_id"],
+                    "candidate_count": len(matches),
+                    "source_snapshot_id": str(target["source_snapshot_id"]) if target else None,
+                    "mapping_method": target["mapping_method"] if target else None,
+                    "reason": "verified mapping"
+                    if target
+                    else "mapping unavailable or not verified",
+                },
+                sort_keys=True,
+            ),
+        ),
+    )
 
 
 def _recover_r2bet_binding(
     connection: Connection[Any],
-    prediction_id: UUID,
+    cursor: Cursor[dict[str, Any]],
     prediction: dict[str, Any],
 ) -> None:
-    provenance = prediction["mapping_provenance"]
-    if (
-        prediction["source_code"] != "r2bet"
-        or not provenance.get("r2bet_match_id")
-        or prediction["match_status"] == "AMBIGUOUS"
-    ):
+    if prediction["source_code"] != "r2bet":
         return
+    provenance = prediction["mapping_provenance"]
+    prediction_id = prediction["prediction_id"]
+    evidence = cursor.execute(
+        """SELECT fixture_reference_url,source_kickoff_text,evidence_sha256
+        FROM football.external_prediction_fixture_evidence
+        WHERE prediction_id=%s AND r2bet_match_id IS NOT NULL AND source_kickoff_text IS NOT NULL
+        ORDER BY observed_at,evidence_sha256""",
+        (prediction_id,),
+    ).fetchall()
+    if provenance.get("r2bet_match_id") and provenance.get("source_kickoff_text"):
+        evidence.append(provenance)
     row = ImportedPrediction(
         source_page=prediction["source_page"],
         prediction_date=prediction["prediction_date"],
@@ -130,16 +170,22 @@ def _recover_r2bet_binding(
         away_team=prediction["away_team_text"],
         market=prediction["market"],
         selection=prediction["selection"],
-        fixture_reference_url=provenance.get("fixture_reference_url"),
-        source_kickoff_text=provenance.get("source_kickoff_text"),
     )
-    if mapping := verified_r2bet_mapping(connection, row):
-        bind_reviewed_prediction(
-            connection,
-            prediction_id,
-            mapping,
-            reason=f"R2Bet match link and fixture context verified: {row.fixture_reference_url}",
+    for item in evidence:
+        candidate = replace(
+            row,
+            fixture_reference_url=item["fixture_reference_url"],
+            source_kickoff_text=item["source_kickoff_text"],
         )
+        if mapping := verified_r2bet_mapping(connection, candidate):
+            reference = item.get("evidence_sha256", candidate.fixture_reference_url)
+            bind_reviewed_prediction(
+                connection,
+                prediction_id,
+                mapping,
+                reason=f"Verified R2Bet fixture evidence: {reference}",
+            )
+            return
 
 
 def bind_reviewed_prediction(
@@ -217,19 +263,23 @@ def _review_date(connection: Connection[Any], prediction_id: UUID) -> None:
         ).fetchone()
         if row is None:
             return
-        source_date, state = None, "NOT_APPLICABLE"
-        if row["source_code"] in ("r2bet", "tips1960"):
-            try:
-                source_date = source_prediction_date(row["source_code"], row["original_date_text"])
-                state = "VERIFIED" if source_date == row["prediction_date"] else "MISMATCH"
-            except ParserBrokenError:
-                state = "UNKNOWN"
+        source_date, state = _source_date_review(row)
         cursor.execute(
             """INSERT INTO football.external_prediction_date_reviews
             (prediction_id,source_date,date_status,reason) VALUES(%s,%s,%s,%s)
             ON CONFLICT(prediction_id) DO NOTHING""",
             (prediction_id, source_date, state, "exact retained source-date validation"),
         )
+
+
+def _source_date_review(row: dict[str, Any]) -> tuple[date | None, str]:
+    if row["source_code"] not in ("r2bet", "tips1960"):
+        return None, "NOT_APPLICABLE"
+    try:
+        source_date = source_prediction_date(row["source_code"], row["original_date_text"])
+    except ParserBrokenError:
+        return None, "UNKNOWN"
+    return source_date, "VERIFIED" if source_date == row["prediction_date"] else "MISMATCH"
 
 
 def settle_pending_predictions(
@@ -262,24 +312,24 @@ def reconcile_external_predictions(
     audit_only: bool = False,
     progress: Callable[[dict[str, Any]], None] | None = None,
 ) -> dict[str, Any]:
-    """Walk a fixed retained inventory. Committed outcomes survive interrupted runs."""
+    """Inventory committed associations or reconcile them, checkpointing each prediction."""
     if requested_at.utcoffset() is None:
         raise ValueError("external settlement requires an aware request time")
     with connection.transaction():
         inventory = connection.execute(
-            """SELECT prediction_id FROM football.external_predictions
+            """SELECT prediction_id,source_code FROM football.external_predictions
             ORDER BY prediction_id"""
         ).fetchall()
     counts: Counter[str] = Counter()
     details: list[dict[str, str]] = []
     changed: list[str] = []
     associations: Counter[str] = Counter()
-    for index, (prediction_id,) in enumerate(inventory, 1):
+    for index, (prediction_id, source_code) in enumerate(inventory, 1):
         try:
             if audit_only:
                 category, association = _inspect_prediction(connection, prediction_id)
             else:
-                category, _, association = _process_prediction(
+                category, appended, association = _process_prediction(
                     connection,
                     prediction_id,
                     requested_at,
@@ -293,12 +343,13 @@ def reconcile_external_predictions(
             category = association = "FAILED"
             associations[association] += 1
         counts[category] += 1
-        if category in {"NEWLY_SETTLED", "NEWLY_VOIDED"}:
+        if not audit_only and category in {"NEWLY_SETTLED", "NEWLY_VOIDED"} and appended:
             changed.append(str(prediction_id))
         if audit_only:
             details.append(
                 {
                     "prediction_id": str(prediction_id),
+                    "source_code": source_code,
                     "category": category,
                     "association": association,
                 }
@@ -317,6 +368,7 @@ def reconcile_external_predictions(
         "total": len(inventory),
         "counts": dict(counts),
         "associations": dict(associations),
+        "mode": "STORED_BINDING_INVENTORY" if audit_only else "RECONCILIATION",
     }
     if audit_only:
         result["predictions"] = details
@@ -354,7 +406,7 @@ def _process_prediction(
         state, reason = _evaluate(row)
         previous = _latest_result(cursor, prediction_id)
         finalized = _finalized_category(previous, state, row)
-        if manual and finalized:
+        if manual and finalized == "FINALIZED_NEEDS_REVIEW":
             return finalized, 0, _association(row)
         unchanged_pending = (
             manual
@@ -368,7 +420,7 @@ def _process_prediction(
         )
         appended = (
             0
-            if unchanged_pending
+            if unchanged_pending or (manual and finalized)
             else _append_settlement(
                 cursor, prediction_id, requested_at, row, state, reason, previous
             )
@@ -379,7 +431,11 @@ def _process_prediction(
             WHERE prediction_id=%s AND completed_generation<generation""",
             (prediction_id,),
         )
-        category = reason or ("NEWLY_VOIDED" if state == "VOID" else "NEWLY_SETTLED")
+        category = (
+            (finalized if manual else None)
+            or reason
+            or ("NEWLY_VOIDED" if state == "VOID" else "NEWLY_SETTLED")
+        )
         return category, appended, _association(row)
 
 
@@ -416,7 +472,7 @@ FROM football.product_provider_fixture_observations o
 JOIN football.source_snapshots snapshot ON snapshot.id=o.source_snapshot_id
 JOIN football.providers provider ON provider.id=snapshot.provider_id
     AND provider.code=o.provider_code
-WHERE o.provider_code=ep.provider_code AND o.provider_match_id=ep.provider_fixture_id
+WHERE o.provider_code=identity.provider_code AND o.provider_match_id=identity.provider_fixture_id
     AND snapshot.status='validated' AND o.observed_at<=statement_timestamp()
     AND snapshot.acquired_at<=statement_timestamp()
 """
@@ -425,7 +481,9 @@ WHERE o.provider_code=ep.provider_code AND o.provider_match_id=ep.provider_fixtu
 def _settlement_input(cursor: Cursor[dict[str, Any]], prediction_id: UUID) -> dict[str, Any]:
     row = cursor.execute(
         """SELECT ep.market,ep.selection,ep.binding_id,ep.date_status,
-            ep.effective_match_status, ep.provider_code AS native_provider,
+            ep.source_code,ep.original_date_text,ep.prediction_date,
+            review.prediction_id IS NOT NULL AS date_reviewed,
+            ep.effective_match_status, identity.provider_code AS native_provider,
             coalesce(fixture.status,native.canonical_status,'UNKNOWN') AS fixture_status,
             fixture.identity_status,
             native.observation_id IS NOT NULL AS native_fixture,
@@ -464,12 +522,15 @@ def _settlement_input(cursor: Cursor[dict[str, Any]], prediction_id: UUID) -> di
                 WHERE (current_scores.home_score,current_scores.away_score)
                     IS DISTINCT FROM (fixture.home_score,fixture.away_score)
             ) OR coalesce(native.result_conflict,false) AS result_conflict,
-            EXISTS (SELECT 1 FROM football.fixture_identity_resolutions r
+            (identity.conflicting AND ep.match_status<>'AMBIGUOUS')
+            OR EXISTS (SELECT 1 FROM football.fixture_identity_resolutions r
                 WHERE r.active AND r.member_fixture_id=fixture.fixture_id
                     AND (r.resolution_status NOT IN ('UNIQUE','DUPLICATE_RESOLVED')
                          OR r.representative_fixture_id<>fixture.fixture_id))
                 OR coalesce(native.identity_conflict,false) AS identity_conflict
         FROM football.external_prediction_effective ep
+        JOIN football.external_prediction_fixture_identity identity USING (prediction_id)
+        LEFT JOIN football.external_prediction_date_reviews review USING (prediction_id)
         LEFT JOIN football.product_fixtures fixture
             ON fixture.fixture_id=ep.effective_fixture_id
         LEFT JOIN LATERAL (
@@ -495,12 +556,13 @@ def _settlement_input(cursor: Cursor[dict[str, Any]], prediction_id: UUID) -> di
             FROM (SELECT evidence.* FROM evidence ORDER BY
                 coalesce(source_updated_at,observed_at) DESC,observed_at DESC,observation_id DESC
                 LIMIT 1) current
-            WHERE current.provider_home_team_id IS NOT NULL
+            WHERE current.provider_competition_id IS NOT NULL
+                AND current.provider_home_team_id IS NOT NULL
                 AND current.provider_away_team_id IS NOT NULL
                 AND current.provider_home_team_id<>current.provider_away_team_id
                 AND current.canonical_fixture_id IS NULL
-                AND (ep.source_kickoff_at IS NULL OR ep.source_kickoff_at=current.kickoff_at)
-                AND (ep.source_kickoff_at IS NOT NULL OR ep.prediction_date IN (
+                AND (identity.kickoff_at IS NULL OR identity.kickoff_at=current.kickoff_at)
+                AND (identity.kickoff_at IS NOT NULL OR ep.prediction_date IN (
                     (current.kickoff_at AT TIME ZONE 'UTC')::date,
                     (current.kickoff_at AT TIME ZONE 'Africa/Lagos')::date))
                 AND NOT EXISTS (SELECT 1 FROM evidence linked
@@ -509,11 +571,11 @@ def _settlement_input(cursor: Cursor[dict[str, Any]], prediction_id: UUID) -> di
                      OR current.observed_at>=current.kickoff_at)
                 AND NOT EXISTS (SELECT 1 FROM football.match_provider_mappings mapping
                     JOIN football.providers p ON p.id=mapping.provider_id
-                    WHERE p.code=ep.provider_code
-                      AND mapping.provider_match_id=ep.provider_fixture_id
+                    WHERE p.code=identity.provider_code
+                      AND mapping.provider_match_id=identity.provider_fixture_id
                       AND (mapping.valid_from IS NULL OR mapping.valid_from<=current.kickoff_at)
                       AND (mapping.valid_to IS NULL OR mapping.valid_to>current.kickoff_at))
-        ) native ON fixture.fixture_id IS NULL AND ep.provider_code IS NOT NULL
+        ) native ON fixture.fixture_id IS NULL AND identity.provider_code IS NOT NULL
         LEFT JOIN LATERAL (
             SELECT provider_code,coalesce(source_updated_at,observed_at) AS provider_updated_at
             FROM football.product_provider_fixture_observations
@@ -550,6 +612,8 @@ def _settlement_input(cursor: Cursor[dict[str, Any]], prediction_id: UUID) -> di
         (prediction_id,),
     ).fetchone()
     assert row is not None
+    if not row["date_reviewed"]:
+        _, row["date_status"] = _source_date_review(row)
     row["score_basis"] = row["canonical_score_basis"]
     if row["score_basis"] == "UNKNOWN" and (row["observed_regulation"] or row["history_provider"]):
         row["score_basis"] = "REGULATION_90"
@@ -565,12 +629,12 @@ def _verified_association(row: dict[str, Any]) -> bool:
 def _association(row: dict[str, Any]) -> str:
     if row["identity_conflict"]:
         return "IDENTITY_CONFLICT"
+    if row["effective_match_status"] == "AMBIGUOUS":
+        return "AMBIGUOUS_IDENTITY"
     if row["native_fixture"]:
         return "VERIFIED_PROVIDER_ONLY"
     if _verified_association(row):
         return "VERIFIED_CANONICAL"
-    if row["effective_match_status"] == "AMBIGUOUS":
-        return "AMBIGUOUS_IDENTITY"
     return "PROVIDER_FIXTURE_UNVERIFIED" if row["native_provider"] else "FIXTURE_IDENTITY"
 
 
