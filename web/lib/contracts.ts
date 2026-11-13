@@ -269,6 +269,7 @@ export type ExternalPrediction = {
   market: string;
   selection: string;
   match_status: string;
+  fixture_association?: string;
   matchforge_probability: number | null;
   agreement: "AGREES" | "WEAK_SUPPORT" | "DISAGREES" | "UNABLE_TO_EVALUATE";
   settlement_state: "WON" | "LOST" | "VOID" | "PENDING";
@@ -303,7 +304,7 @@ export type ExternalSource = {
   matchforge_agreement_rate: number | null;
 };
 
-export type SyncType = "MVP_SYNC" | "OPENFOOTBALL" | "FOOTBALL_DATA_UK" | "HISTORY_BACKFILL" | "FORECAST_REFRESH" | "CONTEXT_REPORTS" | "PUBLIC_REPORTS" | "EXTERNAL_PREDICTIONS" | "FOTMOB_SYNC" | "PITCHAPI_SYNC" | "ALL_DATA" | "MANUAL_BACKUP" | "STORAGE_LIFECYCLE";
+export type SyncType = "MVP_SYNC" | "OPENFOOTBALL" | "FOOTBALL_DATA_UK" | "HISTORY_BACKFILL" | "FORECAST_REFRESH" | "CONTEXT_REPORTS" | "PUBLIC_REPORTS" | "EXTERNAL_PREDICTIONS" | "EXTERNAL_PREDICTION_SETTLEMENT" | "FOTMOB_SYNC" | "PITCHAPI_SYNC" | "ALL_DATA" | "MANUAL_BACKUP" | "STORAGE_LIFECYCLE";
 export type SyncStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED" | "CANCELLED";
 export type HistoryQueueProgress = {
   total: number;
@@ -656,6 +657,7 @@ export function parsePredictions(value: unknown): ExternalPrediction[] {
       market: text(item.market, "market"),
       selection: text(item.selection, "selection"),
       match_status: text(item.match_status, "match_status"),
+      ...(item.fixture_association === undefined ? {} : { fixture_association: text(item.fixture_association, "fixture_association") }),
       matchforge_probability: item.matchforge_probability === null ? null : probability(item.matchforge_probability, "matchforge_probability"),
       comparison_status: comparisonStatus as ExternalPrediction["comparison_status"],
       agreement: agreement as ExternalPrediction["agreement"],
@@ -703,7 +705,7 @@ export function parseSyncRun(value: unknown): SyncRun {
   const item = object(value, "sync run");
   const syncType = text(item.sync_type, "sync_type") as SyncType;
   const status = text(item.status, "status") as SyncStatus;
-  if (!["MVP_SYNC", "OPENFOOTBALL", "FOOTBALL_DATA_UK", "HISTORY_BACKFILL", "FORECAST_REFRESH", "CONTEXT_REPORTS", "PUBLIC_REPORTS", "EXTERNAL_PREDICTIONS", "FOTMOB_SYNC", "PITCHAPI_SYNC", "ALL_DATA", "MANUAL_BACKUP", "STORAGE_LIFECYCLE"].includes(syncType)) throw new Error("invalid sync_type");
+  if (!["MVP_SYNC", "OPENFOOTBALL", "FOOTBALL_DATA_UK", "HISTORY_BACKFILL", "FORECAST_REFRESH", "CONTEXT_REPORTS", "PUBLIC_REPORTS", "EXTERNAL_PREDICTIONS", "EXTERNAL_PREDICTION_SETTLEMENT", "FOTMOB_SYNC", "PITCHAPI_SYNC", "ALL_DATA", "MANUAL_BACKUP", "STORAGE_LIFECYCLE"].includes(syncType)) throw new Error("invalid sync_type");
   if (!["QUEUED", "RUNNING", "SUCCEEDED", "FAILED", "CANCELLED"].includes(status)) throw new Error("invalid sync status");
   const historyQueue = item.history_queue === undefined ? undefined : object(item.history_queue, "history_queue");
   return {
@@ -1017,7 +1019,8 @@ function parseComparisonStatus(value: unknown): ExternalPrediction["comparison_s
 }
 
 export type ExternalConsensus = { id: string; fixture: string; market: string; kickoff: string; selection: string; count: number; total: number; agreement: ExternalPrediction["agreement"] };
-export type ExternalPredictionPage = { predictions: ExternalPrediction[]; pagination: Pagination; consensus: ExternalConsensus[] };
+export type ExternalPredictionArchive = { predictions: ExternalPrediction[]; consensus: ExternalConsensus[] };
+export type ExternalPredictionPage = ExternalPredictionArchive & { pagination: Pagination };
 
 function parseAgreement(value: unknown): ExternalPrediction["agreement"] {
   const agreement = text(value, "agreement");
@@ -1027,9 +1030,15 @@ function parseAgreement(value: unknown): ExternalPrediction["agreement"] {
 
 export function parsePredictionPage(value: unknown): ExternalPredictionPage {
   const envelope = object(value, "prediction page");
-  const predictions = parsePredictions(value);
+  const archive = parsePredictionArchive(value);
   const pagination = parsePagination(envelope.pagination);
-  if (predictions.length > pagination.page_size) throw new Error("prediction page exceeds row bound");
+  if (archive.predictions.length > pagination.page_size) throw new Error("prediction page exceeds row bound");
+  return { ...archive, pagination };
+}
+
+export function parsePredictionArchive(value: unknown): ExternalPredictionArchive {
+  const envelope = object(value, "prediction archive");
+  const predictions = parsePredictions(value);
   const consensus = array(envelope.consensus, "consensus").map((entry) => {
     const item = object(entry, "consensus item");
     const count = integer(item.count, "count", 2), total = integer(item.total, "total", 2);
@@ -1037,7 +1046,7 @@ export function parsePredictionPage(value: unknown): ExternalPredictionPage {
     return { id: text(item.id, "id"), fixture: text(item.fixture, "fixture"), market: text(item.market, "market"), kickoff: timestamp(item.kickoff, "kickoff"), selection: text(item.selection, "selection"), count, total, agreement: parseAgreement(item.agreement) };
   });
   if (consensus.length > 3) throw new Error("consensus exceeds group bound");
-  return { predictions, pagination, consensus };
+  return { predictions, consensus };
 }
 
 function parseExternalIdentity(item: Record<string, unknown>) {

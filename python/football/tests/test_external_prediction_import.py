@@ -7,7 +7,6 @@ from football.product.external_predictions import (
     ImportedPrediction,
     parse_import,
     prediction_revision_sha256,
-    unique_fixture_id,
 )
 
 
@@ -120,18 +119,19 @@ def test_revision_identity_preserves_source_date_text_and_changed_selection() ->
     assert prediction_revision_sha256("tips1960", prediction(selection="DRAW")) != digest
 
 
-def test_fixture_mapping_requires_one_exact_normalized_match() -> None:
-    row = prediction(home_team="Arsenal", away_team="Chelsea")
+@pytest.mark.parametrize(
+    ("reference", "expected"),
+    [
+        ("https://api.pitchapi.dev/v1/matches/m_B8x2K9", ("pitchapi", "m_B8x2K9")),
+        ("https://api.football-data.org/v4/matches/330299", ("football_data_org", "330299")),
+        ("https://www.fotmob.com/matches/home-vs-away/abc#12345", ("fotmob", "12345")),
+        ("https://api.pitchapi.dev.invalid/v1/matches/m_B8x2K9", None),
+        ("https://r2bet.com/index.php/match-details/123-free/home-vs-away", None),
+    ],
+)
+def test_fixture_reference_requires_a_known_provider_namespace(
+    reference: str, expected: tuple[str, str] | None
+) -> None:
+    from football.product.external_predictions import provider_fixture_reference
 
-    assert unique_fixture_id([("fixture-1", "Arsenal FC", "Chelsea FC")], row) == "fixture-1"
-    assert unique_fixture_id([], row) is None
-    assert (
-        unique_fixture_id(
-            [
-                ("fixture-1", "Arsenal FC", "Chelsea FC"),
-                ("fixture-2", "Arsenal", "Chelsea"),
-            ],
-            row,
-        )
-        is None
-    )
+    assert provider_fixture_reference(reference) == expected

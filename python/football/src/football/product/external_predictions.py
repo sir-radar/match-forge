@@ -3,11 +3,15 @@
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any, cast
+from urllib.parse import urlsplit
+from uuid import UUID
+from zoneinfo import ZoneInfo
 
 from psycopg import Connection
 
@@ -40,6 +44,78 @@ class ImportedPrediction:
     source_timezone: str | None = None
     provider_code: str | None = None
     provider_fixture_id: str | None = None
+    fixture_reference_url: str | None = None
+    source_kickoff_text: str | None = None
+    conflicting_fixture_references: tuple[str, ...] = ()
+
+
+def r2bet_match_id(reference: str | None) -> str | None:
+    if not reference:
+        return None
+    try:
+        url = urlsplit(reference)
+    except ValueError:
+        return None
+    if url.scheme != "https" or url.netloc.lower() not in {"r2bet.com", "www.r2bet.com"}:
+        return None
+    match = re.fullmatch(r"/index\.php/match-details/([1-9][0-9]*)-[^/]+/[^/]+/?", url.path)
+    return match[1] if match else None
+
+
+def verified_r2bet_mapping(connection: Connection[Any], row: ImportedPrediction) -> UUID | None:
+    """Corroborate the R2Bet link ID with independent native context in PostgreSQL."""
+    match_id = r2bet_match_id(row.fixture_reference_url)
+    if match_id is None or row.source_kickoff_text is None:
+        return None
+    candidates = connection.execute(
+        """SELECT mapping.id,f.kickoff_at,home.name,away.name,competition.name
+        FROM football.match_provider_mappings mapping
+        JOIN football.providers p ON p.id=mapping.provider_id AND p.code='api_football'
+        JOIN football.source_snapshots snap ON snap.id=mapping.source_snapshot_id
+            AND snap.provider_id=p.id AND snap.status='validated'
+        JOIN football.product_effective_fixtures f ON f.fixture_id=mapping.match_id
+        JOIN football.product_teams home ON home.team_id=f.home_team_id
+        JOIN football.product_teams away ON away.team_id=f.away_team_id
+        JOIN football.product_competitions competition
+            ON competition.competition_id=f.competition_id
+        WHERE mapping.provider_match_id=%s AND mapping.mapping_confidence=1
+          AND mapping.mapping_method IN ('explicit_crosswalk','manual','deterministic')
+          AND mapping.first_seen_at<=statement_timestamp() AND f.identity_status='VERIFIED'
+          AND (mapping.valid_from IS NULL OR mapping.valid_from<=f.kickoff_at)
+          AND (mapping.valid_to IS NULL OR mapping.valid_to>f.kickoff_at)
+          AND NOT EXISTS (SELECT 1 FROM football.fixture_identity_resolutions resolution
+              WHERE resolution.member_fixture_id=f.fixture_id AND resolution.active
+              AND (resolution.resolution_status NOT IN ('UNIQUE','DUPLICATE_RESOLVED')
+                   OR resolution.representative_fixture_id<>f.fixture_id))
+        """,
+        (match_id,),
+    ).fetchall()
+    confirmed = [
+        mapping
+        for mapping, kickoff, home, away, competition in candidates
+        if _r2bet_context_matches(row, kickoff, home, away, competition)
+    ]
+    return cast(UUID, confirmed[0]) if len(confirmed) == 1 else None
+
+
+def _r2bet_context_matches(
+    row: ImportedPrediction,
+    kickoff: datetime,
+    home: str,
+    away: str,
+    competition: str,
+) -> bool:
+    # The archived R2Bet page displays the local kickoff in UTC+01:00.
+    local = kickoff.astimezone(ZoneInfo("Africa/Lagos"))
+    label = normalize_team_name(row.competition)
+    league = normalize_team_name(competition)
+    return (
+        local.date() == row.prediction_date
+        and local.strftime("%H:%M") == row.source_kickoff_text
+        and normalize_team_name(home) == normalize_team_name(row.home_team)
+        and normalize_team_name(away) == normalize_team_name(row.away_team)
+        and (label == league or label.split(" ", 1)[-1] == league)
+    )
 
 
 def parse_import(path: Path) -> tuple[ImportedPrediction, ...]:
@@ -62,6 +138,18 @@ def import_predictions(
     count = 0
     for row in rows:
         fixture_id, match_status, provenance = _match_fixture(connection, row)
+        provenance |= {
+            key: value
+            for key, value in (
+                ("fixture_reference_url", row.fixture_reference_url),
+                ("source_kickoff_text", row.source_kickoff_text),
+            )
+            if value is not None
+        }
+        if row.conflicting_fixture_references:
+            provenance["conflicting_fixture_references"] = row.conflicting_fixture_references
+        if source_code == "r2bet" and (native_id := r2bet_match_id(row.fixture_reference_url)):
+            provenance["r2bet_match_id"] = native_id
         revision_sha = prediction_revision_sha256(source_code, row)
         prediction_id = stable_id("external-prediction", revision_sha)
         with connection.cursor() as cursor:
@@ -135,6 +223,31 @@ def prediction_revision_sha256(source_code: str, row: ImportedPrediction) -> str
     )
 
 
+def provider_fixture_reference(value: str) -> tuple[str, str] | None:
+    """Read only recognized provider-native URLs. Never fetch a supplied URL."""
+    try:
+        url = urlsplit(value)
+    except ValueError:
+        return None
+    if url.scheme != "https" or url.username is not None or url.password is not None:
+        return None
+    patterns = {
+        "api.pitchapi.dev": ("pitchapi", r"/v1/matches/(m_[A-Za-z0-9]+)"),
+        "api.football-data.org": ("football_data_org", r"/v4/matches/([1-9][0-9]*)"),
+        "www.fotmob.com": ("fotmob", r"/matches/[^/]+/[A-Za-z0-9]+/?"),
+        "fotmob.com": ("fotmob", r"/matches/[^/]+/[A-Za-z0-9]+/?"),
+    }
+    if url.netloc.lower() not in patterns:
+        return None
+    provider, pattern = patterns[url.netloc.lower()]
+    path = re.fullmatch(pattern, url.path)
+    if path is None:
+        return None
+    if provider == "fotmob":
+        return (provider, url.fragment) if re.fullmatch(r"[1-9][0-9]*", url.fragment) else None
+    return provider, path[1]
+
+
 def _parse_row(row: Mapping[str, Any]) -> ImportedPrediction:
     required = (
         "source_page",
@@ -157,8 +270,14 @@ def _parse_row(row: Mapping[str, Any]) -> ImportedPrediction:
     source_timezone = _optional_text(row.get("source_timezone"), "source_timezone")
     provider_code = _optional_text(row.get("provider_code"), "provider_code")
     provider_fixture_id = _optional_text(row.get("provider_fixture_id"), "provider_fixture_id")
+    reference = _optional_text(row.get("fixture_reference_url"), "fixture_reference_url")
     if (provider_code is None) != (provider_fixture_id is None):
         raise ValueError("provider_code and provider_fixture_id must be supplied together")
+    native = provider_fixture_reference(reference) if reference else None
+    if native and provider_code is not None and native != (provider_code, provider_fixture_id):
+        raise ValueError("provider fixture URL conflicts with supplied native identity")
+    if native:
+        provider_code, provider_fixture_id = native
     return ImportedPrediction(
         source_page=str(row["source_page"]),
         prediction_date=date.fromisoformat(str(row["prediction_date"])),
@@ -172,12 +291,15 @@ def _parse_row(row: Mapping[str, Any]) -> ImportedPrediction:
         source_timezone=source_timezone,
         provider_code=provider_code,
         provider_fixture_id=provider_fixture_id,
+        fixture_reference_url=reference,
     )
 
 
 def _match_fixture(
     connection: Connection[Any], row: ImportedPrediction
 ) -> tuple[object | None, str, dict[str, object]]:
+    if row.conflicting_fixture_references:
+        return None, "AMBIGUOUS", {"method": "CONFLICTING_NATIVE_REFERENCES"}
     if row.provider_code and row.provider_fixture_id:
         with connection.cursor() as cursor:
             cursor.execute(
@@ -193,8 +315,13 @@ def _match_fixture(
                   AND (mapping.valid_from IS NULL OR mapping.valid_from <= fixture.kickoff_at)
                   AND (mapping.valid_to IS NULL OR mapping.valid_to > fixture.kickoff_at)
                   AND mapping.first_seen_at <= statement_timestamp()
+                  AND (%s::timestamptz IS NULL OR fixture.kickoff_at=%s)
+                  AND NOT EXISTS (SELECT 1 FROM football.fixture_identity_resolutions resolution
+                      WHERE resolution.member_fixture_id=fixture.fixture_id AND resolution.active
+                      AND (resolution.resolution_status NOT IN ('UNIQUE','DUPLICATE_RESOLVED')
+                           OR resolution.representative_fixture_id<>fixture.fixture_id))
                 """,
-                (row.provider_code, row.provider_fixture_id),
+                (row.provider_code, row.provider_fixture_id, row.kickoff_at, row.kickoff_at),
             )
             matches = cursor.fetchall()
         if len(matches) == 1:
@@ -225,58 +352,7 @@ def _match_fixture(
                 "reason": "no independently verified native fixture mapping",
             },
         )
-    with connection.cursor() as cursor:
-        if row.kickoff_at is not None:
-            cursor.execute(
-                """
-                SELECT pf.fixture_id, home.name, away.name
-                FROM football.product_fixtures pf
-                JOIN football.product_teams home ON home.team_id = pf.home_team_id
-                JOIN football.product_teams away ON away.team_id = pf.away_team_id
-                JOIN football.product_competitions pc ON pc.competition_id = pf.competition_id
-                WHERE pf.kickoff_at BETWEEN %s AND %s
-                  AND lower(pc.name) = lower(%s)
-                ORDER BY pf.kickoff_at, pf.fixture_id
-                """,
-                (
-                    row.kickoff_at - timedelta(minutes=15),
-                    row.kickoff_at + timedelta(minutes=15),
-                    row.competition,
-                ),
-            )
-            method = "KICKOFF_TEAM_COMPETITION_15_MINUTES"
-        else:
-            cursor.execute(
-                """
-            SELECT pf.fixture_id, home.name, away.name
-            FROM football.product_fixtures pf
-            JOIN football.product_teams home ON home.team_id = pf.home_team_id
-            JOIN football.product_teams away ON away.team_id = pf.away_team_id
-            JOIN football.product_competitions pc ON pc.competition_id = pf.competition_id
-            WHERE pf.kickoff_at >= %s::date AND pf.kickoff_at < %s::date + interval '1 day'
-              AND lower(pc.name) = lower(%s)
-            ORDER BY pf.kickoff_at, pf.fixture_id
-            """,
-                (row.prediction_date, row.prediction_date, row.competition),
-            )
-            method = "DATE_TEAM_COMPETITION_LEGACY"
-        candidates = cursor.fetchall()
-    matching = [
-        candidate
-        for candidate in candidates
-        if normalize_team_name(candidate[1]) == normalize_team_name(row.home_team)
-        and normalize_team_name(candidate[2]) == normalize_team_name(row.away_team)
-    ]
-    if len(matching) == 1:
-        return matching[0][0], "MATCHED", {"method": method, "candidate_count": 1}
-    return (
-        None,
-        "AMBIGUOUS" if len(matching) > 1 else "UNMATCHED",
-        {
-            "method": method,
-            "candidate_count": len(matching),
-        },
-    )
+    return None, "UNMATCHED", {"method": "INDEPENDENT_FIXTURE_REFERENCE_REQUIRED"}
 
 
 def _optional_kickoff(value: object) -> datetime | None:
@@ -299,15 +375,3 @@ def _optional_text(value: object, field: str) -> str | None:
     if not isinstance(value, str) or not value.strip() or len(value) > 200:
         raise ValueError(f"{field} must be non-empty text")
     return value.strip()
-
-
-def unique_fixture_id(
-    candidates: Sequence[tuple[object, str, str]], row: ImportedPrediction
-) -> object | None:
-    matches = [
-        fixture_id
-        for fixture_id, home_name, away_name in candidates
-        if normalize_team_name(home_name) == normalize_team_name(row.home_team)
-        and normalize_team_name(away_name) == normalize_team_name(row.away_team)
-    ]
-    return matches[0] if len(matches) == 1 else None

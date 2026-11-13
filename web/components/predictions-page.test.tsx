@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { EXTERNAL_SETTLEMENT_CHANGED } from "@/lib/external-settlement";
 import { PredictionsPage } from "@/components/predictions-page";
 
 const source = {
@@ -79,7 +80,7 @@ describe("PredictionsPage", () => {
     expect(screen.getByLabelText("Prediction day")).toHaveValue("2026-09-28");
     expect(screen.getByRole("option", { name: "Unmapped Provider Market" })).toBeInTheDocument();
     expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining("external-predictions?date=2026-09-28"),
+      expect.stringContaining("external-predictions/archive?date=2026-09-28"),
       expect.any(Object),
     );
     expect(fetch).toHaveBeenCalledWith(
@@ -88,14 +89,14 @@ describe("PredictionsPage", () => {
     );
   });
 
-  it("keeps a small selected-day result on one bounded page", async () => {
-    const dailyPredictions = Array.from({ length: 9 }, (_, index) => ({
+  it("shows the complete filtered result in one table", async () => {
+    const dailyPredictions = Array.from({ length: 129 }, (_, index) => ({
       ...prediction,
       id: `prediction-${index + 1}`,
       fixture_id: `fixture-${index + 1}`,
       home_team: `Home ${index + 1}`,
       away_team: `Away ${index + 1}`,
-      collected_at: `2026-09-28T${String(index).padStart(2, "0")}:15:00Z`,
+      collected_at: `2026-09-28T${String(index % 24).padStart(2, "0")}:15:00Z`,
     }));
     vi.mocked(fetch).mockImplementation(async (input: RequestInfo | URL) => {
       const payload = String(input).includes("external-prediction-sources")
@@ -110,15 +111,16 @@ describe("PredictionsPage", () => {
     render(<PredictionsPage initialDate="2026-09-28" />);
 
     const table = await screen.findByLabelText("External selection records table");
-    expect(table.querySelectorAll("tbody tr")).toHaveLength(9);
-    expect(table.parentElement).toHaveTextContent("9 selections on this page");
-    expect(screen.getByText(/Page 1 of 1/)).toBeInTheDocument();
+    expect(table.querySelectorAll("tbody tr")).toHaveLength(129);
+    expect(table.parentElement).toHaveTextContent("129 matching selections");
+    expect(screen.queryByRole("button", { name: /Next page|Previous page/ })).toBeNull();
+    expect(screen.queryByLabelText("Rows per page")).toBeNull();
   });
 
-  it("uses server consensus independently of the visible record page", async () => {
+  it("uses the server consensus for the filtered archive", async () => {
     vi.mocked(fetch).mockImplementation(async (input: RequestInfo | URL) => {
       const payload = String(input).includes("external-prediction-sources") ? { sources: [source] } : {
-        ...predictionPage([prediction], 1, 20, 25),
+        ...predictionPage([prediction]),
         consensus: [{ id: "other:RESULT_1X2", fixture: "Verified Home vs Verified Away", market: "RESULT_1X2", kickoff: "2026-09-28T15:00:00Z", selection: "HOME_WIN", count: 2, total: 3, agreement: "AGREES" }],
       };
       return new Response(JSON.stringify(payload), { status: 200 });
@@ -126,8 +128,26 @@ describe("PredictionsPage", () => {
     render(<PredictionsPage initialDate="2026-09-28" />);
     expect(await screen.findByText("Verified Home vs Verified Away")).toBeInTheDocument();
     expect(screen.getByText("2 of 3 sources (67%)")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Next page" }));
-    await waitFor(() => expect(fetch).toHaveBeenCalledWith(expect.stringContaining("page=2&page_size=20"), expect.any(Object)));
+    expect(screen.queryByRole("button", { name: "Next page" })).toBeNull();
+  });
+
+  it("searches all dates and refreshes the archive and source statistics on settlement", async () => {
+    render(<PredictionsPage initialDate="2026-09-28" />);
+    await screen.findByRole("cell", { name: "Arsenal vs Chelsea" });
+    fireEvent.click(screen.getByLabelText("All dates"));
+    fireEvent.change(screen.getByLabelText("Search predictions"), { target: { value: "Arsenal" } });
+    fireEvent.change(screen.getByLabelText("Settlement"), { target: { value: "WON" } });
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith(
+      expect.stringMatching(/archive\?settlement=WON&search=Arsenal$/), expect.any(Object),
+    ));
+    vi.mocked(fetch).mockClear();
+    fireEvent(window, new StorageEvent("storage", { key: EXTERNAL_SETTLEMENT_CHANGED }));
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith(expect.stringContaining("external-prediction-sources?"), expect.any(Object));
+      expect(fetch).toHaveBeenCalledWith(expect.stringContaining("external-predictions/archive?"), expect.any(Object));
+    });
+    expect(screen.getByLabelText("Settlement")).toHaveValue("WON");
+    expect(screen.getByLabelText("All dates")).toBeChecked();
   });
 
   it("moves one day at a time and keeps the table scoped to that day", async () => {
@@ -139,7 +159,7 @@ describe("PredictionsPage", () => {
     expect(screen.getByLabelText("Prediction day")).toHaveValue("2026-09-27");
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining("external-predictions?date=2026-09-27"),
+        expect.stringContaining("external-predictions/archive?date=2026-09-27"),
         expect.any(Object),
       );
     });
@@ -168,6 +188,6 @@ describe("PredictionsPage", () => {
   });
 });
 
-function predictionPage(items: Record<string, unknown>[], page = 1, pageSize = 20, total = items.length) {
-  return { predictions: items, consensus: [], pagination: { page, page_size: pageSize, total_items: total, total_pages: Math.ceil(total / pageSize) } };
+function predictionPage(items: Record<string, unknown>[]) {
+  return { predictions: items, consensus: [] };
 }

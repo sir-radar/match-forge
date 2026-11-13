@@ -115,6 +115,27 @@ paths:
         '200': { description: Stored source selections and independent comparison, content: { application/json: { schema: { $ref: '#/components/schemas/ExternalPredictionPage' } } } }
         '400': { $ref: '#/components/responses/BadRequest' }
         '503': { $ref: '#/components/responses/Unavailable' }
+  /v1/external-predictions/archive:
+    get:
+      operationId: listExternalPredictionArchive
+      description: Returns all matching retained captures, including superseded picks. Consensus uses current eligible selections.
+      parameters:
+        - { name: date, in: query, schema: { type: string, format: date } }
+        - { name: date_from, in: query, schema: { type: string, format: date } }
+        - { name: date_to, in: query, schema: { type: string, format: date } }
+        - { name: source, in: query, schema: { type: string } }
+        - { name: continent, in: query, schema: { type: string } }
+        - { name: country, in: query, schema: { type: string } }
+        - { name: competition, in: query, schema: { type: string } }
+        - { name: market, in: query, schema: { type: string } }
+        - { name: agreement, in: query, schema: { type: string, enum: [AGREES, WEAK_SUPPORT, DISAGREES, UNABLE_TO_EVALUATE] } }
+        - { name: search, in: query, schema: { type: string }, description: Case-insensitive literal search over team and competition labels, provider and pick. Maximum 256 UTF-8 bytes. }
+        - { name: settlement, in: query, schema: { type: string, enum: [PENDING, WON, LOST, VOID] } }
+        - { name: fixture_id, in: query, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Complete filtered archive in date and capture order, content: { application/json: { schema: { $ref: '#/components/schemas/ExternalPredictionArchive' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '503': { $ref: '#/components/responses/Unavailable' }
   /v1/fixtures/{fixture_id}/external-predictions:
     get:
       operationId: listFixtureExternalPredictions
@@ -415,6 +436,22 @@ paths:
   /v1/admin/sync/football-data-uk: { $ref: '#/components/pathItems/StartSync' }
   /v1/admin/sync/history: { $ref: '#/components/pathItems/StartSync' }
   /v1/admin/sync/forecast-refresh: { $ref: '#/components/pathItems/StartSync' }
+  /v1/admin/sync/settle-external-predictions:
+    post:
+      operationId: startExternalPredictionSettlement
+      description: Start a stored-evidence settlement run over every retained prediction. Progress and counts are reported in the sync run summary.
+      security: [ { AdminCLI: [] }, { AdminBrowserOrigin: [] } ]
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: false }
+      responses:
+        '202': { description: Settlement job accepted, content: { application/json: { schema: { $ref: '#/components/schemas/SyncRun' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/AdminDenied' }
+        '409': { description: Another bulk job is active }
+        '415': { description: JSON content type required }
+        '503': { $ref: '#/components/responses/Unavailable' }
   /v1/admin/sync/external-predictions: { $ref: '#/components/pathItems/StartSync' }
   /v1/admin/sync/fotmob: { $ref: '#/components/pathItems/StartSync' }
   /v1/admin/sync/pitchapi: { $ref: '#/components/pathItems/StartSync' }
@@ -726,7 +763,7 @@ components:
         has_more: { type: boolean }
         items: { type: array, maxItems: 100, items: { type: object }, description: Selected metadata from the named existing domain owner. Model records wrap the unchanged registration under registration; experiment records are shared execution work. }
     Error: { type: object, required: [error], properties: { error: { type: string } } }
-    SyncType: { type: string, description: FotMob and PitchAPI each have an independent live lane; public/context reports share a separate report lane; other types share the bulk lane., enum: [MVP_SYNC, OPENFOOTBALL, FOOTBALL_DATA_UK, HISTORY_BACKFILL, FORECAST_REFRESH, CONTEXT_REPORTS, PUBLIC_REPORTS, EXTERNAL_PREDICTIONS, ALL_DATA, FOTMOB_SYNC, PITCHAPI_SYNC, MANUAL_BACKUP, STORAGE_LIFECYCLE] }
+    SyncType: { type: string, description: FotMob and PitchAPI each have an independent live lane; public/context reports share a separate report lane; other types share the bulk lane., enum: [MVP_SYNC, OPENFOOTBALL, FOOTBALL_DATA_UK, HISTORY_BACKFILL, FORECAST_REFRESH, CONTEXT_REPORTS, PUBLIC_REPORTS, EXTERNAL_PREDICTIONS, EXTERNAL_PREDICTION_SETTLEMENT, ALL_DATA, FOTMOB_SYNC, PITCHAPI_SYNC, MANUAL_BACKUP, STORAGE_LIFECYCLE] }
     SyncStatus: { type: string, enum: [QUEUED, RUNNING, SUCCEEDED, FAILED, CANCELLED] }
     SyncRequest:
       type: object
@@ -1282,6 +1319,7 @@ components:
         market: {"type": "string"}
         selection: {"type": "string"}
         match_status: {"type": "string"}
+        fixture_association: {type: string, description: Latest verified or blocked fixture association when recorded by settlement validation.}
         matchforge_probability: {"type": ["number", "null"]}
         comparison_status: {type: string, enum: [READY, PENDING, FAILED, UNSUPPORTED, NO_FORECAST, UNMATCHED, QUARANTINED]}
         agreement: {"type": "string"}
@@ -1330,6 +1368,13 @@ components:
         count: {type: integer, minimum: 2}
         total: {type: integer, minimum: 2}
         agreement: {type: string}
+    ExternalPredictionArchive:
+      type: object
+      additionalProperties: false
+      required: [predictions, consensus]
+      properties:
+        predictions: {type: array, items: {$ref: '#/components/schemas/ExternalPrediction'}}
+        consensus: {type: array, maxItems: 3, items: {$ref: '#/components/schemas/ExternalConsensus'}}
     ExternalPredictionPage:
       type: object
       additionalProperties: false

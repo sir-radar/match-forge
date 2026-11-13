@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -40,6 +41,10 @@ const externalPredictionFromSQL = `
 
 func filteredExternalPredictions(filters ExternalPredictionFilters) (string, []any) {
 	query, args := externalPredictionFromSQL, []any{}
+	if filters.Archive {
+		query = strings.Replace(query, "FROM football.external_prediction_current ep", `FROM football.external_prediction_effective ep
+		LEFT JOIN football.external_prediction_current current_selection USING(prediction_id)`, 1)
+	}
 	if !filters.Date.IsZero() {
 		args = append(args, filters.Date)
 		query += fmt.Sprintf(" AND ep.prediction_date=$%d", len(args))
@@ -50,8 +55,13 @@ func filteredExternalPredictions(filters ExternalPredictionFilters) (string, []a
 		{"COALESCE(pc.geographic_scope,pc.country)", filters.Country},
 		{"ep.competition_text", filters.Competition}, {"ep.market", filters.Market},
 		{"ep.effective_fixture_id::text", filters.FixtureID}, {externalAgreementSQL, filters.Agreement},
+		{"COALESCE(result.settlement_state,'PENDING')", filters.Settlement},
 	} {
 		query = addFilter(query, &args, filter.column, filter.value)
+	}
+	if filters.Search != "" {
+		args = append(args, filters.Search)
+		query += fmt.Sprintf(" AND strpos(lower(concat_ws(' ',ep.home_team_text,ep.away_team_text,ep.competition_text,eps.name,ep.selection)),lower($%d))>0", len(args))
 	}
 	return query, args
 }
@@ -81,13 +91,16 @@ func (store *PostgresProductStore) ExternalPredictions(ctx context.Context, filt
 		return ExternalPredictionPage{}, err
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
+	if filters.Archive {
+		return readExternalArchive(ctx, tx, filters)
+	}
 	query, args := filteredExternalPredictions(filters)
 	var total int
 	if err := tx.QueryRow(ctx, "SELECT count(*)"+query, args...).Scan(&total); err != nil {
 		return ExternalPredictionPage{}, err
 	}
 	pagination := externalPagination(total, filters.Page, filters.PageSize)
-	items, err := externalPredictionRows(ctx, tx, query, args, pagination)
+	items, err := externalPredictionRows(ctx, tx, query, args, &pagination)
 	if err != nil {
 		return ExternalPredictionPage{}, err
 	}
@@ -98,7 +111,22 @@ func (store *PostgresProductStore) ExternalPredictions(ctx context.Context, filt
 	return ExternalPredictionPage{Predictions: items, Pagination: pagination, Consensus: consensus}, tx.Commit(ctx)
 }
 
-func externalPredictionRows(ctx context.Context, tx pgx.Tx, query string, args []any, page Pagination) ([]ExternalPrediction, error) {
+func readExternalArchive(ctx context.Context, tx pgx.Tx, filters ExternalPredictionFilters) (ExternalPredictionPage, error) {
+	query, args := filteredExternalPredictions(filters)
+	items, err := externalPredictionRows(ctx, tx, query, args, nil)
+	if err != nil {
+		return ExternalPredictionPage{}, err
+	}
+	filters.Archive = false
+	query, args = filteredExternalPredictions(filters)
+	consensus, err := externalConsensus(ctx, tx, query, args)
+	if err != nil {
+		return ExternalPredictionPage{}, err
+	}
+	return ExternalPredictionPage{Predictions: items, Consensus: consensus}, tx.Commit(ctx)
+}
+
+func externalPredictionRows(ctx context.Context, tx pgx.Tx, query string, args []any, page *Pagination) ([]ExternalPrediction, error) {
 	columns := `SELECT ep.prediction_id::text,eps.name,ep.source_page,ep.prediction_date::text,
         ep.original_date_text,ep.collected_at,ep.effective_fixture_id::text,pf.kickoff_at,
         ep.competition_text,ep.home_team_text,ep.away_team_text,ep.market,ep.selection,
@@ -106,9 +134,16 @@ func externalPredictionRows(ctx context.Context, tx pgx.Tx, query string, args [
         source.value->>'forecast_id',COALESCE(result.settlement_state,'PENDING'),
         result.home_score,result.away_score,result.score_basis,result.provider_code,
         result.provider_updated_at,report_work.last_error,ep.source_code,pf.identity_status,
-        ep.date_status,ep.source_revision_conflict`
-	args = append(args, page.PageSize, (page.Page-1)*page.PageSize)
-	query += fmt.Sprintf(" ORDER BY ep.prediction_date DESC,ep.collected_at DESC,ep.prediction_id DESC LIMIT $%d OFFSET $%d", len(args)-1, len(args))
+        result.evidence->>'fixture_association',
+        ep.date_status,`
+	query += " ORDER BY ep.prediction_date DESC,ep.collected_at DESC,ep.prediction_id DESC"
+	if page == nil {
+		columns += "COALESCE(current_selection.source_revision_conflict,false)"
+	} else {
+		columns += "ep.source_revision_conflict"
+		args = append(args, page.PageSize, (page.Page-1)*page.PageSize)
+		query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", len(args)-1, len(args))
+	}
 	rows, err := tx.Query(ctx, columns+query, args...)
 	if err != nil {
 		return nil, err
@@ -127,7 +162,7 @@ func scanExternalPrediction(row pgx.CollectableRow) (ExternalPrediction, error) 
 		&item.MatchStatus, &comparison, &digest, &forecastID, &item.SettlementState,
 		&item.ActualHomeScore, &item.ActualAwayScore, &item.ResultScoreBasis, &item.ResultProvider,
 		&item.ResultUpdatedAt, &comparisonError, &item.SourceCode, &item.FixtureIdentityStatus,
-		&item.SourceDateStatus, &item.SourceRevisionConflict); err != nil {
+		&item.FixtureAssociation, &item.SourceDateStatus, &item.SourceRevisionConflict); err != nil {
 		return item, err
 	}
 	if err := attachComparison(&item, forecastID, comparison, digest); err != nil {

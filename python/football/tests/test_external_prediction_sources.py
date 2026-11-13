@@ -40,6 +40,9 @@ def test_r2bet_parser_extracts_dated_fixture_and_market() -> None:
     assert (rows[0].market, rows[0].selection) == ("RESULT_1X2", "HOME_WIN")
     assert (rows[1].market, rows[1].selection) == ("UNMAPPED", "Asian Handicap -1.5")
     assert rows[0].original_date_text == "30th , Wed Sep 2026"
+    assert rows[0].fixture_reference_url == "https://r2bet.com/match/1"
+    assert rows[0].source_kickoff_text == "17:00"
+    assert rows[0].provider_fixture_id is None
 
 
 def test_r2bet_parser_excludes_recent_winnings() -> None:
@@ -326,3 +329,25 @@ def test_1960tips_rejects_wrong_or_malformed_full_source_date(displayed: str, ta
     )
     with pytest.raises(ParserBrokenError):
         parse_1960tips(html, target, "https://example.test")
+
+
+def test_collector_preserves_verified_namespace_and_holds_conflicting_links() -> None:
+    html = """
+    <h1>Today's Football Predictions — Wed, 30 Sep 2026</h1>
+    <div class="table-row"><div class="tb-league">League</div>
+      <div class="tb-match">
+        <a href="https://api.pitchapi.dev/v1/matches/m_B8x2K9">Home vs Away</a></div>
+      <div class="tb-tip">1</div>{additional}</div>
+    """
+    page = "https://www.1960tips.com/todays-predictions"
+    valid = parse_1960tips(html.format(additional=""), TARGET_DATE, page)[0]
+    assert (valid.provider_code, valid.provider_fixture_id) == ("pitchapi", "m_B8x2K9")
+    conflict = parse_1960tips(
+        html.format(
+            additional='<a href="https://api.football-data.org/v4/matches/330299">Match</a>'
+        ),
+        TARGET_DATE,
+        page,
+    )[0]
+    assert conflict.provider_fixture_id is None
+    assert len(conflict.conflicting_fixture_references) == 2

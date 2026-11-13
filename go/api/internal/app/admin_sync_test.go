@@ -463,7 +463,7 @@ func localAdminTestRequest(method, path string, body io.Reader) *http.Request {
 }
 
 func TestAdminAccessRejectsUnauthorizedMutations(t *testing.T) {
-	for _, path := range []string{"/v1/admin/sync/mvp", "/v1/admin/sync-runs/run-one/stop", "/v1/admin/sync-runs/run-one/retry"} {
+	for _, path := range []string{"/v1/admin/sync/mvp", "/v1/admin/sync/settle-external-predictions", "/v1/admin/sync-runs/run-one/stop", "/v1/admin/sync-runs/run-one/retry"} {
 		for _, invalid := range []string{"origin", "host", "peer", "content-type", "origin-less"} {
 			t.Run(path+"/"+invalid, func(t *testing.T) {
 				runner := &syncRunnerStub{}
@@ -554,5 +554,29 @@ func TestAdministrativeReadsRequireApprovedLocalAccess(t *testing.T) {
 	application.Handler().ServeHTTP(response, request)
 	if response.Code != http.StatusOK {
 		t.Fatalf("authorized origin-less read: status %d", response.Code)
+	}
+}
+
+func TestExternalSettlementUsesUnscopedAdminJob(t *testing.T) {
+	runner := &syncRunnerStub{}
+	handler := newAdminTestApp(runner).Handler()
+	path := "/v1/admin/sync/settle-external-predictions"
+	for _, input := range []struct {
+		body   string
+		status int
+	}{{`{"date":"2026-09-30"}`, http.StatusBadRequest}, {`{}`, http.StatusAccepted}} {
+		response := httptest.NewRecorder()
+		handler.ServeHTTP(response, localAdminTestRequest(http.MethodPost, path, strings.NewReader(input.body)))
+		if response.Code != input.status {
+			t.Fatalf("%s returned %d: %s", input.body, response.Code, response.Body)
+		}
+	}
+	if len(runner.started) != 1 || runner.started[0].Type != SyncExternalSettlement ||
+		runner.started[0].Initiator != "LOCAL_ADMIN_BROWSER" {
+		t.Fatalf("unexpected settlement job: %+v", runner.started)
+	}
+	args, err := syncCommandArgs(runner.started[0])
+	if err != nil || strings.Join(args, " ") != ".tools/bin/uv run python -m football.product.cli settle-external-predictions" {
+		t.Fatalf("settlement args = %v, %v", args, err)
 	}
 }

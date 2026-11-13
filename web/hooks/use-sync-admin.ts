@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError } from "@/lib/api";
+import { EXTERNAL_SETTLEMENT_CHANGED } from "@/lib/external-settlement";
 import type { HistoricalCoverage, ProviderConfiguration, SyncRun, SyncType } from "@/lib/contracts";
 
 export type HistoryProvider = "fotmob" | "pitchapi";
@@ -32,7 +33,19 @@ function useSyncStatus() {
   const invalidate = useCallback(() => { request.current.generation++; request.current.controller?.abort(); }, []);
   const currentRequest = useCallback((generation: number, signal: AbortSignal) => mounted.current && !signal.aborted && generation === request.current.generation, []);
   const publish = useCallback((incoming: SyncRun[]) => {
-    latestRuns.current = mergeSyncRuns(latestRuns.current, incoming);
+    const previous = latestRuns.current;
+    const completed = incoming.find((run) =>
+      run.sync_type === "EXTERNAL_PREDICTION_SETTLEMENT" && !runActive(run)
+      && !previous.some((prior) => prior.run_id === run.run_id && !runActive(prior)),
+    );
+    if (completed) {
+      try {
+        window.localStorage.setItem(EXTERNAL_SETTLEMENT_CHANGED, completed.run_id);
+      } catch {
+        // The archive also revalidates when the tab becomes visible.
+      }
+    }
+    latestRuns.current = mergeSyncRuns(previous, incoming);
     setRuns(latestRuns.current);
   }, []);
   const reload = useCallback(async () => {
@@ -111,8 +124,9 @@ export function useSyncAdminState(initialDate: string) {
   };
   const start = (type: SyncType, operation: (body: Record<string, string>) => Promise<SyncRun>, provider?: HistoryProvider) => {
     const { season, competition, country } = filters;
-    const fields = type === "HISTORY_BACKFILL" ? { season, competition, ...(provider ? { provider } : { country }) } : filters;
-    const body = Object.fromEntries(Object.entries(fields).filter(([, value]) => value));
+    const fields: Partial<SyncFilters> & { provider?: HistoryProvider } = type === "EXTERNAL_PREDICTION_SETTLEMENT" ? {} : type === "HISTORY_BACKFILL"
+      ? { season, competition, ...(provider ? { provider } : { country }) } : filters;
+    const body = Object.fromEntries(Object.entries(fields).filter((entry): entry is [string, string] => typeof entry[1] === "string" && entry[1] !== ""));
     return mutate(type, provider ?? type, () => operation(body));
   };
   const stop = (run: SyncRun) => mutate(run.sync_type, `STOP:${run.run_id}`, () => api.stopSyncRun(run.run_id), true);

@@ -14,9 +14,25 @@ from football.product.external_predictions import (
 )
 from football.product.public_reports import run_pending_public_reports
 
-from tests.integration.test_live_context import FIXTURE, KICKOFF, PROVIDER, SNAPSHOT
+from tests.integration.test_live_context import FIXTURE, KICKOFF, PROVIDER, SNAPSHOT, _seed_fixture
 from tests.integration.test_public_reports import PREDICTION
-from tests.integration.test_public_reports import report_database as report_database
+from tests.integration.test_team_identity_correction import isolated_database
+
+
+@pytest.fixture
+def report_database():
+    from tests.integration.test_public_reports import report_database as shared_report_database
+
+    for url in shared_report_database.__wrapped__():
+        with psycopg.connect(url) as c:
+            c.execute(
+                """INSERT INTO football.match_provider_mappings
+                (match_id,provider_id,provider_match_id,first_seen_at,last_seen_at,
+                 mapping_method,mapping_confidence,source_snapshot_id)
+                VALUES(%s,%s,'fixture-native',clock_timestamp(),clock_timestamp(),'manual',1,%s)""",
+                (FIXTURE, PROVIDER, SNAPSHOT),
+            )
+        yield url
 
 
 def selection(**changes):
@@ -29,6 +45,8 @@ def selection(**changes):
         away_team="Away",
         market="RESULT_1X2",
         selection="HOME_WIN",
+        provider_code="live_context_test",
+        provider_fixture_id="fixture-native",
     )
     return replace(row, **changes)
 
@@ -268,7 +286,12 @@ def test_paginated_go_reader_and_source_aggregates_share_current_settlement_poli
         )
         import_predictions(
             c,
-            tuple(selection(home_team=f"Unknown {index}") for index in range(25)),
+            tuple(
+                selection(
+                    home_team=f"Unknown {index}", provider_code=None, provider_fixture_id=None
+                )
+                for index in range(25)
+            ),
             collected_at=captured,
         )
         outcome = run_pending_public_reports(
@@ -459,7 +482,7 @@ def test_large_current_archive_retains_bounded_api_pages(report_database):
             "test",
             "./internal/app",
             "-run",
-            "^TestExternalPredictionArchiveBoundDatabase$",
+            "^TestExternalPrediction(ArchiveBound|ContinuousArchive)Database$",
             "-count=1",
             "-v",
         ],
@@ -482,7 +505,12 @@ def test_reviewed_capture_without_native_ids_can_bind_and_revoke_append_only(rep
 
     captured = datetime.now(UTC) - timedelta(hours=2)
     with psycopg.connect(report_database) as c:
-        row = selection(home_team="Unresolved source label", prediction_date=captured.date())
+        row = selection(
+            home_team="Unresolved source label",
+            prediction_date=captured.date(),
+            provider_code=None,
+            provider_fixture_id=None,
+        )
         import_predictions(c, (row,), collected_at=captured)
         original = c.execute(
             "SELECT to_jsonb(ep) FROM football.external_predictions ep "
@@ -570,3 +598,271 @@ def test_reviewed_capture_without_native_ids_can_bind_and_revoke_append_only(rep
             "SELECT count(*) FROM football.external_prediction_bindings WHERE prediction_id=%s",
             (prediction,),
         ).fetchone() == (2,)
+
+
+def test_manual_settlement_revisits_completed_work_across_entire_history(report_database):
+    from football.product.external_prediction_recovery import reconcile_external_predictions
+
+    with psycopg.connect(report_database) as c:
+        assert settle(c) == 1
+        c.execute(
+            """INSERT INTO football.external_predictions
+            (prediction_id,revision_sha256,source_code,source_page,prediction_date,
+             original_date_text,collected_at,fixture_id,competition_text,home_team_text,
+             away_team_text,market,selection,match_status)
+            SELECT id,encode(sha256(convert_to(id::text,'UTF8')),'hex'), 'manual_import',
+                'archive/'||id,DATE '2001-01-01','2001-01-01',TIMESTAMPTZ '2001-01-01 12:00Z',
+                %s,'Test','Home','Away','RESULT_1X2','AWAY_WIN','MATCHED'
+            FROM (SELECT uuidv7() AS id FROM generate_series(1,129)) rows""",
+            (FIXTURE,),
+        )
+        c.execute(
+            """UPDATE football.external_prediction_refresh_work
+            SET completed_generation=generation,completed_at=clock_timestamp()"""
+        )
+        c.commit()
+
+        inventory = reconcile_external_predictions(c, datetime.now(UTC), audit_only=True)
+        assert inventory["counts"] == {"ALREADY_SETTLED": 1, "ELIGIBLE": 129}
+        summary = reconcile_external_predictions(c, datetime.now(UTC))
+        assert summary["counts"] == {"ALREADY_SETTLED": 1, "NEWLY_SETTLED": 129}
+        assert summary["examined"] == 130
+        retry = reconcile_external_predictions(c, datetime.now(UTC))
+        assert retry["counts"] == {"ALREADY_SETTLED": 130}
+        assert c.execute(
+            "SELECT count(*) FROM football.external_prediction_result_revisions"
+        ).fetchone() == (130,)
+
+
+def test_manual_settlement_reports_conflicts_and_preserves_finalized_revision(report_database):
+    from football.product.external_prediction_recovery import reconcile_external_predictions
+
+    with psycopg.connect(report_database) as c:
+        assert settle(c) == 1
+        c.execute(
+            "UPDATE football.product_fixtures SET home_score=0,away_score=3 WHERE fixture_id=%s",
+            (FIXTURE,),
+        )
+        c.commit()
+        summary = reconcile_external_predictions(c, datetime.now(UTC))
+        assert summary["counts"] == {"FINALIZED_NEEDS_REVIEW": 1}
+        assert c.execute(
+            "SELECT settlement_state FROM football.external_prediction_latest_results"
+        ).fetchall() == [("WON",)]
+        c.commit()
+        assert settle(c) == 1  # Existing correction workflow appends the revised outcome.
+        assert c.execute(
+            "SELECT settlement_state FROM football.external_prediction_latest_results"
+        ).fetchall() == [("LOST",)]
+
+
+def test_manual_settlement_leaves_conflicting_provider_results_pending(report_database):
+    from football.product.external_prediction_recovery import reconcile_external_predictions
+
+    with psycopg.connect(report_database) as c:
+        c.execute(
+            """INSERT INTO football.product_source_result_conflicts
+            (canonical_match_id,existing_provider_code,existing_home_goals,existing_away_goals,
+             existing_snapshot_id,incoming_provider_code,incoming_home_goals,incoming_away_goals,
+             incoming_snapshot_id,conflict_key)
+            VALUES(%s,'a',2,1,%s,'b',1,2,%s,%s)""",
+            (FIXTURE, SNAPSHOT, SNAPSHOT, "a" * 64),
+        )
+        c.commit()
+        assert reconcile_external_predictions(c, datetime.now(UTC))["counts"] == {
+            "RESULT_CONFLICT": 1
+        }
+        assert c.execute(
+            "SELECT settlement_state FROM football.external_prediction_latest_results"
+        ).fetchall() == [("PENDING",)]
+
+
+def test_manual_settlement_resumes_after_a_row_fails(report_database):
+    from football.product.external_prediction_recovery import reconcile_external_predictions
+
+    with psycopg.connect(report_database) as c:
+        assert import_predictions(c, (selection(selection="AWAY_WIN"),)) == 1
+        c.execute(
+            """CREATE FUNCTION football.test_block_one_settlement() RETURNS trigger
+            LANGUAGE plpgsql AS $$ BEGIN
+                IF NEW.prediction_id='00000000-0000-0000-0000-000000002332' THEN
+                    RAISE EXCEPTION 'synthetic failed append';
+                END IF;
+                RETURN NEW;
+            END $$"""
+        )
+        c.execute(
+            """CREATE TRIGGER test_block_one_settlement BEFORE INSERT
+            ON football.external_prediction_result_revisions
+            FOR EACH ROW EXECUTE FUNCTION football.test_block_one_settlement()"""
+        )
+        c.commit()
+        assert reconcile_external_predictions(c, datetime.now(UTC))["counts"] == {
+            "FAILED": 1,
+            "NEWLY_SETTLED": 1,
+        }
+        c.execute(
+            "DROP TRIGGER test_block_one_settlement ON "
+            "football.external_prediction_result_revisions"
+        )
+        c.commit()
+        assert reconcile_external_predictions(c, datetime.now(UTC))["counts"] == {
+            "ALREADY_SETTLED": 1,
+            "NEWLY_SETTLED": 1,
+        }
+
+
+def test_manual_and_scheduled_settlement_converge(report_database):
+    from threading import Barrier
+
+    from football.product.external_prediction_recovery import reconcile_external_predictions
+
+    start = Barrier(2)
+
+    def scheduled():
+        with psycopg.connect(report_database) as c:
+            start.wait(timeout=10)
+            return settle(c)
+
+    def manual():
+        with psycopg.connect(report_database) as c:
+            start.wait(timeout=10)
+            return reconcile_external_predictions(c, datetime.now(UTC))["counts"]
+
+    with ThreadPoolExecutor(max_workers=2) as workers:
+        automatic = workers.submit(scheduled)
+        manual_run = workers.submit(manual)
+        assert (
+            automatic.result(timeout=15) + manual_run.result(timeout=15).get("NEWLY_SETTLED", 0)
+            == 1
+        )
+    with psycopg.connect(report_database) as c:
+        assert c.execute(
+            "SELECT count(*) FROM football.external_prediction_result_revisions"
+        ).fetchone() == (1,)
+
+
+def _provider_only_result(c, status, observed_at, *, home_id="101", away_id="102"):
+    c.execute(
+        """INSERT INTO football.product_provider_fixture_observations
+        (semantic_sha256,provider_code,provider_match_id,provider_competition_id,
+         provider_home_team_id,provider_away_team_id,source_snapshot_id,kickoff_at,
+         canonical_status,home_score,away_score,observed_at,stale_after,last_fetched_at,
+         result_score_basis)
+        VALUES(%s,'live_context_test','provider-only','league',%s,%s,%s,%s,%s,
+               %s,%s,%s,%s,%s,%s)""",
+        (
+            uuid4().hex * 2,
+            home_id,
+            away_id,
+            SNAPSHOT,
+            observed_at - timedelta(hours=3),
+            status,
+            2 if status == "FINISHED" else None,
+            1 if status == "FINISHED" else None,
+            observed_at,
+            observed_at,
+            observed_at,
+            "REGULATION_90" if status == "FINISHED" else "UNKNOWN",
+        ),
+    )
+
+
+def test_provider_only_late_import_and_manual_and_automatic_settlement_without_forecasts():
+    from football.product.external_prediction_recovery import reconcile_external_predictions
+
+    observed = datetime.now(UTC) - timedelta(hours=1)
+    with isolated_database() as url, psycopg.connect(url) as c:
+        _seed_fixture(c)
+        c.execute(
+            "UPDATE football.source_snapshots SET acquired_at=%s WHERE id=%s",
+            (observed, SNAPSHOT),
+        )
+        c.commit()
+        row = selection(
+            prediction_date=(observed - timedelta(hours=3)).date(),
+            provider_fixture_id="provider-only",
+        )
+        assert import_predictions(c, (row,)) == 1
+        assert settle(c) == 1
+        _provider_only_result(c, "FINISHED", observed)
+        c.commit()
+        assert settle(c) == 1  # Native observation enqueues the previously completed work item.
+        assert c.execute(
+            """SELECT settlement_state,evidence->>'fixture_association',
+                evidence->>'native_snapshot_id' FROM football.external_prediction_latest_results"""
+        ).fetchone() == ("WON", "VERIFIED_PROVIDER_ONLY", str(SNAPSHOT))
+        c.commit()
+        assert import_predictions(c, (replace(row, selection="AWAY_WIN"),)) == 1
+        summary = reconcile_external_predictions(c, datetime.now(UTC))
+        assert summary["counts"] == {"ALREADY_SETTLED": 1, "NEWLY_SETTLED": 1}
+        assert summary["associations"] == {"VERIFIED_PROVIDER_ONLY": 2}
+        assert c.execute("SELECT count(*) FROM football.product_forecasts").fetchone() == (0,)
+        assert c.execute("SELECT count(*) FROM football.product_fixtures").fetchone() == (1,)
+        c.execute(
+            """UPDATE football.product_fixtures
+            SET identity_status='VERIFIED',status='FINISHED',home_score=2,away_score=1,
+                result_score_basis='REGULATION_90',kickoff_at=%s
+            WHERE fixture_id=%s""",
+            (observed - timedelta(hours=3), FIXTURE),
+        )
+        c.execute(
+            """INSERT INTO football.match_provider_mappings
+            (match_id,provider_id,provider_match_id,first_seen_at,last_seen_at,
+             mapping_method,mapping_confidence,source_snapshot_id)
+            VALUES(%s,%s,'provider-only',clock_timestamp(),clock_timestamp(),'manual',1,%s)""",
+            (FIXTURE, PROVIDER, SNAPSHOT),
+        )
+        c.commit()
+        assert settle(c) == 2
+        assert c.execute(
+            """SELECT count(*) FROM football.external_prediction_effective
+               WHERE effective_fixture_id=%s""",
+            (FIXTURE,),
+        ).fetchone() == (2,)
+        assert c.execute("SELECT count(*) FROM football.product_forecasts").fetchone() == (0,)
+
+
+def test_unreferenced_labels_do_not_establish_fixture_identity(report_database):
+    with psycopg.connect(report_database) as c:
+        assert (
+            import_predictions(c, (selection(provider_code=None, provider_fixture_id=None),)) == 1
+        )
+        assert c.execute(
+            """SELECT effective_fixture_id,effective_match_status
+            FROM football.external_prediction_effective WHERE source_code='manual_import'"""
+        ).fetchone() == (None, "UNMATCHED")
+
+
+def test_archived_r2bet_capture_recovers_verified_native_identity(report_database, tmp_path):
+    from football.product.external_prediction_history import recover_external_prediction_bindings
+    from football.product.external_prediction_sources import parse_r2bet
+
+    page = "https://r2bet.com/index.php/best_football_prediction?dt=2030-01-01"
+    raw = """<section><h2>Best Picks</h2><p>1st, Tue Jan 2030</p>
+    <article><div data-link="/index.php/match-details/123-free/home-vs-away">
+    <p>Test League</p><p>19:00</p></div><p>Home</p><p>Away</p><p>Odds: 1.5</p>
+    <p>Pick: 1</p></article></section>"""
+    (tmp_path / "r2bet-2030-01-01.html").write_text(raw)
+    recovered = parse_r2bet(raw, KICKOFF.date(), page)[0]
+    original = replace(recovered, fixture_reference_url=None, source_kickoff_text=None)
+    with psycopg.connect(report_database) as c:
+        c.execute("UPDATE football.providers SET code='api_football' WHERE id=%s", (PROVIDER,))
+        c.execute(
+            "UPDATE football.match_provider_mappings SET provider_match_id='123' "
+            "WHERE provider_id=%s",
+            (PROVIDER,),
+        )
+        c.commit()
+        assert import_predictions(c, (original,), source_code="r2bet") == 1
+        preview = recover_external_prediction_bindings(c, tmp_path, audit_only=True)
+        assert preview["counts"] == {"PAGES_VERIFIED": 1, "BINDING_ELIGIBLE": 1}
+        apply = recover_external_prediction_bindings(c, tmp_path, audit_only=False)
+        assert apply["counts"] == {"PAGES_VERIFIED": 1, "BOUND": 1}
+        retry = recover_external_prediction_bindings(c, tmp_path, audit_only=False)
+        assert not retry["predictions"]
+        assert c.execute(
+            """SELECT effective_fixture_id FROM football.external_prediction_effective
+               WHERE source_code='r2bet' AND source_page=%s""",
+            (page,),
+        ).fetchone() == (FIXTURE,)

@@ -1365,6 +1365,24 @@ work transactionally. The public-report worker applies the validation fence
 before comparisons. Pending corrections hide stale comparison and settlement
 outputs. Checkpointed retries preserve immutable selection and settlement history.
 
+Settlement uses verified fixture identity and qualified results. It runs for
+fixtures with no MatchForge forecast. An exact provider ID can also use a
+validated native observation with complete, consistent competition and oriented
+team IDs. A conflicting, quarantined or ambiguous identity stays pending.
+When a verified canonical mapping becomes available, the normal mapping trigger
+queues revalidation and the append-only binding records the canonical fixture.
+
+New predictions retain available match references and displayed kickoff text.
+A dated R2Bet link can support a binding when a unique retained API-Football
+mapping independently corroborates the native ID, competition, kickoff and
+oriented teams. Source labels alone produce no new bindings. Historical source
+pages can supply missing references for exact retained captures. Their bindings
+use the existing review history and receive no retroactive prospective credit.
+
+The continuous archive returns all retained captures matching the filters.
+The existing list and fixture APIs still return paginated current selections.
+Consensus and source statistics still use current, prospectively eligible picks.
+
 ### Operational acquisition and historical recovery outcomes
 
 Operational provider sync reports `current_acquisition` and `historical_recovery`

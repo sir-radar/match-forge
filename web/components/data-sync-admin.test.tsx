@@ -49,6 +49,43 @@ describe("DataSyncAdmin", () => {
     expect(screen.getByRole("button", { name: "Retry status" })).toBeInTheDocument();
   });
 
+  it("hides the settlement action when admin access is denied", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => json({ error: "administrative access denied" }, 403)));
+    render(<DataSyncAdmin initialDate="2026-09-30" />);
+    expect(await screen.findByRole("alert")).toHaveTextContent("administrative access denied");
+    expect(screen.queryByRole("button", { name: "Settle Finished Predictions" })).toBeNull();
+  });
+
+  it("submits settlement without date filters and shows durable partial results", async () => {
+    const run = {
+      run_id: "settlement-one", sync_type: "EXTERNAL_PREDICTION_SETTLEMENT",
+      status: "FAILED", requested_at: "2026-09-30T10:00:00Z", requested_date: null,
+      started_at: "2026-09-30T10:00:00Z", finished_at: "2026-09-30T10:01:00Z",
+      parameters: {}, log_path: null, error_message: "One prediction failed",
+      summary: { settlement: { examined: 4, total: 4, counts: { NEWLY_SETTLED: 2, FIXTURE_IDENTITY: 1, FAILED: 1 } } },
+    };
+    let started = false;
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+      if (init?.method === "POST") {
+        started = true;
+        return json({ ...run, status: "QUEUED", finished_at: null, summary: {}, error_message: null }, 202);
+      }
+      return json({ runs: started ? [run] : [], coverage });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<DataSyncAdmin initialDate="2026-09-30" />);
+    const button = await screen.findByRole("button", { name: "Settle Finished Predictions" });
+    await waitFor(() => expect(button).toBeEnabled());
+    fireEvent.click(button);
+    fireEvent.click(button);
+    await screen.findByText(/Settlement finished with errors · Examined 4 of 4/);
+    expect(fetchMock.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/v1/admin/sync/settle-external-predictions"), expect.objectContaining({ body: "{}" }));
+    expect(screen.getByText("Newly settled")).toBeInTheDocument();
+    expect(screen.getByText("Fixture association needs verification")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Retry$/ })).toBeEnabled();
+  });
+
   it("renders every fixed action, coverage, history, and prevents duplicate submission", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       if (init?.method === "POST") return json({

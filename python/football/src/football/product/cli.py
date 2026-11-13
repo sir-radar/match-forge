@@ -28,6 +28,7 @@ from football.product.api_football import (
 from football.product.competition_geography import refresh_competition_geography
 from football.product.development_provider_preview import development_provider_preview
 from football.product.domain import MODEL_ARTIFACT_PATH
+from football.product.external_prediction_recovery import reconcile_external_predictions
 from football.product.external_prediction_sources import SourceCollection, collect_sources
 from football.product.external_predictions import import_predictions, parse_import
 from football.product.football_data_org import FootballDataOrgClient, FootballDataOrgError
@@ -199,6 +200,15 @@ def build_parser() -> argparse.ArgumentParser:
             else None
         ),
     )
+    recovery = commands.add_parser("recover-external-bindings")
+    recovery.add_argument("--archive", type=Path, required=True)
+    recovery.add_argument("--apply", action="store_true")
+    settlement = commands.add_parser("settle-external-predictions")
+    settlement.add_argument(
+        "--audit-only",
+        action="store_true",
+        help="Classify retained predictions in a read-only transaction",
+    )
     review = commands.add_parser("provider-mapping-review")
     review.add_argument("--provider", choices=("fotmob", "pitchapi"))
     review.add_argument("--limit", type=int, default=100)
@@ -220,14 +230,22 @@ def main(argv: list[str] | None = None) -> int:
         return {"work-metrics": _run_work_metrics, "domain-metrics": _run_domain_metrics}[
             args.command
         ](args)
-    if args.command == "external-predictions":
-        return _run_external_predictions(args)
+    if args.command in {"external-predictions", "settle-external-predictions"}:
+        return {
+            "external-predictions": _run_external_predictions,
+            "settle-external-predictions": _run_external_settlement,
+        }[args.command](args)
     if args.command == "refresh-competition-geography":
         return _run_competition_geography(args)
-    if args.command in {"provider-mapping-review", "external-binding-review"}:
+    if args.command in {
+        "provider-mapping-review",
+        "external-binding-review",
+        "recover-external-bindings",
+    }:
         return {
             "provider-mapping-review": _run_provider_mapping_review,
             "external-binding-review": _run_external_binding_review,
+            "recover-external-bindings": _run_external_binding_recovery,
         }[args.command](args)
     if args.command == "development-provider-preview":
         return _run_development_provider_preview(args)
@@ -937,6 +955,45 @@ def _history_worker_factory(
     return create_worker
 
 
+def _run_external_settlement(args: argparse.Namespace) -> int:
+    def progress(snapshot: dict[str, Any]) -> None:
+        if sync_run_id is None:
+            return
+        with connection.transaction():
+            connection.execute(
+                """UPDATE football.product_sync_runs SET summary=%s::jsonb
+                WHERE run_id=%s AND worker_id=%s AND status='RUNNING'
+                    AND heartbeat_at>=clock_timestamp()-interval '2 minutes'""",
+                (json.dumps({"settlement": snapshot}), sync_run_id, str(sync_run_id)),
+            )
+
+    sync_run_id = _sync_run_id()
+    requested_at = datetime.now(UTC)
+    with psycopg.connect(args.database_url) as connection:
+        if args.audit_only:
+            connection.read_only = True
+            connection.isolation_level = psycopg.IsolationLevel.REPEATABLE_READ
+            with connection.transaction():
+                result = reconcile_external_predictions(connection, requested_at, audit_only=True)
+        else:
+            result = reconcile_external_predictions(connection, requested_at, progress=progress)
+    failed = result["counts"].get("FAILED", 0)
+    if sync_run_id is not None:
+        # Job history exposes aggregate counts. The operator CLI can report exact IDs.
+        result.pop("changed_prediction_ids", None)
+    print(
+        json.dumps(
+            {
+                "status": "COMPLETED_WITH_ERRORS" if failed else "COMPLETED",
+                "settlement": result,
+                **({"errors": {"settlement": f"{failed} predictions failed"}} if failed else {}),
+            },
+            sort_keys=True,
+        )
+    )
+    return 1 if failed else 0
+
+
 def _run_external_predictions(args: argparse.Namespace) -> int:
     if args.import_file is not None:
         return _run_external_import(args)
@@ -1066,6 +1123,20 @@ def _collection_payload(result: SourceCollection) -> dict[str, object]:
         "parsed": len(result.rows),
         "error": result.error,
     }
+
+
+def _run_external_binding_recovery(args: argparse.Namespace) -> int:
+    from football.product.external_prediction_history import recover_external_prediction_bindings
+
+    with psycopg.connect(args.database_url) as connection:
+        connection.read_only = not args.apply
+        result = recover_external_prediction_bindings(
+            connection,
+            args.archive,
+            audit_only=not args.apply,
+        )
+    print(json.dumps(result, sort_keys=True))
+    return 0
 
 
 def _run_external_binding_review(args: argparse.Namespace) -> int:

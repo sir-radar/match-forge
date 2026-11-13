@@ -136,6 +136,26 @@ func TestExternalPredictionArchiveBoundDatabase(t *testing.T) {
 	}
 }
 
+func TestExternalPredictionContinuousArchiveDatabase(t *testing.T) {
+	store, counter := performanceDatabaseStore(t)
+	ctx, cancel := context.WithTimeout(context.Background(), defaultHandlerTimeout)
+	defer cancel()
+	counter.queries.Store(0)
+	started := time.Now()
+	archive, err := store.ExternalPredictions(ctx, ExternalPredictionFilters{Archive: true})
+	if err != nil || len(archive.Predictions) != 5001 {
+		t.Fatalf("archive rows=%d error=%v", len(archive.Predictions), err)
+	}
+	t.Logf("5001 retained selections: archive latency=%s queries=%d", time.Since(started), counter.queries.Load())
+	filtered, err := store.ExternalPredictions(ctx, ExternalPredictionFilters{
+		Archive: true, Search: archive.Predictions[len(archive.Predictions)-1].HomeTeam,
+		Settlement: "PENDING", Source: "manual_import",
+	})
+	if err != nil || len(filtered.Predictions) == 0 || len(filtered.Predictions) >= len(archive.Predictions) {
+		t.Fatalf("filtered rows=%d error=%v", len(filtered.Predictions), err)
+	}
+}
+
 func TestReviewedExternalAccuracyDatabase(t *testing.T) {
 	store, _ := performanceDatabaseStore(t)
 	sources, err := store.ExternalPredictionSources(context.Background(), ExternalPredictionFilters{Source: "manual_import"})

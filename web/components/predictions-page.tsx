@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Icon } from "@/components/icon";
 import { Logo } from "@/components/logo";
 import { useResource } from "@/hooks/use-resource";
 import { DISPLAY_TIME_ZONE } from "@/lib/display-date";
 import { api } from "@/lib/api";
-import type { ExternalPrediction, ExternalSource, ExternalConsensus, ExternalPredictionPage as PredictionPageData } from "@/lib/contracts";
+import { EXTERNAL_SETTLEMENT_CHANGED } from "@/lib/external-settlement";
+import type { ExternalPrediction, ExternalSource, ExternalConsensus } from "@/lib/contracts";
 
 
 
@@ -18,6 +19,8 @@ type FacetFilters = {
   competition: string;
   market: string;
   agreement: string;
+  settlement: string;
+  search: string;
 };
 
 
@@ -28,6 +31,8 @@ const EMPTY_FILTERS: FacetFilters = {
   competition: "",
   market: "",
   agreement: "",
+  settlement: "",
+  search: "",
 };
 
 const FILTER_LABELS: Record<keyof FacetFilters, string> = {
@@ -36,7 +41,9 @@ const FILTER_LABELS: Record<keyof FacetFilters, string> = {
   country: "Country",
   competition: "Comp",
   market: "Market",
-  agreement: "Status",
+  agreement: "Agreement",
+  settlement: "Settlement",
+  search: "Search",
 };
 
 const mono = "font-mono tabular-nums";
@@ -46,49 +53,61 @@ export function PredictionsPage({ initialDate }: { initialDate: string }) {
   const initialDay = initialDate;
   const [day, setDay] = useState(initialDay);
   const [filters, setFilters] = useState<FacetFilters>(EMPTY_FILTERS);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState<20 | 50 | 100>(20);
-
-  const predictionQuery = useMemo(() => buildPredictionQuery(day, filters, page, pageSize), [day, filters, page, pageSize]);
-  const sourceQuery = useMemo(() => buildSourceQuery(day, filters), [day, filters]);
+  const [allDates, setAllDates] = useState(false);
+  const date = allDates ? "" : day;
+  const predictionQuery = useMemo(() => buildPredictionQuery(date, filters), [date, filters]);
+  const sourceQuery = useMemo(() => buildSourceQuery(date, filters), [date, filters]);
   const loadSources = useCallback(
     (signal: AbortSignal) => api.sources(new URLSearchParams(sourceQuery), signal),
     [sourceQuery],
   );
   const loadPredictions = useCallback(
-    async (signal: AbortSignal) => {
-      const data = await api.predictions(new URLSearchParams(predictionQuery), signal);
-      if (!signal.aborted && data.pagination.page !== page) setPage(data.pagination.page);
-      return data;
-    },
-    [predictionQuery, page],
+    (signal: AbortSignal) => api.predictionArchive(new URLSearchParams(predictionQuery), signal),
+    [predictionQuery],
   );
   const sources = useResource(`external-sources-${sourceQuery}`, loadSources);
   const predictions = useResource(`external-predictions-${predictionQuery}`, loadPredictions);
+  const { retry: retrySources } = sources;
+  const { retry: retryPredictions } = predictions;
+  const refresh = useCallback(() => {
+    retrySources();
+    retryPredictions();
+  }, [retrySources, retryPredictions]);
+
+  useEffect(() => {
+    function settlementChanged(event: StorageEvent) {
+      if (event.key === EXTERNAL_SETTLEMENT_CHANGED) refresh();
+    }
+    function visible() {
+      if (!document.hidden) refresh();
+    }
+    window.addEventListener("storage", settlementChanged);
+    document.addEventListener("visibilitychange", visible);
+    return () => {
+      window.removeEventListener("storage", settlementChanged);
+      document.removeEventListener("visibilitychange", visible);
+    };
+  }, [refresh]);
 
   const sourceItems = sources.data ?? [];
   const predictionItems = useMemo(
-    () => (predictions.data?.predictions ?? [])
-      .filter((item) => item.prediction_date === day)
-      .sort((left, right) => right.collected_at.localeCompare(left.collected_at)),
-    [day, predictions.data],
+    () => (predictions.data?.predictions ?? []).filter((item) => !date || item.prediction_date === date),
+    [date, predictions.data],
   );
   const consensus = predictions.data?.consensus ?? [];
-  const totalSelections = predictions.data?.pagination.total_items ?? 0;
+  const totalSelections = predictionItems.length;
   const reviewed = sourceItems.length;
   const approved = sourceItems.filter((item) => item.adapter_status === "ENABLED").length;
   const tracked = sourceItems.reduce((sum, item) => sum + item.tracked_selections, 0);
 
   const changeDay = (nextDay: string) => {
-    setPage(1);
     setDay(nextDay);
+    setAllDates(false);
   };
   const updateFilter = (key: keyof FacetFilters, value: string) => {
-    setPage(1);
     setFilters((current) => ({ ...current, [key]: value }));
   };
   const resetFilters = () => {
-    setPage(1);
     setFilters(EMPTY_FILTERS);
   };
 
@@ -96,11 +115,13 @@ export function PredictionsPage({ initialDate }: { initialDate: string }) {
     <div className="min-h-screen bg-[#0f131c] text-[#dfe2ef] antialiased">
       <PredictionsHeader status={requestState(predictions)} />
       <main id="main" tabIndex={-1} className="min-h-[calc(100vh-3.5rem)] pt-14">
-        <Intro day={day} />
+        <Intro day={date} />
         <MetricStrip reviewed={reviewed} approved={approved} tracked={tracked} count={totalSelections} />
         <FiltersBar
           day={day}
           today={initialDate}
+          allDates={allDates}
+          onAllDatesChange={setAllDates}
           filters={filters}
           sources={sourceItems}
           count={totalSelections}
@@ -109,17 +130,13 @@ export function PredictionsPage({ initialDate }: { initialDate: string }) {
           onDayChange={changeDay}
           onFilterChange={updateFilter}
           onReset={resetFilters}
-          onRefresh={() => {
-            sources.retry();
-            predictions.retry();
-          }}
+          onRefresh={refresh}
         />
 
         <SourceFailure error={sources.error} retry={sources.retry} />
-        <ConsensusResource loading={predictions.loading} error={predictions.error} items={predictionItems} rows={consensus} />
+        <ConsensusResource loading={predictions.loading} error={predictions.error} rows={consensus} />
 
         <PredictionTableResource
-          day={day}
           items={predictionItems}
           loading={predictions.loading}
           refreshing={predictions.refreshing}
@@ -130,7 +147,6 @@ export function PredictionsPage({ initialDate }: { initialDate: string }) {
 
         <SourceAudit sources={sourceItems} />
       </main>
-      <PredictionsPagination data={predictions.data} refreshing={predictions.refreshing} pageSize={pageSize} setPage={setPage} setPageSize={(size) => { setPage(1); setPageSize(size); }} />
       <PredictionsFooter />
     </div>
   );
@@ -141,31 +157,16 @@ function SourceFailure({ error, retry }: { error: string | null; retry: () => vo
   return <div className="px-4 pt-3"><ErrorState label="Source registry unavailable" message={error} retry={retry} /></div>;
 }
 
-function PredictionsPagination({ data, refreshing, pageSize, setPage, setPageSize }: {
-  data: PredictionPageData | null; refreshing: boolean; pageSize: 20 | 50 | 100;
-  setPage: (page: number) => void; setPageSize: (size: 20 | 50 | 100) => void;
-}) {
-  if (!data || data.pagination.total_items === 0) return null;
-  const { page, total_pages: totalPages, total_items: totalItems } = data.pagination;
-  return <nav className="table-pagination px-4 pb-4" aria-label="External predictions pagination">
-    <label>Rows per page<select value={pageSize} onChange={(event) => setPageSize(Number(event.target.value) as 20 | 50 | 100)}><option value={20}>20</option><option value={50}>50</option><option value={100}>100</option></select></label>
-    <p aria-live="polite">Page {page} of {totalPages} · {totalItems} selections</p>
-    <div><button type="button" disabled={refreshing || page <= 1} onClick={() => setPage(page - 1)}>Previous page</button><button type="button" disabled={refreshing || page >= totalPages} onClick={() => setPage(page + 1)}>Next page</button></div>
-  </nav>;
-}
-
 function ConsensusResource({ loading, error, rows }: {
   loading: boolean;
   error: string | null;
-  items: ExternalPrediction[];
   rows: ExternalConsensus[];
 }) {
   if (loading || error || rows.length === 0) return null;
   return <Consensus rows={rows} />;
 }
 
-function PredictionTableResource({ day, items, loading, refreshing, error, retry, reset }: {
-  day: string;
+function PredictionTableResource({ items, loading, refreshing, error, retry, reset }: {
   items: ExternalPrediction[];
   loading: boolean;
   refreshing: boolean;
@@ -181,7 +182,7 @@ function PredictionTableResource({ day, items, loading, refreshing, error, retry
   } else if (items.length === 0) {
     content = <EmptyState reset={reset} />;
   } else {
-    content = <Results day={day} items={items} refreshing={refreshing} />;
+    content = <Results items={items} refreshing={refreshing} />;
   }
   return <section className="w-full bg-[#0f131c] px-4 py-3" aria-label="External prediction records"><div className="mx-auto max-w-[1720px]">{content}</div></section>;
 }
@@ -239,7 +240,7 @@ function Intro({ day }: { day: string }) {
           </div>
           <div className="flex items-baseline gap-3">
             <h1 className="text-2xl font-semibold tracking-tight">External predictions</h1>
-            <span className={`hidden text-[10px] text-[#86948a] md:inline ${mono}`}>Daily partition {day}</span>
+            <span className={`hidden text-[10px] text-[#86948a] md:inline ${mono}`}>{day ? `Daily partition ${day}` : "All retained dates"}</span>
           </div>
           <p className="mt-1 max-w-3xl text-[12px] leading-5 text-[#bbcabf]">Public selections are cataloged strictly as immutable empirical evidence. They never calibrate, feed, weight, or overwrite MatchForge Poisson goal models or probability densities.</p>
         </div>
@@ -266,7 +267,7 @@ function MetricStrip({ reviewed, approved, tracked, count }: { reviewed: number;
       <div className="mx-auto grid max-w-[1720px] grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Metric icon="monitoring" label="Sources reviewed" value={fmt(reviewed)} detail="Active registries" footerLabel="Daily registry scope" footerValue={`${fmt(reviewed)} sources`} />
         <Metric icon="verified" label="Approved adapters" value={fmt(approved)} detail="Enabled" footerLabel="Adapter status" footerValue={`${fmt(approved)} operational`} />
-        <Metric icon="table" label="Stored selections" value={fmt(tracked)} detail="Recorded records" footerLabel="Active day" footerValue={`${fmt(count)} selections`} />
+        <Metric icon="table" label="Stored selections" value={fmt(tracked)} detail="Recorded records" footerLabel="Current filters" footerValue={`${fmt(count)} selections`} />
         <Metric icon="verified" label="Model influence" value="0.0%" detail="Immutable isolation" footerLabel="Feedback prevention" footerValue="Zero weight" accent />
       </div>
     </section>
@@ -291,9 +292,11 @@ function Metric({ icon, label, value, detail, footerLabel, footerValue, accent =
   );
 }
 
-function FiltersBar({ day, today, filters, sources, count, refreshing, status, onDayChange, onFilterChange, onReset, onRefresh }: {
+function FiltersBar({ day, today, allDates, onAllDatesChange, filters, sources, count, refreshing, status, onDayChange, onFilterChange, onReset, onRefresh }: {
   day: string;
   today: string;
+  allDates: boolean;
+  onAllDatesChange: (value: boolean) => void;
   filters: FacetFilters;
   sources: ExternalSource[];
   count: number;
@@ -311,13 +314,13 @@ function FiltersBar({ day, today, filters, sources, count, refreshing, status, o
       <div className="mx-auto flex max-w-[1720px] flex-col gap-1.5">
         <div className="grid grid-cols-2 items-center gap-1.5 sm:grid-cols-4 md:grid-cols-8 lg:grid-cols-9">
           <div className="col-span-2 flex h-8 min-w-0 items-center rounded-sm border border-[#262a34] bg-[#1c1f29]">
-            <button type="button" onClick={() => onDayChange(addDays(day, -1))} aria-label="Previous day" className="grid h-full w-8 shrink-0 place-items-center border-r border-[#262a34] text-[#bbcabf] hover:bg-[#262a34] hover:text-[#dfe2ef]"><Icon name="chevron-left" className="h-4 w-4" /></button>
+            <button type="button" onClick={() => onDayChange(addDays(day, -1))} aria-label="Previous day" disabled={allDates} className="grid h-full w-8 shrink-0 place-items-center border-r border-[#262a34] text-[#bbcabf] hover:bg-[#262a34] hover:text-[#dfe2ef]"><Icon name="chevron-left" className="h-4 w-4" /></button>
             <Icon name="calendar" className="ml-2 h-4 w-4 shrink-0 text-[#86948a]" />
             <label className="min-w-0 flex-1">
               <span className="sr-only">Prediction day</span>
-              <input aria-label="Prediction day" type="date" value={day} max={today} onChange={(event) => event.target.value && onDayChange(event.target.value)} className={`h-[30px] w-full min-w-0 border-0 bg-transparent px-2 text-[10px] text-[#dfe2ef] outline-none ${mono}`} />
+              <input aria-label="Prediction day" type="date" value={day} max={today} disabled={allDates} onChange={(event) => event.target.value && onDayChange(event.target.value)} className={`h-[30px] w-full min-w-0 border-0 bg-transparent px-2 text-[10px] text-[#dfe2ef] outline-none ${mono}`} />
             </label>
-            <button type="button" onClick={() => onDayChange(addDays(day, 1))} aria-label="Next day" disabled={day >= today} className="grid h-full w-8 shrink-0 place-items-center border-l border-[#262a34] text-[#bbcabf] hover:bg-[#262a34] hover:text-[#dfe2ef] disabled:cursor-not-allowed disabled:opacity-35"><Icon name="chevron-right" className="h-4 w-4" /></button>
+            <button type="button" onClick={() => onDayChange(addDays(day, 1))} aria-label="Next day" disabled={allDates || day >= today} className="grid h-full w-8 shrink-0 place-items-center border-l border-[#262a34] text-[#bbcabf] hover:bg-[#262a34] hover:text-[#dfe2ef] disabled:cursor-not-allowed disabled:opacity-35"><Icon name="chevron-right" className="h-4 w-4" /></button>
           </div>
 
           <select aria-label="Source" className={control} value={filters.source} onChange={(event) => onFilterChange("source", event.target.value)}><option value="">All Sources ({sources.length})</option>{sources.map((source) => <option key={source.code} value={source.code}>{source.name}</option>)}</select>
@@ -332,16 +335,21 @@ function FiltersBar({ day, today, filters, sources, count, refreshing, status, o
           </div>
         </div>
 
+        <div className="grid grid-cols-2 items-center gap-1.5 sm:grid-cols-4">
+          <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={allDates} onChange={(event) => onAllDatesChange(event.target.checked)} /> All dates</label>
+          <input type="search" aria-label="Search predictions" placeholder="Search teams, leagues or picks" className={control} maxLength={80} value={filters.search} onChange={(event) => onFilterChange("search", event.target.value)} />
+          <select aria-label="Settlement" className={control} value={filters.settlement} onChange={(event) => onFilterChange("settlement", event.target.value)}><option value="">All settlements</option><option value="PENDING">Pending</option><option value="WON">Won</option><option value="LOST">Lost</option><option value="VOID">Void</option></select>
+        </div>
         <div className={`flex flex-wrap items-center justify-between gap-1.5 border-t border-[#262a34]/50 pt-1.5 text-[9px] ${mono}`}>
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="mr-1 uppercase tracking-wider text-[#86948a]">Active filters:</span>
-            <FilterPill label="Date" value={day} onRemove={null} />
+            <FilterPill label="Date" value={allDates ? "All dates" : day} onRemove={null} />
             {active.map(([key, value]) => <FilterPill key={key} label={FILTER_LABELS[key]} value={filterDisplay(key, value)} onRemove={() => onFilterChange(key, "")} />)}
             <span className="inline-flex items-center gap-1 rounded-sm border border-[#3c4a42] bg-[#1c1f29] px-2 py-0.5"><span>Isolation:</span><strong className="text-[#4edea3]">Zero Weight</strong><span aria-hidden="true">▣</span></span>
             {active.length > 0 && <button type="button" onClick={onReset} className="ml-1 text-[#86948a] underline hover:text-[#dfe2ef]">Clear all</button>}
           </div>
           <div className="ml-auto flex items-center gap-3">
-            <span className="rounded-sm border border-[#3c4a42] bg-[#1c1f29] px-2 py-0.5">Showing <strong className="text-[#4edea3]">{fmt(count)}</strong> selections for {day}</span>
+            <span className="rounded-sm border border-[#3c4a42] bg-[#1c1f29] px-2 py-0.5">Showing <strong className="text-[#4edea3]">{fmt(count)}</strong> selections{allDates ? "" : ` for ${day}`}</span>
             <span className="flex items-center gap-1 text-[#86948a]" aria-live="polite"><span className={`h-2 w-2 rounded-full ${refreshing ? "bg-[#7bd0ff]" : "bg-[#4edea3]"}`} />Records: {status}</span>
           </div>
         </div>
@@ -391,7 +399,7 @@ function Consensus({ rows }: { rows: ExternalConsensus[] }) {
   );
 }
 
-function Results({ items, refreshing }: { day: string; items: ExternalPrediction[]; refreshing: boolean }) {
+function Results({ items, refreshing }: { items: ExternalPrediction[]; refreshing: boolean }) {
   return (
     <div className="overflow-hidden rounded-sm border border-[#262a34] bg-[#0a0e17]" aria-busy={refreshing}>
       <div className="overflow-x-auto" tabIndex={0} aria-label="External selection records table">
@@ -403,7 +411,9 @@ function Results({ items, refreshing }: { day: string; items: ExternalPrediction
                 <TD className="text-[#86948a]">{collected(item.collected_at)}</TD>
                 <TD><a href={item.source_page} target="_blank" rel="noreferrer" className="font-['Space_Grotesk',system-ui,sans-serif] font-semibold hover:text-[#7bd0ff]">{item.source}<span aria-hidden="true" className="ml-1 text-[#86948a]">↗</span><span className="sr-only"> (opens in new tab)</span></a></TD>
                 <TD className="text-[#bbcabf]">{item.competition}</TD>
-                <TD><strong className="font-['Space_Grotesk',system-ui,sans-serif] text-[15px] font-semibold">{item.home_team} <span className="font-normal text-[#86948a]">vs</span> {item.away_team}</strong>{item.source_revision_conflict && <p className="text-amber-300">Conflicting picks at the same capture time</p>}{item.match_status !== "MATCHED" && <p className="text-[#bbcabf]">{status(item.match_status)} fixture</p>}</TD>
+                <TD><strong className="font-['Space_Grotesk',system-ui,sans-serif] text-[15px] font-semibold">{item.home_team} <span className="font-normal text-[#86948a]">vs</span> {item.away_team}</strong>{item.source_revision_conflict && <p className="text-amber-300">Conflicting picks at the same capture time</p>}{item.fixture_association === "VERIFIED_PROVIDER_ONLY"
+                  ? <p className="text-[#bbcabf]">Verified provider fixture</p>
+                  : item.match_status !== "MATCHED" && <p className="text-[#bbcabf]">{status(item.match_status)} fixture</p>}</TD>
                 <TD className="text-center text-[#86948a]">{kickoffTime(item.kickoff_at)}</TD>
                 <TD className="text-[#bbcabf]">{market(item.market)}</TD>
                 <TD><span className={`rounded-sm border border-[#353943] bg-[#1c1f29] px-2 py-0.5 font-semibold ${tone(item.agreement)}`}>{item.selection}</span></TD>
@@ -417,7 +427,7 @@ function Results({ items, refreshing }: { day: string; items: ExternalPrediction
         </table>
       </div>
       <div className={`flex flex-col items-center justify-between gap-2 border-t border-[#262a34] bg-[#181b25] px-4 py-1.5 text-[9px] text-[#86948a] sm:flex-row ${mono}`}>
-        <span><strong className="text-[#dfe2ef]">{fmt(items.length)}</strong> selections on this page</span>
+        <span><strong className="text-[#dfe2ef]">{fmt(items.length)}</strong> matching selections</span>
       </div>
     </div>
   );
@@ -489,14 +499,14 @@ function EmptyState({ reset }: { reset: () => void }) {
   return <div className="flex min-h-80 flex-col items-center justify-center rounded-sm border border-[#262a34] bg-[#0a0e17] p-12 text-center"><span className="grid h-12 w-12 place-items-center rounded-full bg-[#262a34]"><Icon name="search" className="h-7 w-7 text-[#86948a]" /></span><h2 className="mt-3 text-lg font-semibold">No approved external selections</h2><p className="mt-1 max-w-lg text-[#bbcabf]">No external selections match the current day and filters. MatchForge collects only sources whose access and reuse conditions have been reviewed.</p><div className="mt-4 flex items-center gap-1.5"><button type="button" onClick={reset} className="rounded-sm bg-[#4edea3] px-3 py-1.5 font-semibold text-[#003824]">Reset All Filters</button><a href="#source-audit" className="rounded-sm bg-[#262a34] px-3 py-1.5 hover:bg-[#353943]">Review Source Registry</a></div></div>;
 }
 
-function buildPredictionQuery(day: string, filters: FacetFilters, page: number, pageSize: number) {
-  const query = new URLSearchParams({ date: day, page: String(page), page_size: String(pageSize) });
+function buildPredictionQuery(day: string, filters: FacetFilters) {
+  const query = new URLSearchParams(day ? { date: day } : undefined);
   appendFilters(query, filters);
   return query.toString();
 }
 
 function buildSourceQuery(day: string, filters: FacetFilters) {
-  const query = new URLSearchParams({ date_from: day, date_to: day });
+  const query = new URLSearchParams(day ? { date_from: day, date_to: day } : undefined);
   appendFilters(query, filters);
   return query.toString();
 }
@@ -522,10 +532,15 @@ function probability(value: number | null) {
   return value === null ? "—" : `${(value * 100).toFixed(1)}%`;
 }
 
+const captureFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: DISPLAY_TIME_ZONE, year: "numeric", month: "2-digit", day: "2-digit",
+  hour: "2-digit", minute: "2-digit", hour12: false,
+});
+
 function collected(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.valueOf())) return value;
-  return new Intl.DateTimeFormat("en-CA", { timeZone: DISPLAY_TIME_ZONE, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).format(date).replace(",", "");
+  return captureFormatter.format(date).replace(",", "");
 }
 
 function kickoff(value: string | null) {
@@ -535,11 +550,13 @@ function kickoff(value: string | null) {
   return new Intl.DateTimeFormat("en-GB", { timeZone: DISPLAY_TIME_ZONE, day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit", hour12: false }).format(date);
 }
 
+const kickoffTimeFormatter = new Intl.DateTimeFormat("en-GB", { timeZone: DISPLAY_TIME_ZONE, hour: "2-digit", minute: "2-digit", hour12: false });
+
 function kickoffTime(value: string | null) {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.valueOf())) return value;
-  return new Intl.DateTimeFormat("en-GB", { timeZone: DISPLAY_TIME_ZONE, hour: "2-digit", minute: "2-digit", hour12: false }).format(date);
+  return kickoffTimeFormatter.format(date);
 }
 
 function agreement(value: ExternalPrediction["agreement"] | NonNullable<ExternalPrediction["comparison_status"]>) {
