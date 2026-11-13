@@ -257,3 +257,34 @@ func TestServingDatabaseMissingSchemaFailsReadiness(t *testing.T) {
 		t.Fatal("missing serving schema accepted")
 	}
 }
+
+func TestServingDatabaseSyncListKeepsActiveRunsBeyondHistoryLimit(t *testing.T) {
+	pool := servingDatabasePool(t)
+	ctx := context.Background()
+	bulkID, _ := newUUID()
+	if _, err := pool.Exec(ctx, `INSERT INTO football.product_sync_runs(run_id,sync_type,status,worker_id,heartbeat_at,requested_at)
+		VALUES($1::uuid,'MVP_SYNC','RUNNING',$1::text,clock_timestamp(),clock_timestamp() - interval '1 hour')`, bulkID); err != nil {
+		t.Fatal(err)
+	}
+	liveIDs := []string{bulkID}
+	t.Cleanup(func() {
+		if _, err := pool.Exec(ctx, `UPDATE football.product_sync_runs SET status='CANCELLED',finished_at=clock_timestamp(),error_message='test cleanup' WHERE run_id=ANY($1::uuid[]) AND status IN ('QUEUED','RUNNING')`, liveIDs); err != nil {
+			t.Errorf("test run cleanup: %v", err)
+		}
+	})
+	for index := 0; index < syncRunListLimit+10; index++ {
+		id, _ := newUUID()
+		if _, err := pool.Exec(ctx, `INSERT INTO football.product_sync_runs(run_id,sync_type,status,worker_id,requested_at,finished_at)
+			VALUES($1::uuid,'FOTMOB_SYNC','SUCCEEDED',$1::text,clock_timestamp(),clock_timestamp())`, id); err != nil {
+			t.Fatal(err)
+		}
+	}
+	runner := NewCommandSyncRunner(ctx, pool, t.TempDir(), slog.New(slog.NewTextHandler(io.Discard, nil)))
+	runs, err := runner.List(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(runs) != syncRunListLimit+1 || runs[len(runs)-1].ID != bulkID || runs[len(runs)-1].Status != "RUNNING" {
+		t.Fatalf("active bulk run missing from listing of %d runs", len(runs))
+	}
+}
