@@ -507,18 +507,29 @@ class OperationalStoreMixin(OperationalProviderSyncBase):
         return cast(datetime, row[0]) if row is not None else None
 
     def _complete_refresh(
-        self, name: str, claimed: datetime, item: DetailCounts, *, error: str | None = None
+        self,
+        name: str,
+        claimed: datetime,
+        item: DetailCounts,
+        *,
+        error: str | None = None,
+        retry_after: datetime | None = None,
+        retry_delay: timedelta | None = None,
     ) -> None:
         self.connection.execute(
             """UPDATE football.product_provider_refresh_state
                SET last_success_at=CASE WHEN %s = 0 THEN clock_timestamp() ELSE last_success_at END,
-                   next_attempt_at=GREATEST(clock_timestamp()+%s,%s),
+                   next_attempt_at=GREATEST(clock_timestamp()+%s,%s,%s),
                    failed_requests=%s,last_error=CASE WHEN %s > 0 THEN %s END
                WHERE provider_code=%s AND resource_name=%s AND last_attempt_at=%s""",
             (
                 item.failed_requests,
-                timedelta(days=1) if error == "RECOVERY_FIXTURES_MISSING" else self.stale_after,
+                retry_delay
+                or (
+                    timedelta(days=1) if error == "RECOVERY_FIXTURES_MISSING" else self.stale_after
+                ),
                 item.fresh_until if item.failed_requests == 0 else None,
+                retry_after,
                 item.failed_requests,
                 item.failed_requests,
                 error or "DETAIL_REQUEST_FAILED",

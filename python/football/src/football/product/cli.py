@@ -47,10 +47,19 @@ from football.product.public_reports import (
     run_pending_context_reports,
     run_pending_public_reports,
 )
+from football.product.result_recovery import (
+    finish_result_recovery,
+    recover_api_football_results,
+    recover_provider_results,
+)
 from football.product.sync import HistoryWorkerFactory, ProductSync
 from football.providers.base import ProviderFetchError, UrllibHttpTransport
-from football.providers.fotmob import FotmobClient
-from football.providers.pitchapi import PitchApiClient, UrllibPitchApiTransport
+from football.providers.fotmob import FotmobClient, normalize_daily_matches
+from football.providers.pitchapi import (
+    PitchApiClient,
+    UrllibPitchApiTransport,
+    normalize_pitchapi_matches,
+)
 from football.work.metrics import render_metrics
 
 _DATA_OPERATION_ERRORS = (
@@ -100,6 +109,15 @@ def build_parser() -> argparse.ArgumentParser:
             type=Path,
             default=Path(os.environ.get("FOOTBALL_DATA_ROOT", ".local/football-data")),
         )
+    recovery = commands.add_parser("recover-results")
+    recovery.add_argument("--date", type=date.fromisoformat)
+    recovery.add_argument("--fixture-id", type=UUID)
+    recovery.add_argument("--limit", type=int, default=8, help="maximum UTC dates per provider")
+    recovery.add_argument(
+        "--data-root",
+        type=Path,
+        default=Path(os.environ.get("FOOTBALL_DATA_ROOT", ".local/football-data")),
+    )
     refresh = commands.add_parser("refresh-forecasts")
     refresh.add_argument("--pending-only", action="store_true")
     context_reports = commands.add_parser(
@@ -255,6 +273,7 @@ def main(argv: list[str] | None = None) -> int:
         "backfill-openfootball",
         "backfill-football-data-uk",
         "backfill-history",
+        "recover-results",
         "refresh-forecasts",
         "refresh-context-reports",
         "refresh-public-reports",
@@ -472,6 +491,8 @@ def _run_data_operation(args: argparse.Namespace) -> int:
                 result = _run_reports(connection, args)
             elif args.command == "backfill-history":
                 result = _history_backfill(connection, args)
+            elif args.command == "recover-results":
+                result = _recover_results(connection, args)
             else:
                 result = _sync_all(connection, args)
     except _DATA_OPERATION_ERRORS as error:
@@ -516,6 +537,79 @@ def _live_pitchapi_client(
             request_guard=budget.before_request, http_error_observer=budget.record_http_error
         ),
     )
+
+
+def _recover_results(
+    connection: psycopg.Connection[Any], args: argparse.Namespace
+) -> dict[str, object]:
+    if args.limit <= 0:
+        raise ValueError("result recovery limit must be positive")
+    results: dict[str, object] = {}
+    errors: dict[str, str] = {}
+    for provider, make_client, normalize in (
+        ("fotmob", _live_fotmob_client, normalize_daily_matches),
+        ("pitchapi", _live_pitchapi_client, normalize_pitchapi_matches),
+    ):
+        if os.environ.get(f"MATCHFORGE_{provider.upper()}_ENABLED") != "true":
+            continue
+
+        def run_provider(
+            make_client: Callable[
+                [psycopg.Connection[Any]], FotmobClient | PitchApiClient
+            ] = make_client,
+            provider: str = provider,
+            normalize: Callable[[Any], Any] = normalize,
+        ) -> dict[str, object]:
+            client = make_client(connection)
+            sync = OperationalProviderSync(
+                connection,
+                args.data_root,
+                provider_code=provider,
+                stale_after_seconds=int(
+                    os.environ.get("MATCHFORGE_LIVE_STALE_AFTER_SECONDS", "180")
+                ),
+                minimum_interval_seconds=float(
+                    os.environ.get("MATCHFORGE_PROVIDER_MIN_INTERVAL_SECONDS", "1")
+                ),
+            )
+            return recover_provider_results(
+                sync,
+                client.matches_by_date,
+                normalize,
+                limit=args.limit,
+                day=args.date,
+                fixture_id=args.fixture_id,
+            )
+
+        results[provider] = _run_sync_step(connection, provider, run_provider, errors)
+    api_key = os.environ.get("API_FOOTBALL_API_KEY", "")
+    if api_key:
+        product = ProductSync(
+            connection,
+            ApiFootballClient(api_key, request_budget=PostgresApiFootballBudget(args.database_url)),
+            args.data_root,
+            MODEL_ARTIFACT_PATH,
+        )
+        refresh = OperationalProviderSync(connection, args.data_root, provider_code="api_football")
+        results["api_football"] = _run_sync_step(
+            connection,
+            "api_football",
+            partial(
+                recover_api_football_results,
+                product,
+                refresh,
+                limit=args.limit,
+                day=args.date,
+                fixture_id=args.fixture_id,
+            ),
+            errors,
+        )
+    return {
+        "status": "COMPLETED_WITH_ERRORS" if errors else "COMPLETED",
+        "providers": results,
+        "errors": errors,
+        **finish_result_recovery(connection),
+    }
 
 
 def _run_competition_geography(args: argparse.Namespace) -> int:

@@ -1,6 +1,7 @@
 "use client";
 
-import type { Dispatch, SetStateAction } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
+import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
 import { MarketReadinessAdmin } from "@/components/market-readiness-admin";
 import { AdminNavigation } from "@/components/admin-navigation";
@@ -36,7 +37,7 @@ const LIVE_ACTIONS: Action[] = [
 
 export function DataSyncAdmin({ initialDate }: { initialDate: string }) {
   const state = useSyncAdminState(initialDate);
-  const { active, clock, coverage, error, filters, laneErrors, laneBusy, loading, providerConfiguration, retry, runs, setFilters, start, stop, submitting, reload } = state;
+  const { active, clock, coverage, error, filters, laneErrors, laneBusy, loading, providerConfiguration, recover, refreshHistory, retry, runs, setFilters, start, stop, submitting, reload } = state;
   const settlement = runs.find((run) => run.sync_type === "EXTERNAL_PREDICTION_SETTLEMENT");
   const renderActions = (actions: Action[]) => actions
     .filter((action) => action.type !== "EXTERNAL_PREDICTION_SETTLEMENT" || coverage !== null)
@@ -65,7 +66,23 @@ export function DataSyncAdmin({ initialDate }: { initialDate: string }) {
     <section className="coverage-panel" aria-labelledby="history-actions-title">
       <header><h2 id="history-actions-title">Historical acquisition</h2></header>
       <div className="sync-actions">{renderActions(HISTORY_ACTIONS)}</div>
+      <div className="flex flex-wrap gap-3">
+        {(["fotmob", "pitchapi"] as const).map((provider) => <button key={provider}
+          className="rounded-sm border px-3 py-2 text-sm font-medium disabled:opacity-50"
+          type="button" disabled={loading || !filters.season.trim() || !filters.competition.trim() ||
+            !providerConfiguration[`${provider}_enabled`] || laneBusy("HISTORY_BACKFILL")}
+          onClick={() => void refreshHistory(provider)}>
+          Refresh {provider === "fotmob" ? "FotMob" : "PitchAPI"} history scope
+        </button>)}
+      </div>
+      <p>Enter the provider competition ID and season in Advanced filters to request fresh history.</p>
     </section>
+    <ResultRecoveryPanel
+      date={filters.date}
+      latest={runs.find((run) => run.sync_type === "RESULT_RECOVERY" && !["QUEUED", "RUNNING"].includes(run.status))}
+      disabled={loading || laneBusy("RESULT_RECOVERY")}
+      onStart={(selection) => void recover(selection)}
+    />
     <MarketReadinessAdmin />
     <CoveragePanel coverage={coverage} loading={loading} />
     <HistoryAcquisitionPanel coverage={coverage} configuration={providerConfiguration} loading={loading} />
@@ -160,6 +177,37 @@ function ActionMetrics({ action, latest }: { action: Action; latest?: SyncRun })
   return null;
 }
 
+function ResultRecoveryPanel({ date, latest, disabled, onStart }: {
+  date: string;
+  latest?: SyncRun;
+  disabled: boolean;
+  onStart: (selection: Record<string, string>) => void;
+}) {
+  const [fixture, setFixture] = useState("");
+  const validFixture = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(fixture.trim());
+  return <section className="coverage-panel" aria-labelledby="result-recovery-title">
+    <header><h2 id="result-recovery-title">Result recovery</h2></header>
+    <p>The selected through date is interpreted in UTC. Recovery uses verified fixture mappings and respects provider cooldowns.</p>
+    <div className="flex flex-wrap items-end gap-3">
+      <button className="rounded-sm border px-3 py-2 text-sm font-medium disabled:opacity-50" type="button" disabled={disabled} onClick={() => onStart({})}>Retry unresolved results</button>
+      <button className="rounded-sm border px-3 py-2 text-sm font-medium disabled:opacity-50" type="button" disabled={disabled || !date} onClick={() => onStart({ date })}>Recover selected date</button>
+      <label className="grid gap-1" htmlFor="recovery-fixture">Fixture ID
+        <Input id="recovery-fixture" value={fixture}
+          onChange={(event) => setFixture(event.target.value)} />
+      </label>
+      <button className="rounded-sm border px-3 py-2 text-sm font-medium disabled:opacity-50" type="button" disabled={disabled || !validFixture}
+        onClick={() => onStart({ fixture_id: fixture.trim() })}>Recheck fixture</button>
+    </div>
+    {latest && <dl>
+      <Metric term="Last run" value={formatTime(latest.finished_at)} />
+      <Metric term="Overdue unresolved" value={shortMetric(latest, "overdue")} />
+      <Metric term="Identity pending" value={shortMetric(latest, "identity_pending")} />
+      <Metric term="Without operational route" value={shortMetric(latest, "no_operational_route")} />
+      <Metric term="External predictions settled" value={shortMetric(latest, "settled_external_predictions")} />
+    </dl>}
+  </section>;
+}
+
 function CoveragePanel({ coverage, loading }: { coverage: HistoricalCoverage | null; loading: boolean }) {
   const metrics = coverage ? [
     ["Historical matches", coverage.historical_matches], ["Competitions with history", coverage.competitions_with_history],
@@ -220,7 +268,7 @@ function runLabel(run: SyncRun) {
   return label(run.sync_type);
 }
 
-function label(type: SyncType) { const labels: Record<SyncType, string> = { MVP_SYNC: "MVP Sync", OPENFOOTBALL: "OpenFootball", FOOTBALL_DATA_UK: "Football-Data.co.uk", HISTORY_BACKFILL: "Historical Backfill", FORECAST_REFRESH: "Forecast Refresh", CONTEXT_REPORTS: "Context Reports", PUBLIC_REPORTS: "Public Reports", EXTERNAL_PREDICTIONS: "External Predictions", EXTERNAL_PREDICTION_SETTLEMENT: "External Prediction Settlement", ALL_DATA: "Full Data Sync", FOTMOB_SYNC: "FotMob", PITCHAPI_SYNC: "PitchAPI", MANUAL_BACKUP: "Manual Backup", STORAGE_LIFECYCLE: "Storage Lifecycle" }; return labels[type]; }
+function label(type: SyncType) { const labels: Record<SyncType, string> = { MVP_SYNC: "MVP Sync", OPENFOOTBALL: "OpenFootball", FOOTBALL_DATA_UK: "Football-Data.co.uk", HISTORY_BACKFILL: "Historical Backfill", FORECAST_REFRESH: "Forecast Refresh", CONTEXT_REPORTS: "Context Reports", PUBLIC_REPORTS: "Public Reports", EXTERNAL_PREDICTIONS: "External Predictions", EXTERNAL_PREDICTION_SETTLEMENT: "External Prediction Settlement", ALL_DATA: "Full Data Sync", FOTMOB_SYNC: "FotMob", PITCHAPI_SYNC: "PitchAPI", MANUAL_BACKUP: "Manual Backup", STORAGE_LIFECYCLE: "Storage Lifecycle", RESULT_RECOVERY: "Result Recovery" }; return labels[type]; }
 function formatTime(value: string | null) { return value ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) : "—"; }
 function elapsed(value: string, now: number) { return `${Math.max(0, Math.floor((now - new Date(value).getTime()) / 1000))}s elapsed`; }
 function duration(run: SyncRun, clock: number) { if (!run.started_at) return "—"; const end = run.finished_at ? new Date(run.finished_at).getTime() : clock; return `${Math.max(0, Math.round((end - new Date(run.started_at).getTime()) / 1000))}s`; }

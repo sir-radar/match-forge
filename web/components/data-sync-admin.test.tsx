@@ -39,6 +39,29 @@ describe("DataSyncAdmin", () => {
     expect(screen.getAllByText("Unavailable")).toHaveLength(2);
   });
 
+  it("submits an exact fixture recheck through the result recovery action", async () => {
+    const fixture = "10000000-0000-4000-8000-000000000001";
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+      if (init?.method === "POST") return json({
+        run_id: "recovery-run", sync_type: "RESULT_RECOVERY", status: "QUEUED",
+        requested_at: "2026-09-30T10:00:00Z", started_at: null, finished_at: null,
+        requested_date: null, parameters: { fixture_id: fixture }, summary: {}, error_message: null, log_path: null,
+      }, 202);
+      return json({ runs: [], coverage });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<DataSyncAdmin initialDate="2026-09-30" />);
+    const button = await screen.findByRole("button", { name: "Recheck fixture" });
+    expect(button).toBeDisabled();
+    fireEvent.change(screen.getByLabelText("Fixture ID"), { target: { value: fixture } });
+    await waitFor(() => expect(button).toBeEnabled());
+    fireEvent.click(button);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("/v1/admin/sync/result-recovery"),
+      expect.objectContaining({ method: "POST", body: JSON.stringify({ fixture_id: fixture }) }),
+    ));
+  });
+
   it("rejects malformed background diagnostics and offers status retry", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => json({
       runs: [], coverage: { ...coverage, provider_history: [{ provider: "pitchapi", pending: -1 }] },

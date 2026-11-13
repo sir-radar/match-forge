@@ -35,7 +35,12 @@ class OperationalObservationMixin(OperationalIdentityMixin):
     """Ingest, replay and backfill stored provider observations."""
 
     def _ingest_observations(
-        self, rows: Sequence[FixtureObservation], snapshot_id: UUID, counts: SyncCounts
+        self,
+        rows: Sequence[FixtureObservation],
+        snapshot_id: UUID,
+        counts: SyncCounts,
+        *,
+        create_missing: bool = True,
     ) -> list[tuple[FixtureObservation, UUID | None]]:
         resolved: list[tuple[FixtureObservation, UUID | None]] = []
         self._load_geographic_scopes()
@@ -46,7 +51,7 @@ class OperationalObservationMixin(OperationalIdentityMixin):
                 with self.connection.transaction():
                     acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
                     fixture_id = self._resolve_fixture(row, snapshot_id)
-                    if fixture_id is None:
+                    if fixture_id is None and create_missing:
                         fixture_id = self._create_provider_scoped_fixture(row, snapshot_id)
                         created = int(fixture_id is not None)
                     observation_inserted = self._store_observation(row, snapshot_id, fixture_id)

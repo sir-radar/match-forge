@@ -304,7 +304,7 @@ export type ExternalSource = {
   matchforge_agreement_rate: number | null;
 };
 
-export type SyncType = "MVP_SYNC" | "OPENFOOTBALL" | "FOOTBALL_DATA_UK" | "HISTORY_BACKFILL" | "FORECAST_REFRESH" | "CONTEXT_REPORTS" | "PUBLIC_REPORTS" | "EXTERNAL_PREDICTIONS" | "EXTERNAL_PREDICTION_SETTLEMENT" | "FOTMOB_SYNC" | "PITCHAPI_SYNC" | "ALL_DATA" | "MANUAL_BACKUP" | "STORAGE_LIFECYCLE";
+export type SyncType = "MVP_SYNC" | "OPENFOOTBALL" | "FOOTBALL_DATA_UK" | "HISTORY_BACKFILL" | "FORECAST_REFRESH" | "CONTEXT_REPORTS" | "PUBLIC_REPORTS" | "EXTERNAL_PREDICTIONS" | "EXTERNAL_PREDICTION_SETTLEMENT" | "FOTMOB_SYNC" | "PITCHAPI_SYNC" | "ALL_DATA" | "MANUAL_BACKUP" | "STORAGE_LIFECYCLE" | "RESULT_RECOVERY";
 export type SyncStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED" | "CANCELLED";
 export type HistoryQueueProgress = {
   total: number;
@@ -705,7 +705,7 @@ export function parseSyncRun(value: unknown): SyncRun {
   const item = object(value, "sync run");
   const syncType = text(item.sync_type, "sync_type") as SyncType;
   const status = text(item.status, "status") as SyncStatus;
-  if (!["MVP_SYNC", "OPENFOOTBALL", "FOOTBALL_DATA_UK", "HISTORY_BACKFILL", "FORECAST_REFRESH", "CONTEXT_REPORTS", "PUBLIC_REPORTS", "EXTERNAL_PREDICTIONS", "EXTERNAL_PREDICTION_SETTLEMENT", "FOTMOB_SYNC", "PITCHAPI_SYNC", "ALL_DATA", "MANUAL_BACKUP", "STORAGE_LIFECYCLE"].includes(syncType)) throw new Error("invalid sync_type");
+  if (!["MVP_SYNC", "OPENFOOTBALL", "FOOTBALL_DATA_UK", "HISTORY_BACKFILL", "FORECAST_REFRESH", "CONTEXT_REPORTS", "PUBLIC_REPORTS", "EXTERNAL_PREDICTIONS", "EXTERNAL_PREDICTION_SETTLEMENT", "FOTMOB_SYNC", "PITCHAPI_SYNC", "ALL_DATA", "MANUAL_BACKUP", "STORAGE_LIFECYCLE", "RESULT_RECOVERY"].includes(syncType)) throw new Error("invalid sync_type");
   if (!["QUEUED", "RUNNING", "SUCCEEDED", "FAILED", "CANCELLED"].includes(status)) throw new Error("invalid sync status");
   const historyQueue = item.history_queue === undefined ? undefined : object(item.history_queue, "history_queue");
   return {

@@ -91,6 +91,7 @@ func TestAdminSyncStartRoutesUseFixedTypes(t *testing.T) {
 		{path: "/v1/admin/sync/openfootball", want: SyncOpenFootball},
 		{path: "/v1/admin/sync/football-data-uk", want: SyncFootballDataUK},
 		{path: "/v1/admin/sync/history", want: SyncHistoryBackfill},
+		{path: "/v1/admin/sync/result-recovery", want: SyncResultRecovery},
 		{path: "/v1/admin/sync/forecast-refresh", want: SyncForecastRefresh},
 		{path: "/v1/admin/sync/external-predictions", want: SyncExternalPredictions},
 		{path: "/v1/admin/sync/fotmob", want: SyncFotMob},

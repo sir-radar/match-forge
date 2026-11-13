@@ -35,6 +35,7 @@ type Config struct {
 	OperationalSyncInterval time.Duration
 	HistorySyncEnabled      bool
 	HistorySyncInterval     time.Duration
+	ResultRecoveryInterval  time.Duration
 	FotMobEnabled           bool
 	PitchAPIEnabled         bool
 }
@@ -65,6 +66,10 @@ func ConfigFromEnv(version string) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
+	resultRecoveryInterval, err := optionalDurationFromEnv("MATCHFORGE_RESULT_RECOVERY_INTERVAL")
+	if err != nil {
+		return Config{}, err
+	}
 	repoRoot, err := resolveRepoRoot(os.Getenv("MATCHFORGE_REPO_ROOT"))
 	if err != nil {
 		return Config{}, err
@@ -84,6 +89,7 @@ func ConfigFromEnv(version string) (Config, error) {
 		OperationalSyncInterval: operationalSyncInterval,
 		HistorySyncEnabled:      os.Getenv("MATCHFORGE_HISTORY_SYNC_ENABLED") == "true",
 		HistorySyncInterval:     historySyncInterval,
+		ResultRecoveryInterval:  resultRecoveryInterval,
 		FotMobEnabled:           fotMobEnabled,
 		PitchAPIEnabled:         pitchAPIEnabled,
 	}

@@ -129,9 +129,15 @@ export function useSyncAdminState(initialDate: string) {
     const body = Object.fromEntries(Object.entries(fields).filter((entry): entry is [string, string] => typeof entry[1] === "string" && entry[1] !== ""));
     return mutate(type, provider ?? type, () => operation(body));
   };
+  const recover = (body: Record<string, string>) =>
+    mutate("RESULT_RECOVERY", "RESULT_RECOVERY", () => api.startResultRecovery(body));
+  const refreshHistory = (provider: HistoryProvider) =>
+    mutate("HISTORY_BACKFILL", provider, () => api.startHistoryBackfill({
+      provider, season: filters.season, competition: filters.competition, refresh: true,
+    }));
   const stop = (run: SyncRun) => mutate(run.sync_type, `STOP:${run.run_id}`, () => api.stopSyncRun(run.run_id), true);
   const retry = (run: SyncRun) => mutate(run.sync_type, `RETRY:${run.run_id}`, () => api.retrySyncRun(run.run_id));
-  return { active, clock, coverage, error, laneErrors, filters, loading, providerConfiguration, retry, runs, setFilters, start, stop, submitting, reload, laneBusy };
+  return { active, clock, coverage, error, laneErrors, filters, loading, providerConfiguration, recover, refreshHistory, retry, runs, setFilters, start, stop, submitting, reload, laneBusy };
 }
 
 function errorMessage(cause: unknown): string {

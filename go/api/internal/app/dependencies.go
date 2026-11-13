@@ -69,6 +69,16 @@ func requireProviderSyncSchema(
 		}
 		return nil
 	}
+	if syncType == SyncResultRecovery {
+		var ready bool
+		err := pool.QueryRow(ctx, "SELECT to_regclass('football.product_result_recovery_candidates') IS NOT NULL").Scan(&ready)
+		if err != nil {
+			return err
+		}
+		if !ready {
+			return errProductUnavailable
+		}
+	}
 	if syncType != SyncFotMob && syncType != SyncPitchAPI {
 		return nil
 	}
