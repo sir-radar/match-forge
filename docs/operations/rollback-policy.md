@@ -10,4 +10,4 @@
 - Provider availability/semantic failure quarantines affected input tier and associated new forecasts rather than silently substituting incompatible values.
 - Restoration drills must verify backups, replay, RPO/RTO, artifact hash chain, target firewall and correct current capability flags. Record actual evidence and improvement actions.
 
-See [simulation failure runbook](runbooks/simulation-failure.md), [operational controls](../engineering/operational-controls.md), and [capability registry](capability-registry.md).
+See [simulation failure runbook](runbooks/simulation-failure.md), and [capability registry](capability-registry.md).

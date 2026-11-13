@@ -188,7 +188,7 @@ The **analytic forecast candidate** can be scientifically complete internally be
 
 ## 5. Architectural and ownership policy
 
-Start with a modular monolith and durable, independently scalable workers. Keep Python accountable for statistical modelling/calibration and the separately authorized Rust core accountable for deterministic sampling and numerical verification; reconcile actual Go/Python/Rust interfaces before change. Cross-module boundaries are typed and versioned. Additional deployables require documented scaling, fault isolation or ownership evidence. See [module boundaries](docs/architecture/module-boundaries.md) and [owners and dependencies](docs/governance/ownership-and-dependencies.md).
+Start with a modular monolith and durable, independently scalable workers. Keep Python accountable for statistical modelling/calibration and the separately authorized Rust core accountable for deterministic sampling and numerical verification; reconcile actual Go/Python/Rust interfaces before change. Cross-module boundaries are typed and versioned. Additional deployables require documented scaling, fault isolation or ownership evidence. See [architecture](docs/architecture.md) and [owners and dependencies](docs/governance/ownership-and-dependencies.md).
 
 Exactly one system owns each concern: adapters own provider semantics; resolver owns identities; frozen manifest owns evaluation membership; feature library owns transforms; registries own model/calibrator state; forecast artifact owns forecast probabilities; Rust validation artifact owns simulation evidence; enrichment sidecar owns tags; decisions/registers own authorization; capability registry owns enablement; OpenAPI owns public fields. The frontend does not invent provenance or simulation approval.
 
@@ -227,7 +227,7 @@ the roadmap and engineering documentation.
 
 Maintain simple goals-only/dynamic attack-defence references. Test one independently authorized challenger family at a time: minimal Phase 3A xG first (scope already recorded); subsequently, only under new permissions, xG/xGA and opponent/game-state adjustments, travel/rest, dynamic strength, residual H2H/matchups, lineups/squad context, goalkeeper post-shot, pre-shot threat, horizons/revisions and ensembles. Derby and diagnostic tag validity are separate descriptive-only workstreams. H2H counterfactuals and complex simulation scenarios require their own gates. No candidate is automatically promoted for complexity or a favourable single slice.
 
-Authoritative Evaluation V2 needs a **new, separately approved** frozen policy, independent corpus/target firewall, source and cutoff semantics, same-kickoff grouping, chronological folds, calibrator windows, primary proper scores, reliability metrics, segments, paired uncertainty, practical threshold, stopping rule and compute budget. Do not fill unset values with defaults. The 280 frozen targets are excluded. See [research portfolio](docs/governance/feature-portfolio.md), [feature research](docs/models/feature-research.md), [Evaluation V2](docs/evaluation/evaluation-v2-policy.md), [calibration](docs/models/calibration-policy.md), [experiment register](docs/governance/experiment-register.md) and [promotion gates](docs/evaluation/promotion-gates.md).
+Authoritative Evaluation V2 needs a **new, separately approved** frozen policy, independent corpus/target firewall, source and cutoff semantics, same-kickoff grouping, chronological folds, calibrator windows, primary proper scores, reliability metrics, segments, paired uncertainty, practical threshold, stopping rule and compute budget. Do not fill unset values with defaults. The 280 frozen targets are excluded. See [research portfolio](docs/governance/feature-portfolio.md), [Evaluation V2](docs/evaluation/evaluation-v2-policy.md), [model governance](docs/model-governance.md) and [experiment register](docs/governance/experiment-register.md). The original feature-research, calibration and promotion-gate proposals are sections 8–10 and 13 of the [archived plan](docs/references/supplied-plan-2026-09-21.md).
 
 ### Prediction-improvement candidates
 
@@ -269,7 +269,7 @@ The minimum Rust implementation samples an **already approved coherent distribut
 
 **Recorded status.** `rust_simulation_authorized` is `false` in `docs/project-status.json`. The separate owner decision for the minimal simulator is still only a [proposal](docs/governance/simulation-authorization-proposal.md), and no capability registry or production publication path requires simulation `PASS` today. Separately, the PitchAPI V3, V4 and V5 execution decisions authorized frozen, protocol-scoped Rust builds (112,460 simulations per forecast) as evaluation evidence. V3 failed on Rust parity, V5 recorded parity `PASS`. That evidence supports the design but is not production authorization and does not count as predictive calibration.
 
-See [mandatory validation](docs/simulation/mandatory-validation.md), [authorization proposal](docs/governance/simulation-authorization-proposal.md) and [simulation failure runbook](docs/operations/runbooks/simulation-failure.md). No section here authorizes implementation or activation.
+See [simulation validation contract](docs/contracts/simulation-validation-v1.md), the original validation proposal in section 11 of the [archived plan](docs/references/supplied-plan-2026-09-21.md), [authorization proposal](docs/governance/simulation-authorization-proposal.md) and [simulation failure runbook](docs/operations/runbooks/simulation-failure.md). No section here authorizes implementation or activation.
 
 ## 8. Gated execution sequence
 
@@ -285,7 +285,7 @@ See [mandatory validation](docs/simulation/mandatory-validation.md), [authorizat
 
 The gates group the phases of the original plan (`docs/references/supplied-plan-2026-09-21.md`, section 14): G0 is Phase 0, G1 is Phase 1 plus the cross-phase engineering foundation, G2 is Phase 2, G3 is Phase 3, G4 covers Phases 4–7, G5 is Phase 8 and G6 is Phase 9. Current gate state is in [current state](docs/status/current-state.md), not in this table.
 
-This is a **dependency graph, not a claim that phases are already completed**. Detailed source deliverables remain in [implementation phases](docs/roadmap/implementation-phases.md) and [immediate backlog](docs/roadmap/immediate-backlog.md).
+This is a **dependency graph, not a claim that phases are already completed**. The original per-phase deliverables are sections 14 and 20 of the [archived plan](docs/references/supplied-plan-2026-09-21.md).
 
 ## 9. Definition of done — five distinct objects
 
@@ -295,11 +295,11 @@ This is a **dependency graph, not a claim that phases are already completed**. D
 - **Optional enrichment:** computed only from already published forecast and cutoff-eligible side evidence; `forecast_effect=false`; unchanged forecast and validation hashes. Failure is nonblocking.
 - **Predictive promotion:** authorized untouched historical evaluation against actual outcomes, passing statistical/segment/operational gates and owner decision. Numerical convergence alone is insufficient.
 
-Full [definition-of-done checklist](docs/engineering/definitions-of-done.md).
+The original definition-of-done checklist is sections 21–22 of the [archived plan](docs/references/supplied-plan-2026-09-21.md).
 
 ## 10. Change and safety instructions
 
-Apply this roadmap through scoped repository changes. Do not overwrite `docs/project-status.json`, decision events, approved API contracts, registries, Rust code, or tests without the required authorization and compatibility review. Compare existing names and interfaces, use additive migrations where required, and run the relevant diff and tests. Verify artifact hashes and protected-corpus access before and after applicable changes. Use [reconciliation checklist](docs/reconciliation/adoption-checklist.md), [capability registry](docs/operations/capability-registry.md), [decision template](docs/governance/decision-record-template.md), [rollback policy](docs/operations/rollback-policy.md) and [API compatibility policy](docs/api/compatibility-policy.md). The proposed OpenAPI file does **not** assert that its endpoints currently exist.
+Apply this roadmap through scoped repository changes. Do not overwrite `docs/project-status.json`, decision events, approved API contracts, registries, Rust code, or tests without the required authorization and compatibility review. Compare existing names and interfaces, use additive migrations where required, and run the relevant diff and tests. Verify artifact hashes and protected-corpus access before and after applicable changes. Use the [documentation lifecycle](docs/README.md#documentation-lifecycle), [capability registry](docs/operations/capability-registry.md), [decision template](docs/governance/decision-record-template.md), [rollback policy](docs/operations/rollback-policy.md) and [API compatibility policy](docs/api/compatibility-policy.md). The proposed OpenAPI file does **not** assert that its endpoints currently exist.
 
 ## 11. Document map
 

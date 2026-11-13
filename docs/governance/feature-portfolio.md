@@ -20,4 +20,4 @@
 
 Feature families are sequenced by *evidence dependencies*, not all necessarily sequential by calendar: a properly authorized minimal Rust reference sampler can be developed alongside probability foundations without blocking the authorized analytic Phase 3A study. Failed experiments remain failed; no silent combination or post-hoc threshold tuning. Derby and uncertainty labels stay outside forecasting regardless of descriptive study findings.
 
-For source detail see [feasibility matrix](feasibility-matrix.md), [model research](../models/feature-research.md) and [Evaluation V2](../evaluation/evaluation-v2-policy.md).
+For source detail see sections 8 and 19 of the [archived plan](../references/supplied-plan-2026-09-21.md) and [Evaluation V2](../evaluation/evaluation-v2-policy.md).
