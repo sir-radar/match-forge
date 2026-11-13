@@ -152,13 +152,16 @@ def test_scheduled_history_requires_explicit_enablement(monkeypatch: pytest.Monk
 
 def test_scheduled_history_limits_preserve_manual_budgets(monkeypatch: pytest.MonkeyPatch) -> None:
     args = cli.build_parser().parse_args(["backfill-history", "--scheduled"])
+    monkeypatch.delenv("MATCHFORGE_HISTORY_DISCOVERY_LIMIT", raising=False)
     for provider in ("fotmob", "pitchapi"):
         monkeypatch.delenv(f"MATCHFORGE_{provider.upper()}_HISTORY_SCOPE_LIMIT", raising=False)
-        assert cli._history_limits(args, provider) == (2, 1)
+        assert cli._history_limits(args, provider) == (8, 8)
     monkeypatch.setenv("MATCHFORGE_FOTMOB_HISTORY_SCOPE_LIMIT", "0")
-    assert cli._history_limits(args, "fotmob") == (0, 1)
+    assert cli._history_limits(args, "fotmob") == (0, 8)
     monkeypatch.setenv("MATCHFORGE_FOTMOB_HISTORY_SCOPE_LIMIT", "3")
-    with pytest.raises(ValueError, match="0–2"):
+    assert cli._history_limits(args, "fotmob") == (3, 8)
+    monkeypatch.setenv("MATCHFORGE_FOTMOB_HISTORY_SCOPE_LIMIT", "-1")
+    with pytest.raises(ValueError, match="nonnegative"):
         cli._history_limits(args, "fotmob")
     manual = cli.build_parser().parse_args(["backfill-history", "--provider-scope-budget", "8"])
     assert cli._history_limits(manual, "fotmob") == (8, 8)

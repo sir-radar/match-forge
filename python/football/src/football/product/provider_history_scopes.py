@@ -12,11 +12,7 @@ from uuid import uuid4
 
 from psycopg import Error
 
-from football.product.history_requests import (
-    HistoryDeferred,
-    history_freshness,
-    record_history_check,
-)
+from football.product.history_requests import HistoryDeferred, record_history_check
 from football.product.identity_crosswalks import OPERATIONAL_COMPETITION_CROSSWALKS
 from football.product.operational_provider_sync import OperationalProviderSync
 from football.product.operational_support import _fotmob_season_rows
@@ -25,6 +21,9 @@ from football.providers.fotmob import FotmobClient, FotmobResponse
 from football.providers.pitchapi import PitchApiClient, PitchApiResponse
 from football.storage.raw import ImmutableFileStore
 from football.storage.transactions import require_idle_connection
+
+# Discovery caches only the list of provider scopes. A result refresh bypasses it.
+_CATALOGUE_FRESHNESS = timedelta(days=1)
 
 
 def normalize_seasons(values: Any) -> list[str]:
@@ -125,7 +124,7 @@ def discover_pitchapi(
     response = (
         None
         if refresh
-        else cached_response(sync, "league-catalogue", freshness=history_freshness())
+        else cached_response(sync, "league-catalogue", freshness=_CATALOGUE_FRESHNESS)
     )
     if response is None:
         sync.pacer.wait()
@@ -229,7 +228,7 @@ def discover_fotmob(
             continue
         resource = f"league-catalogue-{league_id}"
         response = (
-            None if refresh else cached_response(sync, resource, freshness=history_freshness())
+            None if refresh else cached_response(sync, resource, freshness=_CATALOGUE_FRESHNESS)
         )
         if response is None:
             if requests >= budget:
@@ -388,9 +387,6 @@ def claim_scope(sync: OperationalProviderSync, competition: str | None, season: 
                    (provider_code,provider_competition_id,season_label)
                WHERE scope.provider_code = %s
                  AND (scope.status IN ('PENDING', 'FAILED', 'DEFERRED')
-                      OR (scope.status = 'SUCCEEDED'
-                          AND right(split_part(scope.season_label, ' - ', 1), 4)
-                              >= extract(year FROM now())::text)
                       OR (scope.status = 'RUNNING'
                           AND ((binding.work_id IS NULL
                                 AND scope.claimed_at < now() - interval '30 minutes')
@@ -463,13 +459,14 @@ def run_scopes(
                SELECT provider_code,provider_competition_id,season_label
                FROM football.product_provider_history_scopes
                WHERE provider_code = %s AND status <> 'RUNNING'
-                 AND next_attempt_at <= now()
+                 AND (status = 'SUCCEEDED' OR next_attempt_at <= now())
                  AND (%s::text IS NULL OR provider_competition_id = %s)
                  AND (%s::text IS NULL OR season_label = %s)
                ORDER BY provider_code COLLATE "C",provider_competition_id COLLATE "C",
                         season_label COLLATE "C"
                FOR UPDATE
-            ) UPDATE football.product_provider_history_scopes scope SET status='PENDING'
+            ) UPDATE football.product_provider_history_scopes scope SET status='PENDING',
+                  next_attempt_at=LEAST(scope.next_attempt_at, clock_timestamp())
               FROM eligible WHERE scope.provider_code=eligible.provider_code
                 AND scope.provider_competition_id=eligible.provider_competition_id
                 AND scope.season_label=eligible.season_label""",
@@ -484,7 +481,7 @@ def run_scopes(
         league_id, selected_season = scope
         error = None
         status = "SUCCEEDED"
-        next_attempt = datetime.now(UTC) + history_freshness()
+        next_attempt = datetime.now(UTC)
         try:
             response, acquired = _scope_response(
                 sync, client, league_id, selected_season, refresh=refresh
@@ -495,6 +492,7 @@ def run_scopes(
             if result["status"] != "COMPLETED":
                 error = str(result["status"])
                 status = "FAILED"
+                next_attempt = datetime.now(UTC) + timedelta(hours=1)
         except HistoryDeferred as deferred:
             sync.connection.rollback()
             error, status, next_attempt = str(deferred), "DEFERRED", deferred.until
@@ -561,11 +559,20 @@ def _scope_response(
 ) -> tuple[FotmobResponse | PitchApiResponse, bool]:
     sync._heartbeat_history_scope()
     resource = f"league-{league_id}-{selected_season}"
-    years = selected_season.split(" - ", 1)[0]
-    freshness = history_freshness() if int(years[-4:]) >= datetime.now(UTC).year else None
-    response = None if refresh else cached_response(sync, resource, freshness=freshness)
-    if response is None and not refresh and sync.provider_code == "fotmob":
-        catalogue = cached_response(sync, f"league-catalogue-{league_id}", freshness=freshness)
+    row = sync.connection.execute(
+        """SELECT attempts FROM football.product_provider_history_scopes
+           WHERE provider_code=%s AND provider_competition_id=%s AND season_label=%s
+             AND claim_token=current_setting('matchforge.history_claim_token')::uuid""",
+        (sync.provider_code, league_id, selected_season),
+    ).fetchone()
+    if row is None:
+        raise RuntimeError("history scope ownership lost")
+    use_retained = not refresh and row[0] == 1
+    response = cached_response(sync, resource) if use_retained else None
+    if response is None and use_retained and sync.provider_code == "fotmob":
+        catalogue = cached_response(
+            sync, f"league-catalogue-{league_id}", freshness=_CATALOGUE_FRESHNESS
+        )
         if catalogue is not None and isinstance(catalogue, FotmobResponse):
             details = (
                 catalogue.data.get("details", {}) if isinstance(catalogue.data, Mapping) else {}
@@ -574,6 +581,7 @@ def _scope_response(
             if selected is not None and normalize_seasons([selected]) == [selected_season]:
                 _fotmob_season_rows(catalogue, league_id, selected_season)
                 response = catalogue
+    sync.connection.commit()
     acquired = response is None
     if response is None:
         sync.pacer.wait()

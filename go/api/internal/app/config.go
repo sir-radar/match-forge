@@ -61,7 +61,7 @@ func ConfigFromEnv(version string) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
-	historySyncInterval, err := historySyncIntervalFromEnv()
+	historySyncInterval, err := durationFromEnv("MATCHFORGE_HISTORY_SYNC_INTERVAL", time.Hour)
 	if err != nil {
 		return Config{}, err
 	}
@@ -111,17 +111,6 @@ func validateRuntimeConfig(config *Config) error {
 		}
 	}
 	return nil
-}
-
-func historySyncIntervalFromEnv() (time.Duration, error) {
-	interval, err := durationFromEnv("MATCHFORGE_HISTORY_SYNC_INTERVAL", time.Hour)
-	if err != nil {
-		return 0, err
-	}
-	if interval < time.Hour {
-		return 0, fmt.Errorf("MATCHFORGE_HISTORY_SYNC_INTERVAL must be at least 1h")
-	}
-	return interval, nil
 }
 
 func runtimeDurationsFromEnv() (time.Duration, time.Duration, time.Duration, error) {

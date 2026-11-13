@@ -266,17 +266,17 @@ func TestConfigFromEnvRejectsNonPositiveDuration(t *testing.T) {
 	}
 }
 
-func TestHistorySyncIntervalCannotExceedApprovedCadence(t *testing.T) {
-	for _, value := range []string{"30m", "invalid"} {
+func TestHistorySyncIntervalAcceptsSubHourlyCadence(t *testing.T) {
+	for _, value := range []string{"0s", "-1m", "invalid"} {
 		t.Setenv("MATCHFORGE_HISTORY_SYNC_INTERVAL", value)
-		if _, err := historySyncIntervalFromEnv(); err == nil {
+		if _, err := durationFromEnv("MATCHFORGE_HISTORY_SYNC_INTERVAL", time.Hour); err == nil {
 			t.Fatalf("interval %q was accepted", value)
 		}
 	}
-	t.Setenv("MATCHFORGE_HISTORY_SYNC_INTERVAL", "1h")
-	interval, err := historySyncIntervalFromEnv()
-	if err != nil || interval != time.Hour {
-		t.Fatalf("approved interval = %s, error = %v", interval, err)
+	t.Setenv("MATCHFORGE_HISTORY_SYNC_INTERVAL", "30m")
+	interval, err := durationFromEnv("MATCHFORGE_HISTORY_SYNC_INTERVAL", time.Hour)
+	if err != nil || interval != 30*time.Minute {
+		t.Fatalf("configured interval = %s, error = %v", interval, err)
 	}
 }
 

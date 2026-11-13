@@ -277,7 +277,6 @@ def main(argv: list[str] | None = None) -> int:
                 args.data_root,
                 MODEL_ARTIFACT_PATH,
                 history_fallback,
-                api_football_max_history_season=_api_football_max_history_season(),
                 history_worker_factory=_history_worker_factory(
                     args.database_url,
                     api_key,
@@ -725,10 +724,16 @@ def _discover_history(
 def _history_limits(args: argparse.Namespace, provider: str) -> tuple[int, int]:
     if not getattr(args, "scheduled", False):
         return args.provider_scope_budget, args.provider_discovery_budget
-    scopes = int(os.environ.get(f"MATCHFORGE_{provider.upper()}_HISTORY_SCOPE_LIMIT", "2"))
-    discovery = int(os.environ.get("MATCHFORGE_HISTORY_DISCOVERY_LIMIT", "1"))
-    if not 0 <= scopes <= 2 or not 0 <= discovery <= 1:
-        raise ValueError("scheduled history limits require 0–2 scopes and 0–1 discovery requests")
+    scopes = int(
+        os.environ.get(
+            f"MATCHFORGE_{provider.upper()}_HISTORY_SCOPE_LIMIT", args.provider_scope_budget
+        )
+    )
+    discovery = int(
+        os.environ.get("MATCHFORGE_HISTORY_DISCOVERY_LIMIT", args.provider_discovery_budget)
+    )
+    if scopes < 0 or discovery < 0:
+        raise ValueError("scheduled history budgets must be nonnegative")
     return scopes, discovery
 
 
@@ -746,7 +751,6 @@ def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> 
             args.data_root,
             MODEL_ARTIFACT_PATH,
             fallback,
-            api_football_max_history_season=_api_football_max_history_season(),
             history_worker_factory=_history_worker_factory(
                 args.database_url,
                 api_key,
@@ -921,11 +925,6 @@ def _lagos_today() -> date:
     return datetime.now(ZoneInfo("Africa/Lagos")).date()
 
 
-def _api_football_max_history_season() -> int | None:
-    value = os.environ.get("API_FOOTBALL_MAX_HISTORY_SEASON")
-    return int(value) if value else None
-
-
 def _sync_run_id() -> UUID | None:
     value = os.environ.get("MATCHFORGE_SYNC_RUN_ID")
     return UUID(value) if value else None
@@ -948,7 +947,6 @@ def _history_worker_factory(
                 data_root,
                 MODEL_ARTIFACT_PATH,
                 fallback,
-                api_football_max_history_season=_api_football_max_history_season(),
                 sync_run_id=sync_run_id,
             )
 

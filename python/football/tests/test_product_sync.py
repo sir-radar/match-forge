@@ -9,7 +9,7 @@ from uuid import UUID
 
 import pytest
 from football.product.api_football import ApiFootballError, ApiResponse, CapabilityStatus
-from football.product.cli import _api_football_max_history_season, build_parser
+from football.product.cli import build_parser
 from football.product.domain import MINIMUM_HISTORY_MATCHES
 from football.product.football_data_org import FootballDataResponse
 from football.product.sync import ProductSync
@@ -298,7 +298,7 @@ def test_existing_sync_and_history_status_contracts_are_unchanged() -> None:
     assert "last_status IN ('STORED', 'EMPTY', 'UNAVAILABLE')" in history_attempts
 
 
-def test_history_sync_uses_api_football_cap_only_after_alternate_provider(
+def test_history_sync_requests_native_season_even_with_legacy_cap(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     observed_at = datetime(2026, 10, 4, tzinfo=UTC)
@@ -319,6 +319,7 @@ def test_history_sync_uses_api_football_cap_only_after_alternate_provider(
             self.seasons.append(season)
             return FootballDataResponse("/matches", observed_at, b"{}", ())
 
+    monkeypatch.setenv("API_FOOTBALL_MAX_HISTORY_SEASON", "2024")
     client = PrimaryClient()
     fallback = FallbackClient()
     sync = ProductSync(
@@ -327,7 +328,6 @@ def test_history_sync_uses_api_football_cap_only_after_alternate_provider(
         Path("data"),
         Path("artifact"),
         cast(Any, fallback),
-        api_football_max_history_season=2024,
     )
     snapshot = UUID("10000000-0000-4000-8000-000000000001")
     monkeypatch.setattr(sync, "_local_history_result", lambda *_args: None)
@@ -347,66 +347,8 @@ def test_history_sync_uses_api_football_cap_only_after_alternate_provider(
 
     assert fallback.seasons == [2026, 2025]
     assert crosswalks == [("PL", snapshot, snapshot, observed_at)] * 2
-    assert client.seasons == [2024]
+    assert client.seasons == [2026]
     assert result == (snapshot, observed_at, 1)
-
-
-def test_history_sync_rejects_invalid_api_football_season_cap() -> None:
-    with pytest.raises(ValueError, match="api_football_max_history_season"):
-        ProductSync(
-            cast(Any, _Connection()),
-            cast(Any, object()),
-            Path("data"),
-            Path("artifact"),
-            api_football_max_history_season=0,
-        )
-
-
-def test_history_season_cap_is_api_football_specific(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.setenv("MVP_MAX_HISTORY_SEASON", "2020")
-    monkeypatch.setenv("API_FOOTBALL_MAX_HISTORY_SEASON", "2024")
-
-    assert _api_football_max_history_season() == 2024
-
-
-def test_history_sync_prefers_alternate_current_data_over_capped_api_football(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    observed_at = datetime(2026, 10, 4, tzinfo=UTC)
-
-    class PrimaryClient:
-        def finished_fixtures(self, _league_id: int, _season: int) -> ApiResponse:
-            raise AssertionError("capped API-Football history must remain last fallback")
-
-    class FallbackClient:
-        def finished_matches(self, _competition_code: str, season: int) -> FootballDataResponse:
-            assert season == 2026
-            return FootballDataResponse("/matches", observed_at, b"{}", ({"id": 1},))
-
-    sync = ProductSync(
-        cast(Any, _Connection()),
-        cast(Any, PrimaryClient()),
-        Path("data"),
-        Path("artifact"),
-        cast(Any, FallbackClient()),
-        api_football_max_history_season=2024,
-    )
-    snapshot = UUID("10000000-0000-4000-8000-000000000001")
-    monkeypatch.setattr(sync, "_local_history_result", lambda *_args: None)
-    monkeypatch.setattr(sync, "_history_sufficient", lambda *_args: True)
-    monkeypatch.setattr(sync, "_record_fallback_response", lambda *_args: snapshot)
-    monkeypatch.setattr(sync, "_competition_id", lambda *_args: snapshot)
-    crosswalks: list[tuple[object, ...]] = []
-    monkeypatch.setattr(
-        sync, "_fallback_competition_mapping", lambda *args: crosswalks.append(args)
-    )
-    monkeypatch.setattr(sync, "_store_fallback_history", lambda *_args: 1)
-    monkeypatch.setattr(sync, "_record_history_sync_attempt", lambda *_args: None)
-
-    assert sync._sync_league_history(39, 2026) == (snapshot, observed_at, 1)
-    assert crosswalks == [("PL", snapshot, snapshot, observed_at)]
 
 
 def test_history_sync_uses_alternate_provider_after_transient_primary_failure(
@@ -490,7 +432,6 @@ def test_history_sync_uses_cross_competition_local_history_for_promoted_team(
         cast(Any, object()),
         Path("data"),
         Path("artifact"),
-        api_football_max_history_season=2024,
     )
     monkeypatch.setattr(sync, "_local_history_result", lambda *_args: (snapshot, observed_at, 0))
     recorded: list[tuple[object, ...]] = []
@@ -548,7 +489,6 @@ def test_transient_history_failure_does_not_record_unavailable(
         cast(Any, PrimaryClient()),
         Path("data"),
         Path("artifact"),
-        api_football_max_history_season=2024,
     )
     monkeypatch.setattr(sync, "_local_history_result", lambda *_args: None)
     monkeypatch.setattr(sync, "_history_sufficient", lambda *_args: False)

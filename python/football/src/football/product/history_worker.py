@@ -46,7 +46,6 @@ class HistorySyncWorker(ProductSync):
         data_root: Path,
         artifact_path: Path,
         history_fallback: FootballDataOrgClient | None = None,
-        api_football_max_history_season: int | None = None,
         sync_run_id: UUID | None = None,
     ) -> None:
         super().__init__(
@@ -55,7 +54,6 @@ class HistorySyncWorker(ProductSync):
             data_root,
             artifact_path,
             history_fallback,
-            api_football_max_history_season=api_football_max_history_season,
             sync_run_id=sync_run_id,
         )
         self._owner = f"product-history:{uuid4()}"
