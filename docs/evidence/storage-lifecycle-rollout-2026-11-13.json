@@ -1,0 +1,105 @@
+{
+ "contract": "StorageLifecycleRolloutV1",
+ "decision_ref": "docs/evidence/owner-decision-authorize-storage-lifecycle-rollout-2026-11-13.json",
+ "release": {
+  "git_sha": "878cd0d5bc9da800b88f8effc6954daef4fb365e",
+  "worktree_state": "clean",
+  "api_binary_sha256": "e970b30081c46a1213cc36d3799a03ce394f2cdcf4250af29f29564c1d30aeb8",
+  "storage_cli_sha256": "ba00f6b0f5fccd76307cb65f5eff89b661b21924607c914f249e93870fe5735f",
+  "api_release_copy": ".local/releases/api-878cd0d",
+  "web_release_copy": ".local/releases/web-878cd0d",
+  "web_build_id": "WABgcvvlNc1WPlNJKeET7",
+  "previous_api_binary_sha256": "5bd069003abfbca2995e02cbbfe2fe126e9ec89861c32d6d82d410b3e76f2053",
+  "previous_web_release": ".local/releases/web-1fa6c6c",
+  "rollback": ".local/rollback/20261113-pre-lifecycle holds the previous API and storage binaries and .env; the migrations only add tables and constraints, so the previous binary runs against the migrated schema"
+ },
+ "cutover": {
+  "waited_for_idle_sync_runs": true,
+  "api_stopped_at": "2026-11-13T03:58:05Z",
+  "migrations_applied_at": "2026-11-13T03:58:08Z",
+  "api_ready_at": "2026-11-13T03:58:09Z",
+  "readyz": 200,
+  "web_http": 200,
+  "migrations": [
+   "202611130100_storage_lifecycle_tracking",
+   "202611130200_storage_maintenance_runs",
+   "202611130300_storage_lifecycle_paths"
+  ],
+  "goose_version_after": 202611130300,
+  "pending_after": 0,
+  "new_database_dump": false
+ },
+ "policy": {
+  "path": ".local/storage-policy.json (git-ignored, mode 600)",
+  "sha256": "d5fe3140c0c0931e5bb636be2b4c4036c7a5b862e8af5918acd46e2ab112c98b",
+  "validated_with": "storage.LoadPolicy",
+  "lifecycle": {
+   "inactivity_seconds": 18000,
+   "check_interval_seconds": 900,
+   "max_per_run": 10,
+   "test_databases": true,
+   "worktree_roots": [
+    ".claude/worktrees",
+    ".local/worktrees"
+   ],
+   "target_ref": "refs/remotes/origin/main",
+   "paths": [
+    "target (cargo, rustc, rust-analyzer)",
+    ".local/go-cache",
+    ".local/golangci-lint-cache",
+    ".local/go-mod-cache (14-day window)"
+   ]
+  },
+  "maintenance": {
+   "growth_warning_bytes_per_day": 5000000000,
+   "max_non_operating_databases": 5,
+   "stale_after_days": 30
+  },
+  "capacity": {
+   "reserve_bytes": 50000000000,
+   "warning_free_bytes": 100000000000,
+   "database_warning_bytes": 30000000000,
+   "database_critical_bytes": 50000000000,
+   "backup_interval_seconds": 2592000
+  },
+  "protected_paths": [
+   ".local/football-data",
+   ".local/bin",
+   ".local/releases",
+   ".local/rollback",
+   ".local/sync-runs",
+   ".local/reports",
+   ".local/storage-protection",
+   ".local/foundation",
+   ".local/backup-staging",
+   ".local/phase3a-serie-a-qualification-20260922",
+   ".local/football-data-liga-f-recovery-2026-09-10",
+   ".local/shadow-v4",
+   ".local/provider-wide-acquisition",
+   ".local/storage-rollout"
+  ]
+ },
+ "verification_after": {
+  "version_code_commit_sha": "878cd0d5bc9da800b88f8effc6954daef4fb365e",
+  "lifecycle_deployed": true,
+  "tracked_resources": 6,
+  "initial_states": {
+   "target, go-cache, go-mod-cache": "ACTIVE (rust-analyzer and gopls running)",
+   "golangci-lint-cache": "WAITING, eligible 2026-11-13T09:58Z",
+   ".claude/worktrees/storage-lifecycle": "ACTIVE (a process works inside)",
+   ".claude/worktrees/storage-audit-docs": "WAITING, eligible 2026-11-13T09:58Z"
+  },
+  "unregistered_test_databases": 0,
+  "maintenance_reports": {
+   "DAILY 2026-11-13": "SUCCEEDED, 0 alerts",
+   "WEEKLY 2026-W46": "SUCCEEDED, 0 alerts",
+   "MONTHLY 2026-11": "SUCCEEDED, 0 alerts"
+  },
+  "syncs_after_restart": "FOTMOB, PITCHAPI, PUBLIC_REPORTS and STORAGE_LIFECYCLE runs started and succeeded",
+  "host_free_bytes": 505130557440
+ },
+ "side_effects": [
+  "The storage schedule now also submits the verified GOVERNED_SCOPE backup when due (interval 30 days; next due 2026-12-12) and needs the backup volume mounted",
+  "The two task worktrees under .claude/worktrees are tracked and will be removed five idle hours after their merged pull requests"
+ ]
+}

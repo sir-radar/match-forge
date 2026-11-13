@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-13T04:15:00Z",
+  "updated_at": "2026-11-13T04:10:00Z",
   "unified_architecture_investigation": {
     "status": "PASS_WITH_WARNINGS",
     "scope": "CURRENT_TASK.md revision 3; architecture investigation/planning only",
@@ -93,7 +93,8 @@
     "APPLY_SOURCE_MANIFEST_BINDING_MIGRATION_V1",
     "APPLY_FDUK_RAW_FILE_BINDINGS_V1",
     "APPLY_SOURCE_SNAPSHOT_PATH_DIGEST_GUARD_V1",
-    "AUTHORIZE_GOVERNED_SCOPE_ACTIVATION_V1"
+    "AUTHORIZE_GOVERNED_SCOPE_ACTIVATION_V1",
+    "AUTHORIZE_STORAGE_LIFECYCLE_ROLLOUT_V1"
   ],
   "closed_routes": [
     {
@@ -4082,7 +4083,7 @@
     "independent_operating_snapshot_restore": "PASS_RECOVERABLE",
     "existing_resources_removed": 10,
     "reclaimed_existing_resource_bytes": 43923338390,
-    "automatic_backups_implemented": false,
+    "automatic_backups_implemented": true,
     "destructive_cleanup_enabled": false,
     "later_phases": {
       "P1": "NOT_STARTED",
@@ -4194,7 +4195,7 @@
       "full_recovery_verified": false,
       "full_recovery_blocker": "FULL_RECOVERY capture enumerates the 159 governed exclusions and fails by design; VERIFIED_GOVERNED_SCOPE is proposed separately"
     },
-    "required_next_action": "Governed recovery is active: VERIFIED_GOVERNED_SCOPE point 02376823 (next due 12 December 2026); FULL_RECOVERY remains ineligible by design. Storage Management has deleted 43 databases and 2 worktrees (179.9 GB measured). Three non-operating databases remain (2.96 GB) and none is eligible: the two StatsBomb databases are isolated by owner decision and the R04 registry waits for its handoff; none is in the governed backup. The owner decisions listed in docs/operations/storage-audit-2026-11-13.md, including the five-hour lifecycle rollout, are open.",
+    "required_next_action": "The five-hour lifecycle and scheduled maintenance are active on release 878cd0d (migrations through 202611130300, none pending). The next scheduled VERIFIED_GOVERNED_SCOPE backup is due 12 December 2026 and needs the backup volume mounted. Three non-operating databases (2.96 GB) remain without a recorded disposition; the StatsBomb databases stay isolated by owner decision and none is in the governed backup.",
     "governed_recovery_point": {
       "decision_id": "AUTHORIZE_GOVERNED_SCOPE_ACTIVATION_V1",
       "decision_ref": "docs/evidence/owner-decision-authorize-governed-scope-activation-2026-11-12.json",
@@ -4247,7 +4248,7 @@
       "owner_decisions_required": 6
     },
     "five_hour_lifecycle": {
-      "status": "IMPLEMENTED_NOT_DEPLOYED",
+      "status": "APPLIED",
       "migrations": [
         "202611130100_storage_lifecycle_tracking",
         "202611130200_storage_maintenance_runs",
@@ -4259,7 +4260,13 @@
         "DISPOSABLE_PATH"
       ],
       "inactivity_seconds": 18000,
-      "operating_activation": "requires owner approval of the migrations, release and a policy file with lifecycle_cleanup and maintenance"
+      "operating_activation": "ACTIVE: policy file .local/storage-policy.json set in MATCHFORGE_STORAGE_POLICY; maintenance reports enabled",
+      "decision_id": "AUTHORIZE_STORAGE_LIFECYCLE_ROLLOUT_V1",
+      "decision_ref": "docs/evidence/owner-decision-authorize-storage-lifecycle-rollout-2026-11-13.json",
+      "evidence_ref": "docs/evidence/storage-lifecycle-rollout-2026-11-13.json",
+      "release_git_sha": "878cd0d5bc9da800b88f8effc6954daef4fb365e",
+      "applied_at": "2026-11-13T03:58:08Z",
+      "pending_migrations_after": 0
     },
     "local_cleanup": {
       "report_ref": "docs/operations/local-storage-cleanup-2026-11-13.md",
