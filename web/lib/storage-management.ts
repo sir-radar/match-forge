@@ -98,7 +98,7 @@ async function request<T>(path: string, parse: (value: unknown) => T, init: { me
 
 export type LifecycleState = "ACTIVE" | "WAITING" | "ELIGIBLE" | "BLOCKED" | "DELETING" | "DELETED" | "ABSENT";
 export type LifecycleRecord = {
-  identity_key: string; resource_class: "TEST_DATABASE" | "WORKTREE"; backend: string; location: string; owner_kind: string;
+  identity_key: string; resource_class: "TEST_DATABASE" | "WORKTREE" | "DISPOSABLE_PATH"; backend: string; location: string; owner_kind: string;
   identity: Record<string, unknown>; owner_ref: Record<string, unknown>; created_at: string; last_activity_at: string;
   completed_at: string | null; completion: string | null; state: LifecycleState; eligible_at: string | null; blockers: string[];
   checked_at: string | null; operation_id: string | null; reclaimed_bytes: number | null;
@@ -106,7 +106,8 @@ export type LifecycleRecord = {
 export type LifecycleStatus = {
   observed_at: string; deployed: boolean; reclaimed_bytes: number;
   policy: { inactivity_seconds: number; check_interval_seconds: number; max_per_run: number; test_databases: boolean;
-    worktrees?: { target_ref: string; roots: string[] }; approved_by: string; approval_record: string } | null;
+    worktrees?: { target_ref: string; roots: string[] };
+    paths?: { path: string; kind: "BUILD_OUTPUT" | "DEPENDENCY_CACHE" | "TEMPORARY"; consumers: string[]; min_idle_seconds?: number }[]; approved_by: string; approval_record: string } | null;
   resources: LifecycleRecord[]; events: { identity_key: string; event: string; detail: Record<string, unknown>; recorded_at: string }[];
   unregistered_test_databases: { name: string; oid: number; bytes: number }[];
 };
@@ -127,7 +128,7 @@ export function parseLifecycle(value: unknown): LifecycleStatus {
   const resources = list(r.resources).map((item) => {
     const record = object(item);
     if (!lifecycleStates.includes(record.state as LifecycleState)) throw new Error("Invalid lifecycle state");
-    if (record.resource_class !== "TEST_DATABASE" && record.resource_class !== "WORKTREE") throw new Error("Invalid lifecycle class");
+    if (!["TEST_DATABASE", "WORKTREE", "DISPOSABLE_PATH"].includes(record.resource_class as string)) throw new Error("Invalid lifecycle class");
     return { ...(record as unknown as LifecycleRecord), blockers: list(record.blockers ?? []).map(text), reclaimed_bytes: bytes(record.reclaimed_bytes) };
   });
   return { ...(r as unknown as LifecycleStatus), resources, events: list(r.events) as LifecycleStatus["events"],

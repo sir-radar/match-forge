@@ -255,6 +255,38 @@ bytes are recorded on the operation and the lifecycle row. A restart settles an
 interrupted deletion from the operation: verified absence becomes `DELETED`,
 anything else `BLOCKED` with the reason, and the next check re-derives the state.
 
+#### Build outputs, caches and temporary directories
+
+Migration `202611130300_storage_lifecycle_paths` adds the class `DISPOSABLE_PATH`.
+The policy lists each directory with its kind and consumer processes:
+
+```json
+"paths": [
+  { "path": "/abs/repo/target", "kind": "BUILD_OUTPUT", "consumers": ["cargo", "rustc", "rust-analyzer"] },
+  { "path": "/abs/repo/.local/go-cache", "kind": "DEPENDENCY_CACHE", "consumers": ["go", "gopls", "golangci-lint"] },
+  { "path": "/abs/repo/.local/go-mod-cache", "kind": "DEPENDENCY_CACHE", "consumers": ["go", "gopls"], "min_idle_seconds": 1209600 },
+  { "path": "/abs/repo/.local/tmp", "kind": "TEMPORARY" }
+]
+```
+
+A path is tracked by device and inode, so a rebuilt directory is a new resource.
+One `ps` and one `lsof` call per check establish use: a running consumer, a file
+open inside the directory, or a process working inside it. Completion
+(`CONSUMERS_IDLE`) starts when none remains. Activity is a bounded fingerprint of
+the first two directory levels (at most 20,000 entries), so a check never walks
+millions of files; with live use it restarts the window. `min_idle_seconds` gives
+frequently reused caches a longer window (never shorter than five hours).
+
+At run time a path must be strictly inside the repository and must not overlap
+`.git`, `FOOTBALL_DATA_ROOT` or a protected path; otherwise it is `BLOCKED`.
+Deletion re-observes the path, records a storage operation (the SQL guard rechecks
+protection), renames the directory to `<path>.matchforge-deleting-<operation>` on
+the same device, measures its allocated bytes, removes it and verifies absence.
+Restart recovery marks the operation failed when the same inode is still at the
+original location; a staging directory is removed on a later check only when its
+operation is this policy's own. Do not list `.venv`, `.tools`, `web/node_modules`,
+`.local/bin` or `.local/releases`: they are the running services' installations.
+
 Databases with a test marker but no registration (runs before this change, or a
 registration that failed) are listed as unregistered and never deleted
 automatically; dispose of them through the resource workflow above. Fixture

@@ -78,6 +78,8 @@ type lifecycleView struct {
 	records map[string]LifecycleRecord
 	cwds    []string
 	cwdErr  error
+	use     ProcessUse
+	useErr  error
 }
 
 func (m *Manager) lifecycleOnce(ctx context.Context, run *LifecycleRun) error {
@@ -92,6 +94,10 @@ func (m *Manager) lifecycleOnce(ctx context.Context, run *LifecycleRun) error {
 	}
 	run.Eligible = len(eligible)
 	for _, rec := range eligible[:min(len(eligible), policy.MaxPerRun)] {
+		if rec.Class == ClassDisposablePath {
+			m.deletePath(ctx, rec, policy, run, run.CheckedAt)
+			continue
+		}
 		m.deleteEligible(ctx, rec, policy, run, run.CheckedAt)
 	}
 	return nil
@@ -121,6 +127,13 @@ func (m *Manager) lifecycleView(ctx context.Context, policy LifecyclePolicy, now
 	if err = m.discover(ctx, v.inv, v.rows, policy, now); err != nil {
 		return v, err
 	}
+	if len(policy.Paths) > 0 {
+		if err = m.discoverPaths(ctx, policy, now); err != nil {
+			return v, err
+		}
+		m.removeStaging(ctx, policy)
+		v.use, v.useErr = m.processScan()(ctx)
+	}
 	v.cwds, v.cwdErr = processDirectories(ctx)
 	v.records, err = lifecycleRecords(ctx, m.Pool, `state NOT IN ('DELETED','ABSENT')`)
 	return v, err
@@ -137,7 +150,7 @@ func (m *Manager) decideAll(ctx context.Context, v lifecycleView, policy Lifecyc
 			m.settle(ctx, rec, run, now)
 			continue
 		}
-		d := DecideLifecycle(rec, m.observe(ctx, rec, v, policy), now, policy.inactivity())
+		d := DecideLifecycle(rec, m.observe(ctx, rec, v, policy), now, policy.idleFor(rec))
 		if d.Changed(rec) || rec.CheckedAt == nil {
 			if err := saveDecision(ctx, m.Pool, rec, d, now); err != nil {
 				return nil, err
@@ -163,6 +176,8 @@ func (m *Manager) observe(ctx context.Context, rec LifecycleRecord, v lifecycleV
 	switch {
 	case rec.Class == ClassTestDatabase && policy.TestDatabases:
 		return m.observeDatabase(ctx, rec, v.byKey, v.rows)
+	case rec.Class == ClassDisposablePath && slices.ContainsFunc(policy.Paths, func(d DisposablePath) bool { return d.Path == rec.Location }):
+		return m.observePath(rec, v.use, v.useErr, policy)
 	case rec.Class == ClassWorktree && policy.Worktrees != nil:
 		if v.cwdErr != nil {
 			return LifecycleObservation{Present: true, Fingerprint: rec.Fingerprint, InUse: []string{"process working directories unavailable"}}
