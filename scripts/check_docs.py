@@ -36,21 +36,9 @@ ROOT_DOCUMENTS = frozenset(
 HISTORICAL_PREFIXES = ("docs/evidence/", "docs/governance/decision-events/", "docs/references/")
 LEGACY_DATED_REPORTS = frozenset(
     {
-        "docs/CODEBASE_AUDIT_REPORT.md",
         "docs/CODEBASE_REMEDIATION_REPORT.md",
-        "docs/IDENTITY_RESOLUTION_IMPLEMENTATION_REPORT.md",
-        "docs/MVP-COMPLETION-AUDIT.md",
-        "docs/MVP-DATA-COVERAGE.md",
-        "docs/MVP-EXTERNAL-PREDICTION-SOURCES.md",
-        "docs/MVP-HISTORICAL-BACKFILL.md",
-        "docs/MVP-OPERATIONAL-PROVIDERS.md",
-        "docs/MVP-RESUME-RESEARCH.md",
-        "docs/V4_IDENTITY_ADMISSION_RECOVERY_REPORT.md",
         "docs/V4_IMPLEMENTATION_REPORT.md",
         "docs/V4_ISSUE_02_QUALIFICATION_REPORT.md",
-        "docs/V4_ISSUE_02_UNBLOCKING_REPORT.md",
-        "docs/V4_ISSUE_03_PROVIDER_EXPANSION_REPORT.md",
-        "docs/V4_ISSUE_04_ACCESS_RECOVERY_REPORT.md",
     }
 )
 DATED_REPORT_NAME = re.compile(r"(_REPORT|^MVP-|^V4_)", re.IGNORECASE)

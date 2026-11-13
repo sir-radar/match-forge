@@ -874,7 +874,7 @@ Team admission does not merge fixtures; fixture reconciliation retains its own
 competition, season, orientation and conflict checks.
 
 The typed correction operation and deployment procedure are documented in
-[MVP-HISTORICAL-BACKFILL.md](MVP-HISTORICAL-BACKFILL.md#independent-team-identity-corrections).
+[the product CLI guide](cli.md#reviewed-team-identity-corrections).
 
 `product.resolution_identity.mapping_detail` provides read-only diagnostics for
 current operational mappings. It reuses retained-source qualification, existing
@@ -1326,6 +1326,44 @@ Use the owning document for implementation-level detail:
 
 Current project state belongs in the tracked project-status authority and applicable Wayfinder/evidence records rather than this document.
 
+
+### Competition geography
+
+Fixture country filters use verified competition geography separately from team
+and venue geography. Continental, global and international competitions use
+`International`. New canonical fixtures require a resolved geographic scope.
+The original source country remains available for provider-origin identities.
+
+Provisional FotMob and PitchAPI competition rows may display geography from
+checksum- and size-verified retained catalogue or daily responses. FotMob
+uses an explicit `primaryId` when supplied, keeps the original group ID in
+retained evidence and stops discovery if verified aliases conflict. The
+returned league ID must still match the request. Names and `parentLeagueId`
+cannot establish identity. Unsupported, missing or conflicting metadata stays
+unresolved. This display repair leaves provisional status, identity admissions,
+history eligibility and forecasts intact. See [CLI replay](cli.md#operational-history-replay).
+
+### External prediction comparison
+
+R2Bet, 1960Tips, SlyBet and MatchOutlook qualified for private-local comparison.
+Forebet's ordinary request was blocked with HTTP 403. Keep source access and
+reuse limits separate from MatchForge authorization. Retain source text,
+capture observations and immutable selection revisions. An unsupported market
+stays visible and cannot be evaluated. Third-party picks never enter the model.
+
+Current reads select the latest observed revision per source, verified fixture
+and market. Same-time conflicts stay out of metrics and consensus. Prospective
+accuracy requires a verified source date, a selection captured strictly before
+kickoff and a current WON/LOST settlement from an explicit regulation-time
+result. Reviewed bindings made after kickoff remain retrospective. Unresolved
+picks and pending corrections are excluded from prospective metrics. Consensus
+requires a strict majority across distinct eligible public sources and uses
+the full filtered population. See [reviewed bindings](cli.md#external-prediction-bindings).
+
+Imports, result revisions and mapping changes enqueue settlement and validation
+work transactionally. The public-report worker applies the validation fence
+before comparisons. Pending corrections hide stale comparison and settlement
+outputs. Checkpointed retries preserve immutable selection and settlement history.
 
 ### Operational acquisition and historical recovery outcomes
 

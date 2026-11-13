@@ -52,7 +52,9 @@ separate UTC claims using exact lifecycle and competition facts, `Europe/London`
 `football resolve sprint2-corners` publishes immutable home/away corner labels from exact
 StatsBomb `Pass` / pass-type `Corner` ID-and-name semantics. Each label binds the completed
 lifecycle claim, canonical teams, validated event file and checksums, source lineage, and validator
-run. It does not add outcomes to pre-match forecast contexts. See [Match corner labels](corner-labels.md).
+run. Use `football resolve corners --dataset-version <uuid> --source-snapshot <uuid>`
+for another published StatsBomb dataset with complete lifecycle evidence for that
+exact pair. See [corner outcome labels](backtesting.md#corner-outcome-labels).
 
 `football evaluate sprint2` runs the pinned Sprint 2 workflow until the first blocking stage. It
 starts with the approved StatsBomb EPL 2015/16 corpus (`competition_id=2`, `season_id=27`). A
@@ -119,3 +121,86 @@ Forecast refresh claims competition rows before fixture rows and skips busy rows
 Deferred work remains pending for a later worker. Identity admission and fixture
 reconciliation acquire the identity admission advisory lock before the fixture
 crosswalk advisory lock. Maintenance can run alongside operational polling.
+
+Use `make openfootball-sync` and `make football-data-uk-sync` for bulk results.
+The former reads a pinned Git mirror and the latter preserves official CSV and
+ZIP downloads. Changed resources append immutable snapshots; exact replays
+reuse them. Provider conflicts stay separate from the stored canonical result.
+`make history-backfill` or `backfill-history --provider-only <provider>` can
+select FotMob, PitchAPI, OpenFootball or Football-Data.co.uk. API-Football and
+football-data.org use the shared history queue. Its fallback order is eligible
+local history, requested-season API-Football within its cap, explicit
+football-data.org requested/previous-season coverage, then the capped
+API-Football season. The cap applies only to API-Football.
+
+For FotMob/PitchAPI, use the per-provider history actions in Admin Data Sync or
+`backfill-history --provider-only` with optional `--competition`, `--season`,
+`--provider-discovery-budget` and `--provider-scope-budget`. Closed seasons
+replay verified retained bytes by default. Advertised scopes without qualified
+identity or regulation scores cannot complete. Review per-provider unmatched
+and history-depth diagnostics with `history-coverage`. Repair existing
+provisional geography from retained bytes with
+`refresh-competition-geography --provider fotmob` or `--provider pitchapi`.
+These repairs do not fetch sources or refresh forecasts.
+
+### Operational sync
+
+`make fotmob-sync` and `make pitchapi-sync` accept `FROM_DATE` and `DATE`.
+Enable each provider in the local environment before use. Live scheduling
+is opt-in via `MATCHFORGE_OPERATIONAL_SYNC_INTERVAL` (minimum 30 seconds).
+Scheduled history is separately opt-in via `MATCHFORGE_HISTORY_SYNC_ENABLED`
+and uses `MATCHFORGE_HISTORY_SYNC_INTERVAL` (minimum one hour). History
+defers to live work and respects per-provider quotas and scope budgets.
+The Make targets require current migrations. Admin Data Sync can stop or
+retry a run; retry preserves the original selectors. Failed providers and
+unqualified history remain explicit in each run summary.
+
+Use `provider-mapping-review --provider fotmob` (or `pitchapi`) to inspect
+unresolved mappings. Supply `--provider-match-id` and `--fixture-id` only for
+an independently verified relationship. Use `development-provider-preview
+--provider fotmob --fixture-id UUID --knowledge-cutoff ISO_TIMESTAMP` for a
+read-only pre-kickoff diagnostic. The target fixture is excluded, provider xG
+definitions stay separate and this path does not publish forecasts.
+
+### Reviewed team identity corrections
+
+Run the read-only preview with separately reviewed IDs:
+
+```bash
+uv run python -m football.product.identity_correction \
+  --database-url "$DATABASE_URL" --data-root "$FOOTBALL_DATA_ROOT" \
+  --source-mapping-id "$SOURCE_MAPPING_ID" --target-mapping-id "$TARGET_MAPPING_ID" \
+  --original-decision-id "$ORIGINAL_DECISION_ID" \
+  --fixture-registration-id "$FIXTURE_REGISTRATION_ID" --orientation HOME
+```
+
+The operation verifies the exact original contradiction, fixture evidence,
+retained bytes and target admission under `ProductTeamIdentityCorrectionV1`.
+It appends a prospective correction for one team. Before an owner-approved
+live `--apply`, verify current migrations and a recoverable backup, then run
+`uv run python -m football.product.maintenance --output .local/r3-quiescence.json`.
+Any other writer blocks the operation. Compare protected registrations and
+publication hashes after applying. Rollback uses a prospective revocation
+through the existing correction owner. See [identity rules](architecture.md#identity).
+
+## External prediction bindings
+
+`make external-predictions DATE=YYYY-MM-DD` runs enabled sources independently.
+Use `SOURCE=<source>` to select one. The optional
+`MVP_EXTERNAL_PREDICTIONS_IMPORT_FILE` uses the append-only manual import path.
+A requested date outside the published window can produce `NO_DATE_PAGE`.
+The repository timer specifies 06:00 Africa/Lagos. Verify installation and
+alert delivery on the operating host separately.
+
+For a capture without a native fixture ID, an operator can review an existing
+verified native mapping against retained evidence:
+
+```bash
+uv run python -m football.product.cli --database-url "$DATABASE_URL" \
+  external-binding-review --prediction-id "$PREDICTION_ID" \
+  --mapping-id "$MAPPING_ID" --reason '<retained evidence and review rationale>'
+```
+
+The binding records the source revision, snapshot, mapping and reason. A retry
+reuses the binding. Mapping revocation queues recovery and retains the original
+capture. See [comparison and settlement rules](architecture.md#external-prediction-comparison).

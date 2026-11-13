@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-13T04:10:00Z",
+  "updated_at": "2026-11-13T05:47:34Z",
   "unified_architecture_investigation": {
     "status": "PASS_WITH_WARNINGS",
     "scope": "CURRENT_TASK.md revision 3; architecture investigation/planning only",
@@ -94,7 +94,8 @@
     "APPLY_FDUK_RAW_FILE_BINDINGS_V1",
     "APPLY_SOURCE_SNAPSHOT_PATH_DIGEST_GUARD_V1",
     "AUTHORIZE_GOVERNED_SCOPE_ACTIVATION_V1",
-    "AUTHORIZE_STORAGE_LIFECYCLE_ROLLOUT_V1"
+    "AUTHORIZE_STORAGE_LIFECYCLE_ROLLOUT_V1",
+    "APPROVE_DATED_REPORT_RETIREMENT_V1"
   ],
   "closed_routes": [
     {
@@ -1012,17 +1013,17 @@
     "delivery_branch": "ft/mvp-product-completion",
     "h2h_model_weight": 0,
     "v6_authorized": false,
-    "completion_audit_ref": "docs/MVP-COMPLETION-AUDIT.md",
+    "completion_audit_ref": "https://github.com/sir-radar/match-forge/blob/e4027330ce23a0a0e2371541f119911a948fc53d/docs/MVP-COMPLETION-AUDIT.md",
     "live_forecasting_status": "PASS_5_FORECASTS_2026_10_10",
     "external_prediction_collection_status": "ENABLED_4_PUBLIC_SOURCES_FOREBET_TECHNICALLY_UNAVAILABLE",
     "live_settlement_evidence_status": "PENDING_MATCH_COMPLETION",
-    "research_resume_ref": "docs/MVP-RESUME-RESEARCH.md",
+    "research_resume_ref": "docs/status/current-state.md#current-authorized-work",
     "operational_provider_recovery": {
       "status": "IMPLEMENTED_WITH_PROVIDER_REVIEW_PENDING",
       "delivery_branch": "ft/provider-history-live-recovery",
       "pull_request": 165,
       "measured_at": "2026-10-12T12:06:17Z",
-      "operations_ref": "docs/MVP-OPERATIONAL-PROVIDERS.md",
+      "operations_ref": "docs/cli.md#operational-sync",
       "raw_history_rows": 333628,
       "forecast_eligible_history_rows": 319291,
       "additional_raw_history_rows": 1137,
@@ -1056,8 +1057,8 @@
       "score_conflicts": 6,
       "mapping_failures": 0,
       "forecasts_created": 0,
-      "coverage_ref": "docs/MVP-DATA-COVERAGE.md",
-      "operations_ref": "docs/MVP-HISTORICAL-BACKFILL.md"
+      "coverage_ref": "https://github.com/sir-radar/match-forge/blob/e4027330ce23a0a0e2371541f119911a948fc53d/docs/MVP-DATA-COVERAGE.md",
+      "operations_ref": "docs/cli.md#operational-history-replay"
     },
     "audit_remediation": {
       "status": "COMPLETE_WITH_OWNER_BLOCKERS",
@@ -1083,7 +1084,7 @@
       "r3_live_status": "PAIR_ADMITTED",
       "competition_geography": {
         "status": "IMPLEMENTED_VERIFIED",
-        "contract_ref": "docs/MVP-DATA-COVERAGE.md",
+        "contract_ref": "docs/architecture.md#competition-geography",
         "source_policy": "VERIFIED_RETAINED_PROVIDER_SCOPED_METADATA_ONLY",
         "identity_qualification_changed": false,
         "published_forecasts_changed": false
@@ -3299,7 +3300,7 @@
   },
   "codebase_remediation": {
     "status": "PASS_WITH_WARNINGS",
-    "audit_ref": "docs/CODEBASE_AUDIT_REPORT.md",
+    "audit_ref": "https://github.com/sir-radar/match-forge/blob/e4027330ce23a0a0e2371541f119911a948fc53d/docs/CODEBASE_AUDIT_REPORT.md",
     "report_ref": "docs/CODEBASE_REMEDIATION_REPORT.md",
     "branch": "ft/codebase-remediation-2026-10-30",
     "current_work": "Authorized code remediation verified and delivered for review; operating rollout, the retained fixture dispute and separately documented external evidence/governance limits remain open.",
@@ -3319,7 +3320,7 @@
   "identity_resolution": {
     "status": "PASS_WITH_WARNINGS",
     "current_phase": 10,
-    "report_ref": "docs/IDENTITY_RESOLUTION_IMPLEMENTATION_REPORT.md",
+    "report_ref": "https://github.com/sir-radar/match-forge/blob/e4027330ce23a0a0e2371541f119911a948fc53d/docs/IDENTITY_RESOLUTION_IMPLEMENTATION_REPORT.md",
     "baseline_ref": "docs/evidence/identity-resolution-baseline-2026-10-31.json",
     "baseline_sha256": "6aacd7415165d6649f47c82da1ed8fa2515713be286c48477ce46f90072fd8b5",
     "phase_0": "PASS",
@@ -3783,7 +3784,7 @@
         "R03-F": "011e9c4b43e5eea432de25f2420cd42b4e3daaf5",
         "R03-G": "84e4013356dc0fcad02103bca3c270fc84224a2d"
       },
-      "report_ref": "docs/V4_ISSUE_03_PROVIDER_EXPANSION_REPORT.md",
+      "report_ref": "https://github.com/sir-radar/match-forge/blob/463ec15a8a0720fb48e842af5a009cf140545f90/docs/V4_ISSUE_03_PROVIDER_EXPANSION_REPORT.md",
       "final_verification_ref": "docs/evidence/v4-issue-03-final-verification.json",
       "phase_h_commit_location": "Commit containing final_verification_ref; exact SHA in CURRENT_TASK_STATUS.md and final handoff",
       "verification_status": "PASS_WITH_WARNINGS",
@@ -3829,7 +3830,7 @@
         "R04-G archive season semantics": "6567b62b501d1fa511adbbd1ace9f43f1cdbcf81",
         "R04-G final": "Commit containing this evidence; exact SHA in CURRENT_TASK_STATUS.md and final handoff"
       },
-      "report_ref": "docs/V4_ISSUE_04_ACCESS_RECOVERY_REPORT.md",
+      "report_ref": "https://github.com/sir-radar/match-forge/blob/463ec15a8a0720fb48e842af5a009cf140545f90/docs/V4_ISSUE_04_ACCESS_RECOVERY_REPORT.md",
       "final_verification_ref": "docs/evidence/v4-issue-04-final-verification.json",
       "experimental_database": "football_v4_access_r04_20261102",
       "experimental_source_resources": 3265,
@@ -3894,7 +3895,7 @@
       "history_sufficiency": "UNASSESSED",
       "experimental_database": "football_v4_unblocking_r02_replay_20261102",
       "final_verification_ref": "docs/evidence/v4-issue-02-unblocking-final.json",
-      "report_ref": "docs/V4_ISSUE_02_UNBLOCKING_REPORT.md",
+      "report_ref": "https://github.com/sir-radar/match-forge/blob/463ec15a8a0720fb48e842af5a009cf140545f90/docs/V4_ISSUE_02_UNBLOCKING_REPORT.md",
       "phase_m_commit_location": "Commit containing final_verification_ref; exact SHA in CURRENT_TASK_STATUS.md and final handoff",
       "required_next_action": "Owner handoff: retain the five-fixture research-only pilot. Obtain exact independently verified source/canonical relationships before submitting valid Resolution Center proposals; any later Issue 5 scientific study requires separate authorization. No further phase, cutover or retirement starts."
     },
@@ -3946,7 +3947,7 @@
       "requested_identity_recovery_complete": false,
       "full_issue_2_can_be_closed": false,
       "final_verification_status": "PASS_WITH_WARNINGS",
-      "report_ref": "docs/V4_IDENTITY_ADMISSION_RECOVERY_REPORT.md",
+      "report_ref": "https://github.com/sir-radar/match-forge/blob/463ec15a8a0720fb48e842af5a009cf140545f90/docs/V4_IDENTITY_ADMISSION_RECOVERY_REPORT.md",
       "final_verification_ref": "docs/evidence/v4-identity-recovery-final.json",
       "phase_f_commit_resolution": "Commit containing this final evidence; self SHA resolved from Git after commit, never fabricated",
       "accepted_competition_target_candidates": 1,

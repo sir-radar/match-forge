@@ -15,3 +15,17 @@
 ## Evolution
 
 Freeze error codes, nullable/optional semantics, distributions/tails, numeric precision and deprecation window with the actual existing clients. Use additive compatible optional fields within V1 and a versioned route/schema for incompatible changes. Validate with generated OpenAPI tooling, fixture snapshots, auth/redaction tests, older consumers and backward-compatibility diff. Coordinate read adapters for legacy `FixtureDisplayTagsV1` / `ForecastRiskAssessmentV1` until approved migration to one `ForecastEnrichmentV1` sidecar.
+
+## Admin access and readiness
+
+Admin routes require a loopback listener, loopback client and approved loopback
+Host at the configured port. Mutations require JSON. Browser requests must
+carry the configured `WEB_ORIGIN`. Origin-less callers use the
+`MATCHFORGE_ADMIN_CLI_TOKEN` Bearer credential from the local environment.
+Keep the credential out of browser configuration and logs.
+
+Apply required migrations before starting the API. `/readyz` checks the
+serving PostgreSQL pool, required schema and Redis within `DEPENDENCY_TIMEOUT`
+(500 ms by default). `/healthz` remains independent of dependency readiness.
+HTTP cancellation reaches database queries. Committed durable jobs use
+process-owned contexts and can continue beyond the HTTP handler deadline.

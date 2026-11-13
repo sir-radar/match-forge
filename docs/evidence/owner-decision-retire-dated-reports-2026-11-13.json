@@ -1,0 +1,35 @@
+{
+  "contract": "OwnerDecisionRecordV1",
+  "decision_id": "APPROVE_DATED_REPORT_RETIREMENT_V1",
+  "recorded_at": "2026-11-13T05:47:34Z",
+  "status": "APPROVED",
+  "owner": "repository owner / sir-radar",
+  "title": "Audit and conditionally retire dated reports",
+  "source": {
+    "execution_instruction": "Owner approved Option 1 — Dated Reports Cleanup in the task associated with PRs #226 and #227.",
+    "context_pr": "https://github.com/sir-radar/match-forge/pull/227"
+  },
+  "authorizes": [
+    "Retire verified redundant reports after extracting lasting material and reconciling project-status references.",
+    "Preserve evidence dependencies, historical facts, and unresolved operational and qualification limits."
+  ],
+  "retired_report_revisions": {
+    "docs/CODEBASE_AUDIT_REPORT.md": "e4027330ce23a0a0e2371541f119911a948fc53d",
+    "docs/IDENTITY_RESOLUTION_IMPLEMENTATION_REPORT.md": "e4027330ce23a0a0e2371541f119911a948fc53d",
+    "docs/MVP-COMPLETION-AUDIT.md": "e4027330ce23a0a0e2371541f119911a948fc53d",
+    "docs/MVP-DATA-COVERAGE.md": "e4027330ce23a0a0e2371541f119911a948fc53d",
+    "docs/MVP-EXTERNAL-PREDICTION-SOURCES.md": "e4027330ce23a0a0e2371541f119911a948fc53d",
+    "docs/MVP-HISTORICAL-BACKFILL.md": "e4027330ce23a0a0e2371541f119911a948fc53d",
+    "docs/MVP-OPERATIONAL-PROVIDERS.md": "e4027330ce23a0a0e2371541f119911a948fc53d",
+    "docs/MVP-RESUME-RESEARCH.md": "e4027330ce23a0a0e2371541f119911a948fc53d",
+    "docs/V4_IDENTITY_ADMISSION_RECOVERY_REPORT.md": "463ec15a8a0720fb48e842af5a009cf140545f90",
+    "docs/V4_ISSUE_02_UNBLOCKING_REPORT.md": "463ec15a8a0720fb48e842af5a009cf140545f90",
+    "docs/V4_ISSUE_03_PROVIDER_EXPANSION_REPORT.md": "463ec15a8a0720fb48e842af5a009cf140545f90",
+    "docs/V4_ISSUE_04_ACCESS_RECOVERY_REPORT.md": "463ec15a8a0720fb48e842af5a009cf140545f90"
+  },
+  "retained_paths": {
+    "docs/CODEBASE_REMEDIATION_REPORT.md": "Open fixture dispute and direct source in the unified redesign register and pinned roadmap.",
+    "docs/V4_IMPLEMENTATION_REPORT.md": "Direct record_md target of the public-development-data owner decision and phase coverage evidence.",
+    "docs/V4_ISSUE_02_QUALIFICATION_REPORT.md": "Direct handoff reference in immutable qualification evidence. Issue 2 remains blocked."
+  }
+}
