@@ -133,3 +133,16 @@ export function parseBackupView(value: unknown): BackupView {
   if (hasPoint !== (result.backup_age_seconds !== null) || hasPoint !== (result.next_due_at !== null)) throw new Error("Inconsistent recovery point age");
   return result;
 }
+
+const REMINDER_LEAD_MS = 24 * 60 * 60 * 1000;
+export type BackupReminder = { dueAt: string | null; overdue: boolean; driveConnected: boolean; dismissKey: string };
+
+// Remind a day before the next backup is due, and every day while it is overdue.
+export function backupReminder(view: BackupView, now: Date): BackupReminder | null {
+  const due = view.next_due_at === null ? null : Date.parse(view.next_due_at);
+  const overdue = view.reminder_due || (due !== null && now.getTime() >= due);
+  if (!overdue && (due === null || now.getTime() < due - REMINDER_LEAD_MS)) return null;
+  const driveConnected = view.availability.drive !== undefined && view.availability.state !== "DISCONNECTED";
+  const cycle = view.next_due_at ?? "first-backup";
+  return { dueAt: view.next_due_at, overdue, driveConnected, dismissKey: overdue ? `${cycle}|${now.toISOString().slice(0, 10)}` : cycle };
+}

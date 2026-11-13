@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log/slog"
+	"net"
 	"net/http"
 	"time"
 
@@ -111,6 +112,17 @@ func (application *App) Handler() http.Handler {
 
 // Run serves until the context is cancelled, then performs bounded graceful shutdown.
 func (application *App) Run(ctx context.Context) error {
+	server := application.httpServer()
+	var listenConfig net.ListenConfig
+	listener, err := listenConfig.Listen(ctx, "tcp", server.Addr)
+	if err != nil {
+		return err
+	}
+	defer listener.Close()
+	if _, port, _ := net.SplitHostPort(server.Addr); port == "0" {
+		application.config.Address = listener.Addr().String()
+	}
+
 	if application.config.OperationalSyncInterval > 0 {
 		go application.runOperationalSyncSchedule(ctx)
 	}
@@ -127,12 +139,15 @@ func (application *App) Run(ctx context.Context) error {
 	go application.runStorageSchedule(ctx)
 	stopRecovery := application.startResolutionRecovery(ctx)
 	defer stopRecovery()
-	server := application.httpServer()
 
+	return application.serve(ctx, server, listener)
+}
+
+func (application *App) serve(ctx context.Context, server *http.Server, listener net.Listener) error {
 	errorsChannel := make(chan error, 1)
 	go func() {
-		application.logger.Info("api listening", "address", application.config.Address)
-		errorsChannel <- server.ListenAndServe()
+		application.logger.Info("api listening", "address", listener.Addr().String())
+		errorsChannel <- server.Serve(listener)
 	}()
 
 	select {
