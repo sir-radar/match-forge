@@ -54,8 +54,15 @@ function useLoader<T>(load: () => Promise<T>) {
   return { value, error, refresh };
 }
 
+const classLabel: Record<LifecycleRecord["resource_class"], string> = { TEST_DATABASE: "Test database", WORKTREE: "Worktree", DISPOSABLE_PATH: "Build output or cache" };
+const kindLabel: Record<string, string> = { BUILD_OUTPUT: "Build output", DEPENDENCY_CACHE: "Dependency cache", TEMPORARY: "Temporary files" };
+
 function owner(record: LifecycleRecord): string {
   if (record.resource_class === "WORKTREE") return `Branch ${String(record.owner_ref.branch ?? "unknown")}`;
+  if (record.resource_class === "DISPOSABLE_PATH") {
+    const consumers = Array.isArray(record.owner_ref.consumers) ? (record.owner_ref.consumers as string[]).join(", ") : "";
+    return `${kindLabel[String(record.owner_ref.kind)] ?? "Disposable path"}${consumers ? `; used by ${consumers}` : ""}`;
+  }
   const pid = record.owner_ref.pid, host = record.owner_ref.host;
   return `${record.owner_kind === "HARNESS_CHILD" ? "Child of test run" : "Test run"} ${String(pid ?? "?")} on ${String(host ?? "?")}`;
 }
@@ -75,7 +82,8 @@ export function LifecyclePanel() {
     <div className={panel}>
       <h3 className="text-lg font-semibold">Five-hour cleanup policy</h3>
       {p ? <p className="mt-1 text-sm">
-        Deletes completed {p.test_databases ? "test databases" : ""}{p.test_databases && p.worktrees ? " and " : ""}{p.worktrees ? `worktrees merged into ${p.worktrees.target_ref}` : ""} after{" "}
+        Deletes completed {[p.test_databases && "test databases", p.worktrees && `worktrees merged into ${p.worktrees.target_ref}`,
+          p.paths?.length && `${p.paths.length} build output and cache director${p.paths.length === 1 ? "y" : "ies"}`].filter(Boolean).join(", ")} after{" "}
         {Math.round(p.inactivity_seconds / 3600)} hours without activity. Checks every {Math.round(p.check_interval_seconds / 60)} minutes,
         at most {p.max_per_run} per run. Approved by {p.approved_by} ({p.approval_record}).
       </p> : <p className="mt-1 text-sm">Not enabled by the storage policy. Resources are tracked only after it is enabled.</p>}
@@ -89,7 +97,7 @@ export function LifecyclePanel() {
         <tbody>
           {value.resources.length === 0 && <tr><td colSpan={7}>No tracked resources.</td></tr>}
           {value.resources.map((r) => <tr key={r.identity_key} className="border-t border-[var(--outline)] align-top">
-            <td><span className="font-semibold">{r.resource_class === "WORKTREE" ? "Worktree" : "Test database"}</span><br /><span className="break-all">{r.location}</span></td>
+            <td><span className="font-semibold">{classLabel[r.resource_class]}</span><br /><span className="break-all">{r.location}</span></td>
             <td><span className={`inline-block rounded-sm border px-2 text-xs font-semibold ${stateTone[r.state]}`}>{stateLabel[r.state]}</span></td>
             <td>{owner(r)}</td>
             <td>{formatStorageTime(r.last_activity_at)}</td>

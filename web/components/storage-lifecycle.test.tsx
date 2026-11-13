@@ -18,6 +18,9 @@ const lifecycle = {
     record({}),
     record({ identity_key: "git:/r/.git/worktrees/a", resource_class: "WORKTREE", backend: "git", location: "/r/.claude/worktrees/a",
       owner_kind: "WORKTREE_DISCOVERY", owner_ref: { branch: "docs/a" }, state: "BLOCKED", blockers: ["uncommitted or untracked changes"] }),
+    record({ identity_key: "fs:1:2", resource_class: "DISPOSABLE_PATH", backend: "filesystem", location: "/r/target", owner_kind: "POLICY_PATH",
+      owner_ref: { kind: "BUILD_OUTPUT", consumers: ["cargo", "rustc"] }, state: "ACTIVE", completed_at: null, completion: null, eligible_at: null,
+      blockers: ["consumer process running: cargo"] }),
   ],
   events: [{ identity_key: "postgres:1:900", event: "COMPLETED", detail: {}, recorded_at: "2026-11-13T06:00:00Z" }],
   unregistered_test_databases: [{ name: "football_api_test_7", oid: 7, bytes: 1e8 }],
@@ -51,6 +54,9 @@ describe("five-hour cleanup", () => {
     expect(within(rows[1]).getByText("Test run 42 on mac")).toBeTruthy();
     expect(within(rows[2]).getByText("Blocked")).toBeTruthy();
     expect(within(rows[2]).getByText("uncommitted or untracked changes")).toBeTruthy();
+    expect(within(rows[3]).getByText("Build output or cache")).toBeTruthy();
+    expect(within(rows[3]).getByText("Build output; used by cargo, rustc")).toBeTruthy();
+    expect(within(rows[3]).getByText("consumer process running: cargo")).toBeTruthy();
     expect(screen.getByText(/after 5 hours without activity/)).toBeTruthy();
     expect(screen.getByText(/football_api_test_7/)).toBeTruthy();
     fireEvent.click(screen.getByText(/Audit trail/));

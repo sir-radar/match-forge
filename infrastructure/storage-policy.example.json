@@ -28,7 +28,40 @@
       ]
     },
     "approved_by": "owner",
-    "approval_record": "docs/evidence/owner-decision-<approval-of-the-five-hour-policy>.json"
+    "approval_record": "docs/evidence/owner-decision-<approval-of-the-five-hour-policy>.json",
+    "paths": [
+      {
+        "path": "/absolute/path/to/matchforge/target",
+        "kind": "BUILD_OUTPUT",
+        "consumers": [
+          "cargo",
+          "rustc",
+          "rust-analyzer"
+        ]
+      },
+      {
+        "path": "/absolute/path/to/matchforge/.local/go-cache",
+        "kind": "DEPENDENCY_CACHE",
+        "consumers": [
+          "go",
+          "gopls",
+          "golangci-lint"
+        ]
+      },
+      {
+        "path": "/absolute/path/to/matchforge/.local/go-mod-cache",
+        "kind": "DEPENDENCY_CACHE",
+        "consumers": [
+          "go",
+          "gopls"
+        ],
+        "min_idle_seconds": 1209600
+      },
+      {
+        "path": "/absolute/path/to/matchforge/.local/tmp",
+        "kind": "TEMPORARY"
+      }
+    ]
   },
   "maintenance": {
     "growth_warning_bytes_per_day": 5000000000,
