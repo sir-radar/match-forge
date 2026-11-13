@@ -253,6 +253,16 @@ paths:
         '200': { description: Lifecycle status }
         '403': { $ref: '#/components/responses/AdminDenied' }
         '409': { description: Storage management migration has not been deployed }
+  /v1/admin/storage/maintenance:
+    get:
+      operationId: storageMaintenance
+      summary: Daily, weekly and monthly storage maintenance reports and their thresholds
+      description: Read-only. Each report has a cadence, slot, state, findings (task, INFO/WARNING/CRITICAL severity, message, optional count, bytes and items) and an alert count. Reports never delete anything. policy is null when the storage policy does not enable maintenance.
+      security: [ { AdminCLI: [] }, { AdminBrowserOrigin: [] } ]
+      responses:
+        '200': { description: Maintenance reports }
+        '403': { $ref: '#/components/responses/AdminDenied' }
+        '409': { description: Storage management migration has not been deployed }
   /v1/admin/storage/operations/{batch_id}/cancel:
     post:
       operationId: cancelStorageBatch

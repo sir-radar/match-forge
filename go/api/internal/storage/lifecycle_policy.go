@@ -12,8 +12,9 @@ const MinimumInactivity = 5 * time.Hour
 
 // Resource classes the five-hour policy may delete. Nothing else is ever selected.
 const (
-	ClassTestDatabase = "TEST_DATABASE"
-	ClassWorktree     = "WORKTREE"
+	ClassTestDatabase   = "TEST_DATABASE"
+	ClassWorktree       = "WORKTREE"
+	ClassDisposablePath = "DISPOSABLE_PATH"
 )
 
 // LifecyclePolicy is the owner-approved five-hour cleanup. It covers only
@@ -25,8 +26,39 @@ type LifecyclePolicy struct {
 	MaxPerRun            int                `json:"max_per_run"`
 	TestDatabases        bool               `json:"test_databases"`
 	Worktrees            *WorktreeLifecycle `json:"worktrees,omitempty"`
-	ApprovedBy           string             `json:"approved_by"`
-	ApprovalRecord       string             `json:"approval_record"`
+	// Paths are regenerable build outputs, dependency caches and temporary
+	// directories inside the repository, each deleted as a whole.
+	Paths          []DisposablePath `json:"paths,omitempty"`
+	ApprovedBy     string           `json:"approved_by"`
+	ApprovalRecord string           `json:"approval_record"`
+}
+
+// DisposablePath declares one regenerable directory. Consumers are process names
+// (for example cargo, go, node) whose running instance counts as use. A cache
+// that is expensive to rebuild can require more idle time than five hours.
+type DisposablePath struct {
+	Path           string   `json:"path"`
+	Kind           string   `json:"kind"`
+	Consumers      []string `json:"consumers"`
+	MinIdleSeconds int      `json:"min_idle_seconds,omitempty"`
+}
+
+var pathKinds = []string{"BUILD_OUTPUT", "DEPENDENCY_CACHE", "TEMPORARY"}
+
+func (d DisposablePath) validate(protected []string) error {
+	if !cleanAbsolute(d.Path) || !slices.Contains(pathKinds, d.Kind) {
+		return errors.New("invalid disposable path")
+	}
+	if d.Kind != "TEMPORARY" && len(d.Consumers) == 0 {
+		return errors.New("build outputs and caches must name their consumer processes")
+	}
+	if d.MinIdleSeconds != 0 && time.Duration(d.MinIdleSeconds)*time.Second < MinimumInactivity {
+		return errors.New("a disposable path cannot be idle for less than five hours")
+	}
+	if slices.ContainsFunc(protected, func(p string) bool { return p == d.Path || within(p, d.Path) || within(d.Path, p) }) {
+		return errors.New("a disposable path overlaps a protected path")
+	}
+	return nil
 }
 
 // WorktreeLifecycle declares where removable worktrees live and which ref proves
@@ -43,13 +75,41 @@ func (l LifecyclePolicy) validate(protected []string) error {
 	if err := l.validateBounds(); err != nil {
 		return err
 	}
-	if !l.TestDatabases && l.Worktrees == nil {
+	if !l.TestDatabases && l.Worktrees == nil && len(l.Paths) == 0 {
 		return errors.New("lifecycle cleanup must enable at least one resource class")
+	}
+	if err := validatePaths(l.Paths, protected); err != nil {
+		return err
 	}
 	if l.Worktrees != nil {
 		return l.Worktrees.validate(protected)
 	}
 	return nil
+}
+
+func validatePaths(paths []DisposablePath, protected []string) error {
+	for i, d := range paths {
+		if err := d.validate(protected); err != nil {
+			return err
+		}
+		if slices.ContainsFunc(paths[:i], func(o DisposablePath) bool {
+			return o.Path == d.Path || within(o.Path, d.Path) || within(d.Path, o.Path)
+		}) {
+			return errors.New("disposable paths must not overlap")
+		}
+	}
+	return nil
+}
+
+// idleFor is the inactivity a resource needs: five hours, or more for a path
+// with a retention exemption.
+func (l LifecyclePolicy) idleFor(rec LifecycleRecord) time.Duration {
+	for _, d := range l.Paths {
+		if rec.Class == ClassDisposablePath && d.Path == rec.Location && time.Duration(d.MinIdleSeconds)*time.Second > l.inactivity() {
+			return time.Duration(d.MinIdleSeconds) * time.Second
+		}
+	}
+	return l.inactivity()
 }
 
 func (l LifecyclePolicy) validateBounds() error {

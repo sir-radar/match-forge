@@ -48,9 +48,11 @@ type Manager struct {
 	Policy     *Policy
 	Logger     *slog.Logger
 	Now        func() time.Time
-	// OwnerProcess and PRVerifier default to the local ps and GitHub CLI checks.
+	// OwnerProcess, PRVerifier and ProcessScan default to local ps, GitHub CLI
+	// and lsof checks.
 	OwnerProcess OwnerProcess
 	PRVerifier   PRVerifier
+	ProcessScan  ProcessScan
 	run          sync.Mutex
 	// lastAutomatic is guarded by run.
 	lastAutomatic time.Time
@@ -687,8 +689,18 @@ func (m *Manager) absent(ctx context.Context, op operationRow) bool {
 			path = q
 		}
 		_, err := os.Lstat(path)
-		return errors.Is(err, fs.ErrNotExist)
+		return errors.Is(err, fs.ErrNotExist) && !stillAtLocation(op)
 	}
+}
+
+// stillAtLocation reports that a lifecycle path deletion was interrupted before
+// its directory was detached: the same device and inode are still at the
+// original location.
+func stillAtLocation(op operationRow) bool {
+	if _, tracked := op.Identity["inode"]; !tracked {
+		return false
+	}
+	return currentPath(op.IdentityKey, op.Location)
 }
 
 // openQuarantines returns resources quarantined and not yet restored or purged.

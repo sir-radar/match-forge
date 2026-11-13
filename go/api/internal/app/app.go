@@ -80,6 +80,7 @@ func NewWithSyncRunner(
 	mux.HandleFunc("POST /v1/admin/storage/actions", application.executeStorageAction)
 	mux.HandleFunc("GET /v1/admin/storage/operations", application.storageOperations)
 	mux.HandleFunc("GET /v1/admin/storage/lifecycle", application.storageLifecycle)
+	mux.HandleFunc("GET /v1/admin/storage/maintenance", application.storageMaintenance)
 	mux.HandleFunc("POST /v1/admin/storage/operations/{batch_id}/cancel", application.cancelStorageBatch)
 	mux.HandleFunc("POST /v1/admin/storage/compare", application.compareStorageDatabases)
 	mux.HandleFunc("POST /v1/admin/storage/dispositions", application.recordStorageDisposition)

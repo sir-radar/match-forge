@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { LifecyclePanel, MaintenancePanel } from "@/components/storage-lifecycle";
 import { TableScroll } from "@/components/table-scroll";
 import { formatStorageBytes, formatStorageTime } from "@/lib/storage";
 import {
@@ -18,7 +19,10 @@ const badgeTone: Record<string, string> = {
   ELIGIBLE: "border-[var(--secondary)] text-[var(--secondary)]",
 };
 const actionLabel: Record<StorageActionName, string> = { DELETE: "Delete", QUARANTINE: "Quarantine", RESTORE: "Restore", PURGE: "Permanently delete" };
-type Tab = "databases" | "resources" | "operations";
+type Tab = "databases" | "resources" | "operations" | "lifecycle" | "maintenance";
+const tabLabel: Record<Exclude<Tab, "operations">, string> = {
+  databases: "Databases", resources: "All resources", lifecycle: "Five-hour cleanup", maintenance: "Maintenance",
+};
 
 export function StorageManagement() {
   const [inventory, setInventory] = useState<StorageInventory | null>(null);
@@ -91,12 +95,12 @@ export function StorageManagement() {
     {error && <p role="alert" className="text-[var(--error)]">{error}</p>}
     {plan && <PlanPanel plan={plan} onClose={() => setPlan(null)} onDone={async (message) => { setPlan(null); setSelected(new Set()); setNotice(message); setTab("operations"); await load(); }} />}
     <div role="tablist" aria-label="Storage views" className="flex flex-wrap gap-2">
-      {(["databases", "resources", "operations"] as Tab[]).map((name) => <button key={name} type="button" role="tab" id={`tab-${name}`}
+      {(["databases", "resources", "operations", "lifecycle", "maintenance"] as Tab[]).map((name) => <button key={name} type="button" role="tab" id={`tab-${name}`}
         aria-selected={tab === name} aria-controls={`panel-${name}`} className={`${button} ${tab === name ? "bg-[var(--high)]" : ""}`}
-        onClick={() => setTab(name)}>{name === "databases" ? "Databases" : name === "resources" ? "All resources" : `Operations (${operations.length})`}</button>)}
+        onClick={() => setTab(name)}>{name === "operations" ? `Operations (${operations.length})` : tabLabel[name]}</button>)}
     </div>
     <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
-      {tab === "operations"
+      {tab === "lifecycle" ? <LifecyclePanel /> : tab === "maintenance" ? <MaintenancePanel /> : tab === "operations"
         ? <OperationsTable operations={operations} onCancel={(batch) => void run(async () => { await storageManagement.cancel(batch); await load(); })} />
         : <ResourceExplorer key={tab} resources={tab === "databases" ? resources.filter((r) => r.backend === "postgres") : resources}
           databases={tab === "databases"} comparisons={comparisons} selected={selected} setSelected={setSelected} busy={busy}

@@ -233,6 +233,7 @@ func (application *App) storageScheduleTick(ctx context.Context, policy storage.
 	}
 	application.runAutomaticStorageCleanup(ctx)
 	application.runLifecycleCleanup(ctx)
+	application.runStorageMaintenance(ctx)
 	for _, kind := range []SyncType{SyncStorageLifecycle, SyncManualBackup} {
 		request, due, err := runner.storageScheduledRequest(ctx, kind, policy)
 		if err == nil && due {
@@ -300,6 +301,29 @@ func (application *App) runLifecycleCleanup(ctx context.Context) {
 		application.logger.Error("storage lifecycle deletions failed", "failed", run.Failed, "deleted", run.Deleted)
 	case run.Submitted > 0:
 		application.logger.Info("storage lifecycle cleanup", "deleted", run.Deleted, "reclaimed_bytes", run.ReclaimedBytes)
+	}
+}
+
+// runStorageMaintenance produces the due daily, weekly and monthly reports and
+// logs every WARNING or CRITICAL finding as an alert.
+func (application *App) runStorageMaintenance(ctx context.Context) {
+	if application.storage == nil || !application.storageReady(ctx) {
+		return
+	}
+	reports, err := application.storage.RunMaintenance(ctx)
+	if err != nil {
+		application.logger.Error("storage maintenance blocked", "error", err)
+	}
+	for _, report := range reports {
+		for _, finding := range report.Findings {
+			if finding.Severity != storage.SeverityInfo {
+				application.logger.Error("storage maintenance alert", "cadence", report.Cadence, "task", finding.Task,
+					"severity", finding.Severity, "message", finding.Message)
+			}
+		}
+		if report.Error != nil {
+			application.logger.Error("storage maintenance check failed", "cadence", report.Cadence, "error", *report.Error)
+		}
 	}
 }
 

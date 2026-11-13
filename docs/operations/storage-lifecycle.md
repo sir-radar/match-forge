@@ -255,6 +255,40 @@ bytes are recorded on the operation and the lifecycle row. A restart settles an
 interrupted deletion from the operation: verified absence becomes `DELETED`,
 anything else `BLOCKED` with the reason, and the next check re-derives the state.
 
+#### Build outputs, caches and temporary directories
+
+Migration `202611130300_storage_lifecycle_paths` adds the class `DISPOSABLE_PATH`.
+The policy lists each directory with its kind and consumer processes:
+
+```json
+"paths": [
+  { "path": "/abs/repo/target", "kind": "BUILD_OUTPUT", "consumers": ["cargo", "rustc", "rust-analyzer"] },
+  { "path": "/abs/repo/.local/go-cache", "kind": "DEPENDENCY_CACHE", "consumers": ["go", "gopls", "golangci-lint"] },
+  { "path": "/abs/repo/.local/go-mod-cache", "kind": "DEPENDENCY_CACHE", "consumers": ["go", "gopls"], "min_idle_seconds": 1209600 },
+  { "path": "/abs/repo/.local/tmp", "kind": "TEMPORARY" }
+]
+```
+
+A path is tracked by device, inode and a digest of its path, plus a generation:
+some filesystems reuse a deleted directory's inode at once, so a rebuilt directory
+always gets a new record instead of inheriting a deleted one.
+One `ps` and one `lsof` call per check establish use: a running consumer, a file
+open inside the directory, or a process working inside it. Completion
+(`CONSUMERS_IDLE`) starts when none remains. Activity is a bounded fingerprint of
+the first two directory levels (at most 20,000 entries), so a check never walks
+millions of files; with live use it restarts the window. `min_idle_seconds` gives
+frequently reused caches a longer window (never shorter than five hours).
+
+At run time a path must be strictly inside the repository and must not overlap
+`.git`, `FOOTBALL_DATA_ROOT` or a protected path; otherwise it is `BLOCKED`.
+Deletion re-observes the path, records a storage operation (the SQL guard rechecks
+protection), renames the directory to `<path>.matchforge-deleting-<operation>` on
+the same device, measures its allocated bytes, removes it and verifies absence.
+Restart recovery marks the operation failed when the same inode is still at the
+original location; a staging directory is removed on a later check only when its
+operation is this policy's own. Do not list `.venv`, `.tools`, `web/node_modules`,
+`.local/bin` or `.local/releases`: they are the running services' installations.
+
 Databases with a test marker but no registration (runs before this change, or a
 registration that failed) are listed as unregistered and never deleted
 automatically; dispose of them through the resource workflow above. Fixture
@@ -263,6 +297,32 @@ launcher rehearsals keep their reservation protection and stay outside this poli
 deadlines and blockers, the last 100 events and the unregistered databases.
 Failed or blocked deletions are logged as errors and recorded as
 `DELETE_FAILED` or `REJECTED` events.
+
+### Scheduled maintenance
+
+Migration `202611130200_storage_maintenance_runs` stores one report per cadence
+and slot (`DAILY` by UTC date, `WEEKLY` by ISO week, `MONTHLY` by month). The
+unique slot admits one worker; a report still `RUNNING` after an hour is retried,
+at most ten times. Finished reports are immutable. The policy's `maintenance`
+block sets the thresholds:
+
+```json
+"maintenance": { "growth_warning_bytes_per_day": 5000000000, "max_non_operating_databases": 4, "stale_after_days": 30 }
+```
+
+| Cadence | Checks |
+| --- | --- |
+| Daily | Host free space against `warning_free_bytes` and `reserve_bytes`; the PostgreSQL cluster against its budgets; growth per day since the previous daily report; unregistered test databases, lifecycle resources stuck in `BLOCKED`, and more non-operating databases than allowed; the latest verified backup against `backup_interval_seconds`, and failed attempts after it |
+| Weekly | Managed-root children unchanged for `stale_after_days` (logs, caches, generated artifacts) with their class; verified bytes reclaimed in the last seven days |
+| Monthly | Verified backups with isolated restore in the last month and their recorded status; every non-operating database with its classification, evidence and disposition |
+
+Reports only measure and alert. `WARNING` and `CRITICAL` findings are logged as
+errors and shown in Storage Management. Deletion still happens only through the
+approved `automatic_cleanup` rules, the five-hour policy, or a resource-specific
+owner approval. A backup status is reported exactly as recorded; maintenance never
+turns `VERIFIED_GOVERNED_SCOPE` into `FULL_RECOVERY`.
+`GET /v1/admin/storage/maintenance` returns the thresholds and the latest 60 reports.
+Storage Management shows both views as the "Five-hour cleanup" and "Maintenance" tabs.
 
 ## Recovery and approval
 
