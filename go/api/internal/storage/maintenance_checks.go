@@ -77,7 +77,7 @@ func (c *maintenanceContext) capacity(context.Context) error {
 func (c *maintenanceContext) growth(ctx context.Context) error {
 	var raw []byte
 	err := c.m.Pool.QueryRow(ctx, `SELECT measures FROM football.storage_maintenance_runs WHERE cadence='DAILY' AND state='SUCCEEDED'
- ORDER BY started_at DESC LIMIT 1`).Scan(&raw)
+ AND started_at<$1 ORDER BY started_at DESC LIMIT 1`, c.now.Add(-time.Hour)).Scan(&raw)
 	if errors.Is(err, pgx.ErrNoRows) {
 		c.add(Finding{Task: "growth", Severity: SeverityInfo, Message: "first daily report; growth is measured from the next one"})
 		return nil
