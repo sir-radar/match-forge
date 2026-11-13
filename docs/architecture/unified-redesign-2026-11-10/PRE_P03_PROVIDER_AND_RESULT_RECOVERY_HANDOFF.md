@@ -48,9 +48,9 @@ The local Python suite passed 2,329 tests at the configured 67% coverage floor.
 Go and Rust tests, architecture checks, static analysis, project status and
 documentation checks passed. Web unit tests passed 257 cases. The pinned
 Next.js binary built the application after the aggregate make target hit a
-pnpm dependency-directory error. The existing desktop Chromium Admin
-keyboard and axe tests passed. Assistive-technology conformance remains
-unverified.
+pnpm dependency-directory error. Five Admin browser tests passed across
+desktop Chromium and mobile WebKit, including keyboard, axe and 320-pixel
+reflow checks. Assistive-technology conformance remains unverified.
 
 On disposable PostgreSQL 18, 83 focused integration tests and the new
 settlement regression passed. The latter published a 2–1 result on a fixture
