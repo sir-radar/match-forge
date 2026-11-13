@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"math/rand/v2"
 	"strings"
 	"sync"
 	"testing"
@@ -40,8 +39,8 @@ func TestBackupFindingSeverity(t *testing.T) {
 func TestDatabaseMaintenanceReportsOncePerSlotAndRetriesInterrupted(t *testing.T) {
 	pool := databasePool(t)
 	ctx := context.Background()
-	// A random future year gives this run daily, weekly and monthly slots no other run uses.
-	now := time.Now().UTC().AddDate(100+rand.IntN(5000), 0, 0).Truncate(time.Second)
+	// Advancing one day must leave the ISO week and month unchanged.
+	now := time.Date(2400, time.January, 11, 12, 0, 0, 0, time.UTC)
 	policy := &Policy{MaxEntries: 100_000, ReserveBytes: 1, WarningFreeBytes: 2, DatabaseWarningBytes: 1 << 50, DatabaseCriticalBytes: 1 << 51,
 		BackupIntervalSeconds: 2592000, Maintenance: &MaintenancePolicy{GrowthWarningBytesPerDay: 1 << 40, MaxNonOperatingDatabases: 0, StaleAfterDays: 30}}
 	manager := func() *Manager { return &Manager{Pool: pool, Policy: policy, Now: func() time.Time { return now }} }
