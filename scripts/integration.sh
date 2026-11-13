@@ -13,8 +13,7 @@ set +a
 : "${POSTGRES_DB:?Set POSTGRES_DB in .env}"
 : "${DATABASE_URL:?Set DATABASE_URL in .env}"
 
-API_ADDRESS=127.0.0.1:58080
-API_LOG="$FOOTBALL_PROJECT_ROOT/.local/integration-api.log"
+API_LOG=$(mktemp "$FOOTBALL_PROJECT_ROOT/.local/integration-api.XXXXXX")
 API_PID=
 API_TEST_DATABASE="football_api_test_$$"
 API_DATABASE_CREATED=0
@@ -27,6 +26,7 @@ cleanup() {
 	if [ "$API_DATABASE_CREATED" -eq 1 ]; then
 		docker compose exec -T postgres dropdb --if-exists --force -U "$POSTGRES_USER" "$API_TEST_DATABASE" >/dev/null
 	fi
+	rm -f "$API_LOG"
 }
 
 trap cleanup EXIT HUP INT TERM
@@ -56,12 +56,16 @@ TEST_DATABASE_URL="$API_TEST_DATABASE_URL" DATABASE_URL="$API_TEST_DATABASE_URL"
 )
 
 MATCHFORGE_OPERATIONAL_SYNC_INTERVAL=0 MATCHFORGE_HISTORY_SYNC_ENABLED=false \
-    DATABASE_URL="$API_TEST_DATABASE_URL" API_ADDR="$API_ADDRESS" \
+    MATCHFORGE_STORAGE_POLICY= DATABASE_URL="$API_TEST_DATABASE_URL" API_ADDR=127.0.0.1:0 \
     "$FOOTBALL_PROJECT_ROOT/.local/bin/football-api" >"$API_LOG" 2>&1 &
 API_PID=$!
 
 attempt=0
-while ! curl --fail --silent "http://$API_ADDRESS/healthz" >/dev/null 2>&1; do
+while :; do
+	API_ADDRESS=$(sed -n 's/.*"msg":"api listening","address":"\(127\.0\.0\.1:[0-9][0-9]*\)".*/\1/p' "$API_LOG")
+	if [ -n "$API_ADDRESS" ] && curl --fail --silent "http://$API_ADDRESS/healthz" >/dev/null 2>&1; then
+		break
+	fi
 	attempt=$((attempt + 1))
 	if [ "$attempt" -ge 30 ] || ! kill -0 "$API_PID" 2>/dev/null; then
 		printf 'Go API failed to start:\n' >&2
