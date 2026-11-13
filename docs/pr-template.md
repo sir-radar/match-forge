@@ -172,6 +172,18 @@ List relevant durable evidence, where applicable:
 
 Do not add transient evidence documents merely to fill this section.
 
+## Documentation
+
+Say which canonical documents changed and which files were added or deleted. For a PR that finishes a feature, also confirm:
+
+- the feature is merged, tested and, where it applies, deployed and verified;
+- its lasting facts (what, why, where in the code, configuration, limits, PR links) are a short section in the canonical document;
+- its plans, checklists, progress notes and generated reports are deleted, and links to them are fixed;
+- evidence an owner decision or `docs/project-status.json` cites is kept;
+- `make docs-check` passes.
+
+Do not add a separate completion report; this section is the record. See [the documentation lifecycle](README.md#documentation-lifecycle).
+
 ## Risks and Limitations
 
 Document known limitations, such as:
@@ -203,7 +215,7 @@ Do not invent speculative follow-up work.
 - [ ] Point-in-time/leakage checks pass where applicable.
 - [ ] Migrations were validated where applicable.
 - [ ] Serialization/reproduction checks pass where applicable.
-- [ ] Documentation was updated where required.
+- [ ] Documentation was updated where required; a finished feature's temporary documents are retired and `make docs-check` passes.
 - [ ] No quality gate was weakened.
 - [ ] No placeholder implementation remains.
 - [ ] PR body matches the final diff.

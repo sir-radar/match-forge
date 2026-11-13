@@ -509,6 +509,18 @@ Maintain current project state in the repository's tracked project-status author
 
 Do not scan all historical evidence by default.
 
+### Documentation lifecycle
+
+Follow the lifecycle in `docs/README.md#documentation-lifecycle`. In short:
+
+- **Before starting:** find the canonical document for the area in `docs/README.md` and plan to update it. Do not start a new plan, checklist or report beside it.
+- **While working:** keep scratch notes, agent output, generated reports and JSON results in `.local/tmp/` (git-ignored). Record progress in the PR description, not in new tracked files.
+- **When a feature is finished:** confirm it is merged, tested and, where applicable, deployed. Move its lasting facts into the canonical document as a short section, delete its temporary plans, checklists and reports, fix the links, and list what was retired in the PR's Documentation section.
+- **Never retire** evidence, decision events, source archives, files cited by `docs/project-status.json` or by a current evidence record, contracts, schemas, migrations or fixtures without an owner decision.
+- Run `make docs-check` before every commit that adds, moves or deletes documentation.
+
+A task that leaves temporary documentation behind is not delivered.
+
 ---
 
 ## 12. Git and Delivery
@@ -564,7 +576,7 @@ Do not declare completion until applicable items are true:
 - no task-introduced dead, duplicate, speculative, placeholder, or obsolete code remains;
 - migrations are validated where applicable;
 - artifacts and reproducibility are validated where applicable;
-- documentation is updated where required;
+- documentation is updated where required, and the task's temporary documents are retired (`make docs-check` passes);
 - the final diff contains no unrelated work;
 - final Git status is understood;
 - required delivery steps are complete or explicitly blocked.
