@@ -892,7 +892,7 @@
       ],
       "source": "roadmap.md",
       "heading": "Phase 3 — Backend live synchronization and fairness",
-      "entry_dependencies_and_scope": "Dependencies: P00/P02 for affected correctness; existing live schedules remain\nrunning under their prior authority. P01 before operating schedule changes."
+      "entry_dependencies_and_scope": "Dependencies: P00, P02 and the pre-P03 readiness gate. Existing live schedules remain\nrunning under their prior authority. P01 before operating schedule changes."
     },
     {
       "phase": 4,
@@ -1022,7 +1022,7 @@
         {
           "id": "P09-01",
           "scope": "P09-01",
-          "objective_owners_contracts": "Cohort existing retained source/native observations via `product/history_worker.py`, identity/admission/correction and reconciliation owners. Prioritize exact recoverable score/season/binding predicate over broad refetch; preserve FR reports and current affected IDs",
+          "objective_owners_contracts": "Use pre-P03 recovery for mapped overdue results. Cohort broader historical gaps via `product/history_worker.py`, identity/admission/correction and reconciliation owners. Prioritize exact recoverable score/season/binding predicate over broad refetch; preserve FR reports and current affected IDs",
           "validation_done_rollback": "Byte/manifest/known-time verification, same-kickoff/date-only/order exclusion, identity/source/basis negative and idempotent bounded replay tests; before/after qualified result/API/history hash and coverage by exact target union. DoD: proven newly eligible facts only; source-only rows not counted as forecasts gained. Revoke prospectively through approved owner if correction fails",
           "authorization": "PROPOSED_NOT_EXECUTED"
         },
@@ -1036,7 +1036,7 @@
       ],
       "source": "roadmap.md",
       "heading": "Phase 9 — Missing authentic data recovery",
-      "entry_dependencies_and_scope": "Dependencies: P08/P03 and applicable P02, P01 for risky operating correction.\nTask-specific new authority required; standing provider research permission is\nnot repeatedly re-requested, and does not bypass scientific/health/paid gates."
+      "entry_dependencies_and_scope": "Dependencies: P08, P03 and applicable P02 and pre-P03 recovery contracts. P01 applies to risky operating corrections.\nTask-specific new authority required; standing provider research permission is\nnot repeatedly re-requested, and does not bypass scientific/health/paid gates."
     },
     {
       "phase": 10,

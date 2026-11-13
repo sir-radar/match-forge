@@ -357,7 +357,11 @@ Models consume provider-neutral MatchForge contracts.
 
 Acquisition follows the provider-wide standing research decision and access
 register in `docs/source-acquisition.md`. Keep provider-specific restrictions,
-credentials and entitlements distinct from project-owner authorization.
+credentials and entitlements distinct from project-owner authorization. Ordinary
+research acquisition within that decision requires no additional owner
+approval. Use actual resource capabilities, preserve quotas and access controls,
+and evaluate identity, score basis and model eligibility separately. Operating
+deployment and consequential database changes keep their existing approvals.
 
 Provider adapters may differ in coverage, granularity, terminology, event detail, and update timing.
 

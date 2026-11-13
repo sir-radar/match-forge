@@ -191,6 +191,30 @@ Reconsider previously unresolved observations after exact mapping/season/source
 changes. Each work key binds input revision and intended consumer; coalesce
 repeated requests and avoid all-history refresh fanout.
 
+## Pre-P03 result recovery
+
+Go submits `RESULT_RECOVERY` through the existing Admin sync runner. The run
+has the existing bulk-lane lease and publication fence. Python selects
+unresolved canonical fixtures and due native provider dates, including past
+dates outside the live polling window. The four-hour P02 overdue threshold
+selects work without assigning a lifecycle state. FotMob and PitchAPI replay
+eligible retained observations before making dated requests. API-Football
+uses the existing persistent daily and minute budget and exact native identity
+checks. Each provider and date has independent retry state.
+
+Only the established result owners publish scores or qualify history. An
+explicit recheck can acquire a later score for a finished fixture. A newer
+API-Football regulation-time correction uses the existing versioned history
+decision path when the preceding score was also sourced from API-Football.
+Other conflicting evidence remains available for review. Result and observation
+updates enqueue the existing external settlement work without requiring a
+forecast.
+
+History scopes can be refreshed after completion. The catalogue cache does
+not control result acquisition. P03 owns live scheduling, fairness and
+affected-only work, P04 owns committed events and SSE, and P09 owns broader
+historical completeness and authentic source gaps.
+
 ## Work scheduling, fairness and Mac recovery
 
 Keep `WorkRequest` semantic identity, input hash, current states, generation,

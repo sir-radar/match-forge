@@ -132,6 +132,25 @@ contract step. Rollback disables routing/worker/display, retaining additive sche
 and immutable publications. A compensating forward migration is distinct from
 restoring a prior service route; do not assume destructive SQL down migrations.
 
+## Pre-P03 result recovery
+
+- Refresh a completed scope twice on the same day and retain each distinct
+  result observation. Confirm ordinary completion does not schedule duplicate
+  season requests and an actual cooldown still defers acquisition.
+- Miss a result in live polling, recover it from the retained source or a
+  verified provider date, and confirm canonical status, score and basis.
+  Repeat across midnight and outside the usual date range.
+- Deny a provider through quota, access or a missing resource while an
+  independently mapped source can still recover the result. Resume on the
+  provider's retry deadline and on worker restart.
+- Publish an eligible correction and check older knowledge cutoffs, immutable
+  forecast bytes, team history and settlement without an internal forecast.
+  Preserve ambiguous identity, score conflicts and unavailable evidence.
+- Verify claims, duplicate requests, request volume and populated database
+  costs. Check the Admin date and fixture selectors and active documentation.
+  The [handoff](PRE_P03_PROVIDER_AND_RESULT_RECOVERY_HANDOFF.md) records which
+  conditions are verified and which remain open.
+
 ## Live-score regression assignment
 
 These are proposed deterministic extensions to existing harnesses, not new passing

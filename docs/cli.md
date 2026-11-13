@@ -149,11 +149,22 @@ These repairs do not fetch sources or refresh forecasts.
 Enable each provider in the local environment before use. Live scheduling
 is opt-in via `MATCHFORGE_OPERATIONAL_SYNC_INTERVAL` (minimum 30 seconds).
 Scheduled history is separately opt-in via `MATCHFORGE_HISTORY_SYNC_ENABLED`
-and uses `MATCHFORGE_HISTORY_SYNC_INTERVAL` (minimum one hour). History
-defers to live work and respects per-provider quotas and scope budgets.
+and uses the positive `MATCHFORGE_HISTORY_SYNC_INTERVAL`. History defers to
+live work and respects provider quotas and the configured per-run budgets.
+Explicit `backfill-history --provider-only PROVIDER --competition ID --season
+SEASON --refresh` requests fresh data for completed scopes. Provider cooldowns
+and technical retry deadlines still apply.
 The Make targets require current migrations. Admin Data Sync can stop or
 retry a run; retry preserves the original selectors. Failed providers and
 unqualified history remain explicit in each run summary.
+
+Admin Data Sync has a Result recovery action. On a disposable or separately
+authorized database, the CLI equivalent is
+`uv run --locked python -m football.product.cli recover-results`. The optional
+`--date YYYY-MM-DD` selects a UTC kickoff date. `--fixture-id UUID` selects
+an individual fixture and can recheck a finished result. `--limit` bounds
+source dates per provider (default eight). `MATCHFORGE_RESULT_RECOVERY_INTERVAL`
+controls unattended submission. A zero interval disables scheduling.
 
 Use `provider-mapping-review --provider fotmob` (or `pitchapi`) to inspect
 unresolved mappings. Supply `--provider-match-id` and `--fixture-id` only for
