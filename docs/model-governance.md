@@ -24,6 +24,47 @@ Complexity must earn its place.
 
 ---
 
+### Sprint 2 baseline contracts
+
+The [Sprint 2 gate](sprint2-phase-gate.md) retains the authoritative failure
+and frozen policy. The following implementations are the evaluated baselines.
+
+- **Team Elo.** Process unique canonical matches in kickoff and match-ID order.
+  Reject two appearances by one team in the same kickoff batch. Expected home
+  score is `1 / (1 + 10^((away_rating - home_rating - home_advantage)/400))`.
+  Update both ratings symmetrically by `K × competition_weight × margin ×
+  (actual_home_score - expected_home_score)`. The margin is one for a goal
+  difference up to one, otherwise `1 + ln(goal_difference)`. Optional
+  inactivity decay regresses toward the initial rating by elapsed half-lives.
+  `EloOneXTwoAdapterV1` uses Davidson weights `home = 10^((R_h+H)/400)`,
+  `away = 10^(R_a/400)`, `draw = 0.5 × sqrt(home × away)`, then normalizes
+  across the three outcomes. The draw propensity was fixed before evaluation.
+  `football.team_elo_history` binds the model version and configuration hash to
+  immutable per-team, per-match ratings. `PostgresEloHistory.rating_at` requires
+  a timezone-aware cutoff.
+- **Dixon–Coles.** Fit time-weighted completed canonical matches in kickoff and
+  match-ID order. Goal rates exponentiate team attack, opposing defensive
+  vulnerability and home advantage on the home side. Attack effects sum to
+  zero. Version 2 uses bounded SLSQP with an analytic gradient, objective
+  tolerance `1e-12` and projected stationarity tolerance `1e-3`. Version 3
+  shrinks attack effects and deviations from mean defense with L2 strength
+  `16.0`, selected in four chronological folds before the first evaluation
+  target. The mean defense and stored likelihood remain unpenalized. Versions
+  1 and 2 remain loadable. For `(0,0), (0,1), (1,0), (1,1)`, multiply the
+  independent joint Poisson mass by `1 - λhλaρ`, `1 + λhρ`, `1 + λaρ`
+  and `1 - ρ` respectively. Reject a non-positive correction. The same joint
+  distribution supplies exact scores, 1X2, goal totals, BTTS and clean sheets.
+  The 6×6 matrix retains all tail mass in `5+` buckets.
+- **Corner counts.** Poisson and NB2 use the same prior-only possession, shot,
+  cross and corner features, trained feature scales, team attack/opponent
+  concession effects, competition and home advantage. Team and opponent effects
+  each sum to zero. Version 2 applies L2 strength `256.0` to both effect vectors,
+  selected in the 100-match warm-up before evaluation. NB2 variance is
+  `mean + alpha × mean²`. Fit with deterministic restart and select the lowest
+  finite converged objective. Compare families on unpenalized likelihood and
+  AIC. The artifacts retain expected counts, variances and exact probabilities.
+  Out-of-sample evaluation remains the acceptance gate.
+
 ## Model Identity
 
 Keep these concepts separate:

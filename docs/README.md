@@ -43,8 +43,8 @@ Every file marked *proposed* under `docs/` is a proposal, not an approval. A sta
 
 ## Models, evaluation and experimentation
 
-- [Backtesting](backtesting.md), [model governance](model-governance.md), [Sprint 2 backtesting contract](sprint2-backtesting-contract.md), [walk-forward target plan](walk-forward-target-plan.md), [Sprint 2 phase gate](sprint2-phase-gate.md)
-- Baselines: [team Elo](team-elo.md), [Dixon–Coles](dixon-coles.md), [corner models](corner-models.md), [corner labels](corner-labels.md)
+- [Backtesting](backtesting.md), [Sprint 2 walk-forward and scoring](backtesting.md#sprint-2-walk-forward-and-scoring), [Sprint 2 phase gate](sprint2-phase-gate.md)
+- [Model governance](model-governance.md), [Sprint 2 baseline contracts](model-governance.md#sprint-2-baseline-contracts)
 - [Evaluation V2 freeze/metrics and authorization](evaluation/evaluation-v2-policy.md)
 - [Phase 3A minimal xG draft pre-registration](governance/phase3a-minimal-xg-preregistration.md)
 - [Portfolio dependency table](governance/feature-portfolio.md), [experiment ledger template](governance/experiment-register.md)

@@ -246,6 +246,69 @@ Passing feasibility does not imply admission.
 
 Passing admission does not imply authoritative evaluation unless a later owner decision explicitly authorizes it.
 
+## Sprint 2 walk-forward and scoring
+
+`PointInTimeScopeV1` binds the exact dataset, source, feature version, policy,
+two cutoffs, knowledge mode and target-set hash. The planner freezes one
+outcome-complete population, including governed corner labels, before applying
+warm-up. `WalkForwardTargetPlanV1` checks at least 10 prior completed matches per
+team and 100 per competition using state from earlier batches. All targets at
+one kickoff see the same history. Duplicate appearances by one team at a
+kickoff fail. The plan contains label-free contexts and prior-history counts.
+
+For the fixed retrospective EPL snapshot, regulation-time results become
+available two hours after kickoff. Strict modes use governed claim timestamps.
+Both planning and history require `outcome_known_at < football_cutoff`.
+`Sprint2WalkForwardExecutor` fits and persists all four raw model forecasts
+before requesting outcomes. `reveal_outcomes` requires explicit frozen target
+IDs and exact lifecycle, kickoff, corner-label, dataset and cutoff lineage.
+Reference forecasts use the same prior history and common targets.
+
+### Corner outcome labels
+
+`statsbomb-pass-type-61-corner-v1` counts only events with type ID/name
+`30 / Pass` and pass-type ID/name `61 / Corner`. Partial ID/name matches
+fail publication. Every counted event must have a unique canonical ID for the
+exact match and home or away team. Zero is valid for a complete event stream.
+The label binds match/team IDs, the scored observation and completed lifecycle
+claim, dataset/snapshot/resource/file IDs, validator run, physical and logical
+Parquet checksums, and the ordered qualifying event IDs and counts. Publication
+verifies file bytes and is atomic and idempotent. The label inherits
+`known_from` from the lifecycle claim and is absent from forecast contexts.
+See [corner resolution commands](cli.md#commands).
+
+### Frozen plan and metrics
+
+The plan stores `WalkForwardTargetPlanV1.json` at
+`target-set=<target-sha256>/plan=<full-plan-sha256>/`. The first hash covers
+ordered label-free target contexts. The second also binds dataset specification
+and history counts. The [JSON Schema](../schemas/contracts/walk-forward-target-plan-v1.schema.json)
+validates the plan. Exact retries verify the original bytes.
+
+The approved StatsBomb EPL 2015/16 corpus contains 380 resolved matches,
+100 warm-up exclusions, 280 targets and 146 batches, with full outcome
+coverage. The target set SHA-256 is
+`c5b9ff5860d9d00d55ab58fe3dc044d41d95af49501d27275fdc2e0831bff362`.
+The authoritative [phase gate](sprint2-phase-gate.md) records the executed
+result and frozen acceptance policy.
+
+Score 1X2 with log loss, multiclass Brier, RPS, accuracy and calibration
+diagnostics. Score goals with joint NLL, total-goal CRPS, MAE, RMSE and Poisson
+deviance. Score home, away and total corners with NLL, CRPS, MAE and RMSE.
+Count support must capture `1 - 1e-12` mass within 1,000,000 counts or fail.
+Calibration uses earlier out-of-sample predictions with outcomes known
+strictly before the fit cutoff. Multiclass vector calibration preserves the
+simplex. Over 2.5 and BTTS use Platt and isotonic challengers. Raw probabilities
+stay immutable.
+
+Uncertainty uses 2,000 paired chronological moving-block resamples, block
+size 10, 95% intervals and seed `20260831`. Retain resample deltas, artifact and
+forecast UUIDs for each target, initial and final football cutoffs, and
+`subgroup_diagnostics.parquet`. Subgroups use overall, month, team, competition,
+home/away role, realized 1X2, realized-probability decile, and exact goal or
+corner totals. Compare reruns only under equivalent target, code, dependency,
+bootstrap, calibration and clean-worktree provenance.
+
 ## Reproducibility
 
 An authoritative run must bind the applicable:
