@@ -75,6 +75,8 @@ def running_application(database, repository, log_path):
         "MATCHFORGE_REPO_ROOT": str(repository),
         "MATCHFORGE_OPERATIONAL_SYNC_INTERVAL": "0",
         "MATCHFORGE_HISTORY_SYNC_ENABLED": "false",
+        # The disposable application must never run the host's storage policy.
+        "MATCHFORGE_STORAGE_POLICY": "",
         "MATCHFORGE_REAL_PROVIDER_E2E": "false",
         "MATCHFORGE_REMEDIATION_BACKEND": "http://127.0.0.1:58081",
     }
