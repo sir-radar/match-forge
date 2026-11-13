@@ -122,11 +122,22 @@ func (m *Manager) discoverPaths(ctx context.Context, policy LifecyclePolicy, now
 }
 
 // pathAllowed refuses anything that is not strictly inside the repository, or
-// that overlaps Git metadata, the operating data root or a protected path.
+// that overlaps Git metadata, Git-tracked files, the operating data root or a
+// protected path.
 func (m *Manager) pathAllowed(path string) string {
 	if m.Repository == "" || !within(m.Repository, path) || path == m.Repository {
 		return "path is not inside the repository"
 	}
+	for p, reason := range m.reservedPaths() {
+		if overlaps(p, path) {
+			return reason
+		}
+	}
+	return trackedFilesInside(m.Repository, path)
+}
+
+// reservedPaths maps each path the policy must never touch to the reason.
+func (m *Manager) reservedPaths() map[string]string {
 	reserved := map[string]string{filepath.Join(m.Repository, ".git"): "path is Git metadata"}
 	if root := os.Getenv("FOOTBALL_DATA_ROOT"); root != "" {
 		if !filepath.IsAbs(root) {
@@ -139,10 +150,25 @@ func (m *Manager) pathAllowed(path string) string {
 			reserved[p] = "path overlaps a protected path"
 		}
 	}
-	for p, reason := range reserved {
-		if overlaps(p, path) {
-			return reason
-		}
+	return reserved
+}
+
+// trackedFilesInside refuses a directory that holds files Git tracks: tracked
+// documentation and source are retired by pull request, never by this policy.
+// It fails closed when Git cannot answer.
+func trackedFilesInside(repository, path string) string {
+	relative, err := filepath.Rel(repository, path)
+	if err != nil {
+		return "could not check Git-tracked files"
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	output, err := exec.CommandContext(ctx, "git", "-C", repository, "ls-files", "-z", "--", relative).Output()
+	if err != nil {
+		return "could not check Git-tracked files"
+	}
+	if len(output) > 0 {
+		return "path contains Git-tracked files"
 	}
 	return ""
 }
