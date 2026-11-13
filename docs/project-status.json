@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-12T20:35:00Z",
+  "updated_at": "2026-11-12T22:00:00Z",
   "unified_architecture_investigation": {
     "status": "PASS_WITH_WARNINGS",
     "scope": "CURRENT_TASK.md revision 3; architecture investigation/planning only",
@@ -4194,7 +4194,7 @@
       "full_recovery_verified": false,
       "full_recovery_blocker": "FULL_RECOVERY capture enumerates the 159 governed exclusions and fails by design; VERIFIED_GOVERNED_SCOPE is proposed separately"
     },
-    "required_next_action": "Governed recovery is active: VERIFIED_GOVERNED_SCOPE point 02376823 (Admin history, next due 12 December 2026) covers every present original with 159 approved exclusions. FULL_RECOVERY remains ineligible by design while those exclusions exist. The rehearsal databases (including football_fduk_binding_rehearsal_20261112), football_v4_integration_20261110 and the StatsBomb and P02 databases stay until separately reviewed.",
+    "required_next_action": "Governed recovery is active: VERIFIED_GOVERNED_SCOPE point 02376823 (next due 12 December 2026); FULL_RECOVERY remains ineligible by design. Storage Management has deleted 43 databases and 2 worktrees (179.9 GB measured). Three non-operating databases remain (2.96 GB) and none is eligible: the two StatsBomb databases are isolated by owner decision and the R04 registry waits for its handoff; none is in the governed backup. The owner decisions listed in docs/operations/storage-audit-2026-11-13.md, including the five-hour lifecycle rollout, are open.",
     "governed_recovery_point": {
       "decision_id": "AUTHORIZE_GOVERNED_SCOPE_ACTIVATION_V1",
       "decision_ref": "docs/evidence/owner-decision-authorize-governed-scope-activation-2026-11-12.json",
@@ -4214,6 +4214,50 @@
       "next_backup_due": "2026-12-12",
       "preservation": "UNCHANGED",
       "full_recovery_verified": false
+    },
+    "storage_audit": {
+      "report_ref": "docs/operations/storage-audit-2026-11-13.md",
+      "evidence_ref": "docs/evidence/storage-audit-2026-11-13.json",
+      "observed_at": "2026-11-12T21:55:00Z",
+      "method": "read-only; nothing recorded, compared, moved or deleted",
+      "storage_management_deletions": {
+        "databases": 43,
+        "worktrees": 2,
+        "reclaimed_bytes_measured": 179949870725
+      },
+      "previously_unrecorded_batches": {
+        "databases": 20,
+        "reclaimed_bytes_measured": 58604406508,
+        "batches_utc": [
+          "2026-11-12T19:40",
+          "2026-11-12T20:29"
+        ],
+        "approved_by": "owner credential through Storage Management"
+      },
+      "remaining_non_operating_databases": [
+        "football_phase3a_serie_a_20260922",
+        "football_liga_f_recovery_20260910",
+        "football_v4_access_r04_20261102"
+      ],
+      "remaining_non_operating_bytes": 2961949757,
+      "proposed_disposition": "PRESERVE (not recorded)",
+      "statsbomb_reconciliation": "NOT_AUTHORIZED: isolated by owner decision; retained source files verified 1,142/1,142 and 722/722",
+      "in_governed_backup": false,
+      "deletion_eligible_resources": 0,
+      "owner_decisions_required": 6
+    },
+    "five_hour_lifecycle": {
+      "status": "IMPLEMENTED_NOT_DEPLOYED",
+      "migrations": [
+        "202611130100_storage_lifecycle_tracking",
+        "202611130200_storage_maintenance_runs"
+      ],
+      "resource_classes": [
+        "TEST_DATABASE",
+        "WORKTREE"
+      ],
+      "inactivity_seconds": 18000,
+      "operating_activation": "requires owner approval of the migrations, release and a policy file with lifecycle_cleanup and maintenance"
     }
   }
 }
