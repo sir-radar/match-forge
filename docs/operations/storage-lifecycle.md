@@ -269,7 +269,9 @@ The policy lists each directory with its kind and consumer processes:
 ]
 ```
 
-A path is tracked by device and inode, so a rebuilt directory is a new resource.
+A path is tracked by device, inode and a digest of its path, plus a generation:
+some filesystems reuse a deleted directory's inode at once, so a rebuilt directory
+always gets a new record instead of inheriting a deleted one.
 One `ps` and one `lsof` call per check establish use: a running consumer, a file
 open inside the directory, or a process working inside it. Completion
 (`CONSUMERS_IDLE`) starts when none remains. Activity is a bounded fingerprint of

@@ -700,8 +700,7 @@ func stillAtLocation(op operationRow) bool {
 	if _, tracked := op.Identity["inode"]; !tracked {
 		return false
 	}
-	key, _, err := pathIdentity(op.Location)
-	return err == nil && key == op.IdentityKey
+	return currentPath(op.IdentityKey, op.Location)
 }
 
 // openQuarantines returns resources quarantined and not yet restored or purged.

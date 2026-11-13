@@ -61,18 +61,22 @@ func pathHarness(t *testing.T) (*lifecycleHarness, *fakeProcesses, map[string]st
 	return h, processes, paths
 }
 
-func pathKey(t *testing.T, path string) string {
+// pathKey returns the open record that tracks the directory now at path.
+func pathKey(t *testing.T, h *lifecycleHarness, path string) string {
 	t.Helper()
-	key, _, err := pathIdentity(path)
+	base, _, err := pathIdentity(path)
 	must(t, err)
+	var key string
+	must(t, h.pool.QueryRow(context.Background(), `SELECT identity_key FROM football.storage_lifecycle_resources
+ WHERE starts_with(identity_key,$1) AND state NOT IN ('DELETED','ABSENT')`, base+":").Scan(&key))
 	return key
 }
 
 func TestDatabaseLifecyclePathsFiveHourDeletionAndActivity(t *testing.T) {
 	h, processes, paths := pathHarness(t)
-	target, tmp := pathKey(t, paths["target"]), pathKey(t, paths["tmp"])
 	processes.set(ProcessUse{Names: []string{"cargo"}, Open: []string{paths["tmp"] + "/a/tmp.bin"}}, nil)
 	h.advance(time.Minute)
+	target, tmp := pathKey(t, h, paths["target"]), pathKey(t, h, paths["tmp"])
 	expect(t, h.record(target).State == LifecycleActive && contains(h.record(target).Blockers, "consumer process running: cargo"), "a running build must keep its output active: %+v", h.record(target))
 	expect(t, h.record(tmp).State == LifecycleActive, "an open file must keep a directory active")
 
@@ -104,15 +108,15 @@ func TestDatabaseLifecyclePathsFiveHourDeletionAndActivity(t *testing.T) {
 	// A rebuilt directory is a new resource with its own window.
 	writeFile(t, filepath.Join(paths["target"], "a", "rebuilt.o"), 1024)
 	h.advance(time.Minute)
-	rebuilt := h.record(pathKey(t, paths["target"]))
+	rebuilt := h.record(pathKey(t, h, paths["target"]))
 	expect(t, rebuilt.IdentityKey != target && rebuilt.State == LifecycleWaiting, "rebuilt output not tracked anew: %+v", rebuilt)
 }
 
 func TestDatabaseLifecyclePathsExemptionsProtectionAndScanFailure(t *testing.T) {
 	h, processes, paths := pathHarness(t)
-	cache, data := pathKey(t, paths["cache"]), pathKey(t, paths["data"])
 	processes.set(ProcessUse{}, errors.New("lsof unavailable"))
 	h.advance(time.Minute)
+	cache, data := pathKey(t, h, paths["cache"]), pathKey(t, h, paths["data"])
 	expect(t, h.record(cache).State == LifecycleActive, "unknown process activity must count as use")
 	processes.set(ProcessUse{}, nil)
 	h.advance(time.Minute)
@@ -133,7 +137,7 @@ func TestDatabaseLifecyclePathsInterruptedDeletion(t *testing.T) {
 	ctx := context.Background()
 	processes.set(ProcessUse{}, nil)
 	h.advance(time.Minute)
-	key := pathKey(t, paths["tmp"])
+	key := pathKey(t, h, paths["tmp"])
 	rec := h.record(key)
 	// Interrupted before the directory was detached: recovery must not claim success.
 	operation := newUUID()
@@ -177,4 +181,22 @@ func TestDisposablePathValidation(t *testing.T) {
 	p := base
 	p.Paths = []DisposablePath{{Path: "/r/target", Kind: "BUILD_OUTPUT", Consumers: []string{"cargo"}}, {Path: "/r/.local/tmp", Kind: "TEMPORARY"}}
 	expect(t, p.validate(nil) == nil, "valid paths rejected")
+}
+
+// Some filesystems hand a deleted directory's inode to the next directory at the
+// same path at once. The new directory must get a new generation, not the old
+// terminal record.
+func TestDatabaseLifecyclePathsReusedInodeGetsNewGeneration(t *testing.T) {
+	h, processes, paths := pathHarness(t)
+	processes.set(ProcessUse{}, nil)
+	base, identity, err := pathIdentity(paths["tmp"])
+	must(t, err)
+	_, err = h.pool.Exec(context.Background(), `INSERT INTO football.storage_lifecycle_resources(identity_key,resource_class,backend,identity,location,
+ owner_kind,owner_ref,created_at,last_activity_at,state) VALUES($1,'DISPOSABLE_PATH','filesystem',$2,$3,'POLICY_PATH','{}',$4,$4,'DELETED')`,
+		base+":0", identity, paths["tmp"], h.now)
+	must(t, err)
+	h.advance(time.Minute)
+	r := h.record(pathKey(t, h, paths["tmp"]))
+	expect(t, r.IdentityKey == base+":1" && r.State == LifecycleWaiting, "reused inode inherited the deleted record: %+v", r)
+	expect(t, h.record(base+":0").State == LifecycleDeleted, "the deleted record changed")
 }

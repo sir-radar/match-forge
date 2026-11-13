@@ -68,8 +68,9 @@ func (m *Manager) processScan() ProcessScan {
 	return LocalProcessScan
 }
 
-// pathIdentity binds a directory by device and inode, so a directory recreated
-// after deletion becomes a new resource.
+// pathIdentity returns the identity base of a directory: device, inode and a
+// digest of its path. Some filesystems reuse a deleted directory's inode at
+// once, so a record key adds a generation after the base (see discoverPaths).
 func pathIdentity(path string) (string, map[string]any, error) {
 	info, err := os.Lstat(path)
 	if err != nil {
@@ -80,22 +81,39 @@ func pathIdentity(path string) (string, map[string]any, error) {
 		return "", nil, errors.New("not a directory")
 	}
 	identity := map[string]any{"path": path, "device": uint64(stat.Dev), "inode": stat.Ino}
-	return fmt.Sprintf("fs:%d:%d", uint64(stat.Dev), stat.Ino), identity, nil
+	return fmt.Sprintf("fs:%d:%d:%s", uint64(stat.Dev), stat.Ino, Fingerprint(path)[:16]), identity, nil
 }
 
-// discoverPaths registers each configured path that exists under its current
-// identity.
+// currentPath reports whether the record still describes the directory now at
+// its location: same device, inode and path.
+func currentPath(key, location string) bool {
+	base, _, err := pathIdentity(location)
+	return err == nil && strings.HasPrefix(key, base+":")
+}
+
+// discoverPaths registers each configured path that exists. A directory whose
+// identity base already has an open record is tracked by it; otherwise a new
+// generation is registered, so a rebuilt directory never inherits a deleted
+// directory's terminal record even when its inode was reused.
 func (m *Manager) discoverPaths(ctx context.Context, policy LifecyclePolicy, now time.Time) error {
 	for _, d := range policy.Paths {
-		key, identity, err := pathIdentity(d.Path)
+		base, identity, err := pathIdentity(d.Path)
 		if errors.Is(err, fs.ErrNotExist) {
 			continue
 		}
 		if err != nil {
 			return err
 		}
-		rec := LifecycleRecord{IdentityKey: key, Class: ClassDisposablePath, Backend: "filesystem", Location: d.Path,
-			OwnerKind: "POLICY_PATH", Identity: identity, OwnerRef: map[string]any{"kind": d.Kind, "consumers": d.Consumers}}
+		var open, generations int
+		if err = m.Pool.QueryRow(ctx, `SELECT count(*) FILTER (WHERE state NOT IN ('DELETED','ABSENT')),count(*)
+ FROM football.storage_lifecycle_resources WHERE starts_with(identity_key,$1)`, base+":").Scan(&open, &generations); err != nil {
+			return err
+		}
+		if open > 0 {
+			continue
+		}
+		rec := LifecycleRecord{IdentityKey: fmt.Sprintf("%s:%d", base, generations), Class: ClassDisposablePath, Backend: "filesystem",
+			Location: d.Path, OwnerKind: "POLICY_PATH", Identity: identity, OwnerRef: map[string]any{"kind": d.Kind, "consumers": d.Consumers}}
 		if err = registerLifecycle(ctx, m.Pool, rec, now); err != nil {
 			return err
 		}
@@ -135,8 +153,7 @@ func overlaps(a, b string) bool { return a == b || within(a, b) || within(b, a) 
 // directories), completion once none remains, and a bounded fingerprint of the
 // top two directory levels that changes when the build or cache writes.
 func (m *Manager) observePath(rec LifecycleRecord, use ProcessUse, scanErr error, policy LifecyclePolicy) LifecycleObservation {
-	key, _, err := pathIdentity(rec.Location)
-	if err != nil || key != rec.IdentityKey {
+	if !currentPath(rec.IdentityKey, rec.Location) {
 		return LifecycleObservation{}
 	}
 	obs := LifecycleObservation{Present: true, Fingerprint: shallowFingerprint(rec.Location, 20_000), Deletable: true}
