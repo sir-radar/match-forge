@@ -62,7 +62,7 @@ and frozen policy. The following implementations are the evaluated baselines.
   selected in the 100-match warm-up before evaluation. NB2 variance is
   `mean + alpha × mean²`. Fit with deterministic restart and select the lowest
   finite converged objective. Compare families on unpenalized likelihood and
-  AIC. The artifacts retain expected counts, variances and exact probabilities.
+  AIC. Forecasts expose expected counts, variances and exact probabilities.
   Out-of-sample evaluation remains the acceptance gate.
 
 ## Model Identity

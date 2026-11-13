@@ -299,7 +299,8 @@ Count support must capture `1 - 1e-12` mass within 1,000,000 counts or fail.
 Calibration uses earlier out-of-sample predictions with outcomes known
 strictly before the fit cutoff. Multiclass vector calibration preserves the
 simplex. Over 2.5 and BTTS use Platt and isotonic challengers. Raw probabilities
-stay immutable.
+stay immutable. The frozen policy requires ECE improvement within the locked
+log-loss and Brier regression allowances.
 
 Uncertainty uses 2,000 paired chronological moving-block resamples, block
 size 10, 95% intervals and seed `20260831`. Retain resample deltas, artifact and
