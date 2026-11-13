@@ -60,6 +60,7 @@ Every file marked *proposed* under `docs/` is a proposal, not an approval. A sta
 - [Capabilities and enablement](operations/capability-registry.md), [rollback](operations/rollback-policy.md), [monitoring](operations/forecast-monitoring.md)
 - [P0 storage protection and recovery evidence](operations/storage-protection-2026-11-11.md)
 - [Storage lifecycle operations, capacity policy and approval-only resource manifest](operations/storage-lifecycle.md)
+- [Storage lifecycle rollout, 13 November 2026](evidence/storage-lifecycle-rollout-2026-11-13.json): release `878cd0d`, migrations through `202611130300`, policy active
 - [Local storage cleanup, 13 November 2026](operations/local-storage-cleanup-2026-11-13.md): 134.1 GB deleted, 148.2 GB reclaimed, [evidence](evidence/local-storage-cleanup-2026-11-13.json)
 - [Storage audit and dispositions, 13 November 2026](operations/storage-audit-2026-11-13.md): remaining databases, host resources and open owner decisions, [evidence](evidence/storage-audit-2026-11-13.json)
 - [Remaining non-operating databases: review, 12 November 2026](operations/remaining-database-review-2026-11-12.md): 23 compared, 18 reviewed, [evidence](evidence/remaining-database-unique-rows-2026-11-12.json)

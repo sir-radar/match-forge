@@ -1,0 +1,26 @@
+{
+ "contract": "OwnerDecisionRecordV1",
+ "decision_id": "AUTHORIZE_STORAGE_LIFECYCLE_ROLLOUT_V1",
+ "recorded_at": "2026-11-13T04:10:00Z",
+ "title": "Deploy 878cd0d, apply the storage lifecycle migrations and activate the storage policy",
+ "status": "APPROVED",
+ "owner": "repository owner / sir-radar",
+ "map": "storage-lifecycle",
+ "ticket": "Five-hour lifecycle and maintenance rollout (PRs 218, 219 and 220)",
+ "source": {
+  "execution_instruction": "Owner instruction in this session: fix the failing CI for PR 220, then apply these migrations and storage policies once the needed PRs are merged to main; owner then confirmed 'They're merged'.",
+  "release_git_sha": "878cd0d5bc9da800b88f8effc6954daef4fb365e"
+ },
+ "authorizes": [
+  "deploying API, storage CLI and web release 878cd0d to the operating host",
+  "applying migrations 202611130100_storage_lifecycle_tracking, 202611130200_storage_maintenance_runs and 202611130300_storage_lifecycle_paths to football without a new dump; backup 02376823 is the latest verified recovery point",
+  "writing .local/storage-policy.json and setting MATCHFORGE_STORAGE_POLICY in the local .env",
+  "automatic five-hour deletion of registered test databases, merged worktrees under .claude/worktrees and .local/worktrees, and the declared build outputs and caches, plus scheduled maintenance reports"
+ ],
+ "explicitly_not_authorized": [
+  "automatic deletion of any other resource class, the authoritative database, protected paths or original data",
+  "recording dispositions for or deleting the three remaining non-operating databases",
+  "claiming FULL_RECOVERY or changing its semantics"
+ ],
+ "evidence_ref": "docs/evidence/storage-lifecycle-rollout-2026-11-13.json"
+}
