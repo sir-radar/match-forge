@@ -1129,3 +1129,36 @@ def test_exact_archive_can_follow_a_reviewed_post_kickoff_fixture_replacement(re
             "SELECT count(*) FROM football.external_reviewed_fixture_mappings WHERE mapping_id=%s",
             (replacement,),
         ).fetchone() == (0,)
+
+
+def test_result_recovery_settles_without_internal_forecast():
+    from football.product.result_recovery import finish_result_recovery
+
+    from tests.integration.test_live_context import _seed_fixture
+    from tests.integration.test_team_identity_correction import isolated_database
+
+    with isolated_database() as url, psycopg.connect(url) as connection:
+        _seed_fixture(connection)
+        assert (
+            import_predictions(
+                connection, (selection(),), collected_at=KICKOFF - timedelta(hours=3)
+            )
+            == 1
+        )
+        connection.execute(
+            """UPDATE football.product_fixtures SET status='FINISHED',home_score=2,away_score=1,
+                      result_score_basis='REGULATION_90',identity_status='VERIFIED'
+               WHERE fixture_id=%s""",
+            (FIXTURE,),
+        )
+        assert connection.execute("SELECT count(*) FROM football.product_forecasts").fetchone() == (
+            0,
+        )
+        connection.commit()
+
+        assert finish_result_recovery(connection)["settled_external_predictions"] == 1
+        assert connection.execute(
+            "SELECT settlement_state FROM football.external_prediction_latest_results"
+        ).fetchall() == [("WON",)]
+        connection.commit()
+        assert finish_result_recovery(connection)["settled_external_predictions"] == 0

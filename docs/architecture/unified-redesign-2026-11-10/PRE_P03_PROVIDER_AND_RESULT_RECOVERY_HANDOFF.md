@@ -42,6 +42,31 @@ refresh. P03 retains live resource scheduling, fairness, catch-up and
 dependency-specific work. P04 retains committed events, SSE and browser
 freshness. P09 retains broader source and identity gaps.
 
+## Verification
+
+The local Python suite passed 2,329 tests at the configured 67% coverage floor.
+Go and Rust tests, architecture checks, static analysis, project status and
+documentation checks passed. Web unit tests passed 257 cases. The pinned
+Next.js binary built the application after the aggregate make target hit a
+pnpm dependency-directory error. The existing desktop Chromium Admin
+keyboard and axe tests passed. Assistive-technology conformance remains
+unverified.
+
+On disposable PostgreSQL 18, 83 focused integration tests and the new
+settlement regression passed. The latter published a 2–1 result on a fixture
+with zero internal forecasts, recorded a winning settlement, and appended no
+settlement on retry. The recovery suite exercised same-day scope refresh,
+expired leases, provider cooldown, a 23:50 UTC kickoff, and correction history
+at an earlier cutoff. These tests used simulated provider responses.
+
+A separate synthetic dump and restore applied migration `202611130400` to
+the prior schema and ran the result recovery summary. All seven P02 checksum
+queries matched before and after. Forecast and source snapshot tables had one
+seeded record each. The five other protected cohorts were empty in that
+rehearsal. Automatic approval review rejected creating a new copy of the
+operating database because it would duplicate sensitive data. A populated
+restore and operating performance evidence remain pending.
+
 ## Open requirements
 
 - Verify actual scoped entitlements and supported results outside the three
@@ -53,10 +78,9 @@ freshness. P09 retains broader source and identity gaps.
   advanced lifecycle and provider-ID changes, retained-evidence reactivation,
   and populated request and database costs. Existing cross-source conflicts
   require qualified evidence. A manual recheck does not resolve them by itself.
-- Complete the controlled rehearsal, P02 preservation checks and external
-  settlement verification on the intended release. PR #230 was an open draft
-  during Phase A. The implementation uses settlement code and SQL triggers
-  already on main.
+- Complete populated preservation and external settlement verification on
+  the intended release. PR #230 remained an open draft during verification.
+  The branch regression uses settlement code and SQL triggers on main.
 - Record a verified deployment, resource consumption and dataset-wide recovery
   results before declaring readiness.
 
