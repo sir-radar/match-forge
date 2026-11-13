@@ -1008,3 +1008,124 @@ def test_inventory_validates_source_date_before_reconciliation(report_database):
         assert {row["prediction_id"] for row in audit["predictions"]} == set(
             result["changed_prediction_ids"]
         )
+
+
+def test_exact_archive_can_follow_a_reviewed_post_kickoff_fixture_replacement(report_database):
+    from football.product.external_predictions import verified_r2bet_mapping
+    from psycopg.types.json import Jsonb
+
+    original, replacement, decision = uuid4(), uuid4(), uuid4()
+    kickoff = datetime(2026, 10, 3, 18, tzinfo=UTC)
+    reviewed_at = kickoff + timedelta(days=1)
+    row = selection(
+        prediction_date=kickoff.date(),
+        original_date_text="3rd, Sat Oct 2026",
+        provider_code=None,
+        provider_fixture_id=None,
+        fixture_reference_url="https://r2bet.com/index.php/match-details/123-free/home-vs-away",
+        source_kickoff_text="19:00",
+    )
+    with psycopg.connect(report_database) as c:
+        c.execute("UPDATE football.providers SET code='api_football' WHERE id=%s", (PROVIDER,))
+        c.execute(
+            "UPDATE football.product_fixtures SET kickoff_at=%s WHERE fixture_id=%s",
+            (
+                kickoff,
+                FIXTURE,
+            ),
+        )
+        c.execute(
+            """INSERT INTO football.matches (id,competition_id,season_id)
+            SELECT %s,competition_id,season_id FROM football.matches WHERE id=%s""",
+            (original, FIXTURE),
+        )
+        c.execute(
+            """INSERT INTO football.product_fixtures
+            (fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,status,
+             forecast_availability,identity_status,updated_at)
+            SELECT %s,competition_id,home_team_id,away_team_id,kickoff_at,'SCHEDULED',
+                forecast_availability,identity_status,updated_at
+            FROM football.product_fixtures WHERE fixture_id=%s""",
+            (original, FIXTURE),
+        )
+        c.execute(
+            """INSERT INTO football.match_provider_mappings
+            (id,match_id,provider_id,provider_match_id,first_seen_at,last_seen_at,valid_from,valid_to,
+             mapping_method,mapping_confidence,source_snapshot_id)
+            VALUES(uuidv7(),%s,%s,'123',%s,%s,NULL,%s,'deterministic',1,%s),
+                  (%s,%s,%s,'123',%s,%s,%s,NULL,'manual',1,%s)""",
+            (
+                original,
+                PROVIDER,
+                reviewed_at,
+                reviewed_at,
+                reviewed_at,
+                SNAPSHOT,
+                replacement,
+                FIXTURE,
+                PROVIDER,
+                reviewed_at,
+                reviewed_at,
+                reviewed_at,
+                SNAPSHOT,
+            ),
+        )
+        c.execute(
+            """INSERT INTO football.product_provider_mapping_decisions
+            (decision_id,semantic_sha256,provider_code,provider_match_id,candidate_fixture_id,
+             disposition,reason,evidence,source_snapshot_id,observed_at)
+            VALUES(%s,%s,'api_football','123',%s,'AUTO_ACCEPTED','Reviewed fixture',%s,%s,%s)""",
+            (
+                decision,
+                uuid4().hex * 2,
+                FIXTURE,
+                Jsonb({"rule": "admitted_competition_home_away_exact_kickoff_native_fixture_id"}),
+                SNAPSHOT,
+                reviewed_at,
+            ),
+        )
+        c.execute(
+            """INSERT INTO football.fixture_identity_resolutions
+            (canonical_real_fixture_id,member_fixture_id,representative_fixture_id,
+             resolution_status,resolution_reason,evidence_json,evidence_sha256,
+             resolution_version,created_at)
+            VALUES(%s,%s,%s,'DUPLICATE_RESOLVED','Reviewed fixture',%s,%s,'test',%s)""",
+            (
+                FIXTURE,
+                original,
+                FIXTURE,
+                Jsonb(
+                    {
+                        "provider_mapping_decision_id": str(decision),
+                        "provider": "api_football",
+                        "provider_match_id": "123",
+                        "source_snapshot_id": str(SNAPSHOT),
+                        "original_fixture_id": str(original),
+                        "reviewed_fixture_id": str(FIXTURE),
+                    }
+                ),
+                uuid4().hex * 2,
+                reviewed_at,
+            ),
+        )
+        assert verified_r2bet_mapping(c, row) == replacement
+        c.commit()
+        assert import_predictions(c, (row,), source_code="r2bet", collected_at=kickoff) == 1
+        assert settle(c) == 2
+        assert c.execute(
+            """SELECT binding.mapping_id,result.settlement_state
+            FROM football.external_predictions ep
+            JOIN football.external_prediction_bindings binding USING (prediction_id)
+            JOIN football.external_prediction_latest_results result USING (prediction_id)
+            WHERE ep.source_page=%s""",
+            (row.source_page,),
+        ).fetchone() == (replacement, "WON")
+        c.execute(
+            "UPDATE football.fixture_identity_resolutions SET active=false "
+            "WHERE member_fixture_id=%s",
+            (original,),
+        )
+        assert c.execute(
+            "SELECT count(*) FROM football.external_reviewed_fixture_mappings WHERE mapping_id=%s",
+            (replacement,),
+        ).fetchone() == (0,)

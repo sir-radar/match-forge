@@ -1380,8 +1380,10 @@ affected captures through the existing settlement and comparison queues.
 A dated R2Bet link can support a binding when a unique retained API-Football
 mapping independently corroborates the native ID, competition, kickoff and
 oriented teams. Source labels alone produce no new bindings. Historical source
-pages can supply missing references for exact retained captures. Their bindings
-use the existing review history and receive no retroactive prospective credit.
+pages can supply missing references for exact retained captures. A verified
+replacement mapping recorded after kickoff can settle a capture when an active
+duplicate resolution and retained provider decision corroborate the same native
+fixture. These reviewed bindings receive no retroactive prospective credit.
 
 External Predictions displays all matching captures for the selected day in
 capture order. Older days are available through the date picker and day

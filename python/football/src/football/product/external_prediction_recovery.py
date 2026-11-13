@@ -67,7 +67,8 @@ def _refresh_native_binding(
     prediction_id = prediction["prediction_id"]
     matches = cursor.execute(
         """SELECT mapping.id,fixture.fixture_id,
-            mapping.source_snapshot_id,mapping.mapping_method
+            mapping.source_snapshot_id,mapping.mapping_method,
+            coalesce(mapping.valid_from>fixture.kickoff_at,false) AS retrospective
         FROM football.match_provider_mappings mapping
         JOIN football.providers provider ON provider.id=mapping.provider_id
         JOIN football.product_fixtures fixture ON fixture.fixture_id=mapping.match_id
@@ -83,8 +84,12 @@ def _refresh_native_binding(
                 WHERE resolution.member_fixture_id=fixture.fixture_id AND resolution.active
                 AND (resolution.resolution_status NOT IN ('UNIQUE','DUPLICATE_RESOLVED')
                      OR resolution.representative_fixture_id<>fixture.fixture_id))
-            AND (mapping.valid_from IS NULL OR mapping.valid_from<=fixture.kickoff_at)
-            AND (mapping.valid_to IS NULL OR mapping.valid_to>fixture.kickoff_at)
+            AND (
+                ((mapping.valid_from IS NULL OR mapping.valid_from<=fixture.kickoff_at)
+                 AND (mapping.valid_to IS NULL OR mapping.valid_to>fixture.kickoff_at))
+                OR EXISTS (SELECT 1 FROM football.external_reviewed_fixture_mappings r
+                    WHERE r.mapping_id=mapping.id)
+            )
             AND mapping.first_seen_at<=statement_timestamp()
             AND (%s::timestamptz IS NULL OR fixture.kickoff_at=%s)""",
         (
@@ -104,7 +109,7 @@ def _refresh_native_binding(
     fixture, mapping = (target["fixture_id"], target["id"]) if target else (None, None)
     if previous and (previous["fixture_id"], previous["mapping_id"]) == (fixture, mapping):
         return
-    if target and prediction["provider_code"] is None:
+    if target and (prediction["provider_code"] is None or target["retrospective"]):
         bind_reviewed_prediction(
             connection,
             prediction_id,
@@ -212,8 +217,12 @@ def bind_reviewed_prediction(
             WHERE mapping.id=%s AND mapping.mapping_confidence=1
                 AND mapping.mapping_method IN ('explicit_crosswalk','manual','deterministic')
                 AND fixture.identity_status='VERIFIED'
-                AND (mapping.valid_from IS NULL OR mapping.valid_from<=fixture.kickoff_at)
-                AND (mapping.valid_to IS NULL OR mapping.valid_to>fixture.kickoff_at)
+                AND (
+                    ((mapping.valid_from IS NULL OR mapping.valid_from<=fixture.kickoff_at)
+                     AND (mapping.valid_to IS NULL OR mapping.valid_to>fixture.kickoff_at))
+                    OR EXISTS (SELECT 1 FROM football.external_reviewed_fixture_mappings r
+                        WHERE r.mapping_id=mapping.id)
+                )
                 AND mapping.first_seen_at<=statement_timestamp()""",
             (mapping_id,),
         ).fetchone()

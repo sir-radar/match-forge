@@ -81,8 +81,12 @@ def verified_r2bet_mapping(connection: Connection[Any], row: ImportedPrediction)
         WHERE mapping.provider_match_id=%s AND mapping.mapping_confidence=1
           AND mapping.mapping_method IN ('explicit_crosswalk','manual','deterministic')
           AND mapping.first_seen_at<=statement_timestamp() AND f.identity_status='VERIFIED'
-          AND (mapping.valid_from IS NULL OR mapping.valid_from<=f.kickoff_at)
-          AND (mapping.valid_to IS NULL OR mapping.valid_to>f.kickoff_at)
+          AND (
+              ((mapping.valid_from IS NULL OR mapping.valid_from<=f.kickoff_at)
+               AND (mapping.valid_to IS NULL OR mapping.valid_to>f.kickoff_at))
+              OR EXISTS (SELECT 1 FROM football.external_reviewed_fixture_mappings reviewed
+                  WHERE reviewed.mapping_id=mapping.id)
+          )
           AND NOT EXISTS (SELECT 1 FROM football.fixture_identity_resolutions resolution
               WHERE resolution.member_fixture_id=f.fixture_id AND resolution.active
               AND (resolution.resolution_status NOT IN ('UNIQUE','DUPLICATE_RESOLVED')
