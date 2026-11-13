@@ -1,0 +1,481 @@
+{
+ "contract": "LocalStorageCleanupV1",
+ "owner_instruction": "Owner instruction of 13 November 2026 in the Claude Code session: delete obsolete MatchForge-owned local files without making another backup; resource-specific confirmation given for the database dumps.",
+ "completed_at": "2026-11-13T04:05:00Z",
+ "host_free_bytes": {
+  "before": 361100079104,
+  "after": 509338000000,
+  "reclaimed_physical": 148237920896,
+  "note": "df on /System/Volumes/Data; physical reclaim exceeds logical bytes because APFS released previously held blocks"
+ },
+ "local_directory_bytes": {
+  "before": 150000000000,
+  "after": 27457000000,
+  "note": "before is the audit measurement of 12 November (du per entry)"
+ },
+ "logical_bytes_deleted": 134118547456,
+ "by_category": {
+  "investigation_output_r3_architecture_v2": 77187366912,
+  "other_generated_output": 4605390848,
+  "database_dumps_and_run_folders": 41102495744,
+  "build_caches": 1461415936,
+  "duplicate_data_and_restore_drill": 9761878016
+ },
+ "verification": {
+  "data_copies_sha256": [
+   {
+    "copy": "data-status-remediation/populated/data",
+    "files": 112092,
+    "identical": 112092,
+    "not_identical": 0,
+    "samples": []
+   },
+   {
+    "copy": "foundation/operating-ntc-restore/data",
+    "files": 115316,
+    "identical": 115316,
+    "not_identical": 0,
+    "samples": []
+   }
+  ],
+  "data_copy_note": "Compared with the active data root .local/football-data; the 19 Sprint 2 reports of the second copy compared with .local/reports/sprint2.",
+  "dumps": [
+   {
+    "dump": ".local/backups/pre-bulk-reconcile-20260930.sql",
+    "payload_rows": 0,
+    "rows_absent_from_football": 0
+   },
+   {
+    "dump": ".local/backups/football_crosswalk_preapply_20261004.dump",
+    "payload_rows": 0,
+    "rows_absent_from_football": 0
+   },
+   {
+    "dump": ".local/backups/football_crosswalk_preapply_20261004_postsync.dump",
+    "payload_rows": 0,
+    "rows_absent_from_football": 0
+   },
+   {
+    "dump": ".local/storage-rollout/operating-before.dump",
+    "payload_rows": 338580,
+    "rows_absent_from_football": 0
+   },
+   {
+    "dump": ".local/storage-rollout/operating-before-dispositions.dump",
+    "payload_rows": 339690,
+    "rows_absent_from_football": 0
+   },
+   {
+    "dump": ".local/p02/rollout/operating-before.dump",
+    "payload_rows": 336575,
+    "rows_absent_from_football": 0
+   },
+   {
+    "dump": ".local/p02/rehearsal-2/operating.dump",
+    "payload_rows": 329792,
+    "rows_absent_from_football": 0
+   },
+   {
+    "dump": ".local/forecast-readiness-execution/operating-backup-before-phase-a/database.dump",
+    "payload_rows": 283991,
+    "rows_absent_from_football": 0
+   },
+   {
+    "dump": ".local/forecast-readiness-execution/operating-backup-before-native-correction/database.dump",
+    "payload_rows": 286584,
+    "rows_absent_from_football": 0
+   },
+   {
+    "dump": ".local/forecast-readiness-execution/resume-20261109/operating-backup-before-native-correction/database.dump",
+    "payload_rows": 305594,
+    "rows_absent_from_football": 0
+   },
+   {
+    "dump": ".local/forecast-readiness-execution/resume-20261109/operating-backup-before-scope-holds/database.dump",
+    "payload_rows": 313262,
+    "rows_absent_from_football": 0
+   },
+   {
+    "dump": ".local/forecast-readiness-execution/resume-20261109/operating-backup-before-team-name-refresh/database.dump",
+    "payload_rows": 317279,
+    "rows_absent_from_football": 0
+   },
+   {
+    "dump": ".local/forecast-readiness-execution/resume-20261109/operating-backup-before-context-indexes/database.dump",
+    "payload_rows": 316093,
+    "rows_absent_from_football": 0
+   },
+   {
+    "dump": ".local/data-status-remediation/populated/database.dump",
+    "payload_rows": 256705,
+    "rows_absent_from_football": 0
+   },
+   {
+    "dump": ".local/provider-wide-acquisition/shadow-backup/database.dump",
+    "payload_rows": 273509,
+    "rows_absent_from_football": 0
+   },
+   {
+    "dump": ".local/data-recovery-current/rollout-backup/database.dump",
+    "payload_rows": 265290,
+    "rows_absent_from_football": 0
+   },
+   {
+    "dump": ".local/storage-protection/2026-11-11/payload/files/data/database.dump",
+    "payload_rows": 318095,
+    "rows_absent_from_football": 0
+   }
+  ],
+  "dump_method": "Primary keys of football.product_provider_resource_observations (the mutable table holding provider payloads) extracted from each dump and compared with the live table; dumps from before 11 October predate the table. product_uncontested_provider_resources had no rows in any dump.",
+  "operating_references": "Registered file paths in football resolve under FOOTBALL_DATA_ROOT (.local/football-data) and .local/sync-runs; none under deleted paths.",
+  "open_files": "lsof showed no process with a deleted path open immediately before each deletion."
+ },
+ "kept": [
+  ".local/football-data",
+  ".local/sync-runs",
+  ".local/reports",
+  ".local/storage-protection/2026-11-11/recovered-originals and records",
+  ".local/foundation/admin-backup-status and backup receipts",
+  ".local/bin",
+  ".local/releases",
+  ".local/rollback",
+  ".local/phase3a-serie-a-qualification-20260922",
+  ".local/football-data-liga-f-recovery-2026-09-10",
+  ".local/shadow-v4/access-r04 and expansion-r03",
+  ".local/provider-wide-acquisition/acquired",
+  ".local/pitchapi-*",
+  ".local/storage-rollout logs",
+  ".local/go-mod-cache",
+  ".local/uv-cache",
+  "target",
+  "web/node_modules",
+  ".venv",
+  ".tools"
+ ],
+ "deleted": [
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-0",
+   "logical_bytes": 2086338560,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-0-restore-verification",
+   "logical_bytes": 647884800,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-1",
+   "logical_bytes": 647872512,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-10",
+   "logical_bytes": 40960,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-11",
+   "logical_bytes": 40960,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-12",
+   "logical_bytes": 8192,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-13",
+   "logical_bytes": 40960,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-14",
+   "logical_bytes": 40960,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-15",
+   "logical_bytes": 53248,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-15-lock-inventory.txt",
+   "logical_bytes": 8192,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-16",
+   "logical_bytes": 45056,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-17",
+   "logical_bytes": 204800,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-18",
+   "logical_bytes": 65536,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-19",
+   "logical_bytes": 102400,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-20",
+   "logical_bytes": 126976,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-21",
+   "logical_bytes": 86016,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-22",
+   "logical_bytes": 90861568,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-23",
+   "logical_bytes": 69632,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-24",
+   "logical_bytes": 315392,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-25",
+   "logical_bytes": 143360,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-26",
+   "logical_bytes": 106496,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-27",
+   "logical_bytes": 307200,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-28",
+   "logical_bytes": 163840,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-29",
+   "logical_bytes": 286720,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-30",
+   "logical_bytes": 3051520,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-31",
+   "logical_bytes": 7811072,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-32",
+   "logical_bytes": 184320,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-33",
+   "logical_bytes": 5170016256,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-34",
+   "logical_bytes": 36864,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/shadow-v4/phase-14",
+   "logical_bytes": 2309857280,
+   "category": "other_generated_output"
+  },
+  {
+   "path": ".local/foundation/scope-investigation",
+   "logical_bytes": 235372544,
+   "category": "other_generated_output"
+  },
+  {
+   "path": ".local/storage-protection/2026-11-11/supplement",
+   "logical_bytes": 271757312,
+   "category": "other_generated_output"
+  },
+  {
+   "path": ".local/p02-audit",
+   "logical_bytes": 718053376,
+   "category": "other_generated_output"
+  },
+  {
+   "path": ".local/issue02-unblocking",
+   "logical_bytes": 204488704,
+   "category": "other_generated_output"
+  },
+  {
+   "path": ".local/identity-recovery",
+   "logical_bytes": 196816896,
+   "category": "other_generated_output"
+  },
+  {
+   "path": ".local/codex-code-intelligence-benchmark",
+   "logical_bytes": 459067392,
+   "category": "other_generated_output"
+  },
+  {
+   "path": ".local/data-recovery-followup",
+   "logical_bytes": 209977344,
+   "category": "other_generated_output"
+  },
+  {
+   "path": ".local/backups/pre-bulk-reconcile-20260930.sql",
+   "logical_bytes": 2628067328,
+   "category": "database_dumps_and_run_folders"
+  },
+  {
+   "path": ".local/backups/football_crosswalk_preapply_20261004.dump",
+   "logical_bytes": 445878272,
+   "category": "database_dumps_and_run_folders"
+  },
+  {
+   "path": ".local/backups/football_crosswalk_preapply_20261004_postsync.dump",
+   "logical_bytes": 445923328,
+   "category": "database_dumps_and_run_folders"
+  },
+  {
+   "path": ".local/storage-rollout/operating-before.dump",
+   "logical_bytes": 2505621504,
+   "category": "database_dumps_and_run_folders"
+  },
+  {
+   "path": ".local/storage-rollout/operating-before-dispositions.dump",
+   "logical_bytes": 2520764416,
+   "category": "database_dumps_and_run_folders"
+  },
+  {
+   "path": ".local/p02",
+   "logical_bytes": 4818640896,
+   "category": "database_dumps_and_run_folders"
+  },
+  {
+   "path": ".local/forecast-readiness-execution",
+   "logical_bytes": 9905455104,
+   "category": "database_dumps_and_run_folders"
+  },
+  {
+   "path": ".local/data-status-remediation",
+   "logical_bytes": 11751071744,
+   "category": "database_dumps_and_run_folders"
+  },
+  {
+   "path": ".local/data-recovery-current",
+   "logical_bytes": 1816596480,
+   "category": "database_dumps_and_run_folders"
+  },
+  {
+   "path": ".local/provider-wide-acquisition/shadow-backup",
+   "logical_bytes": 1786834944,
+   "category": "database_dumps_and_run_folders"
+  },
+  {
+   "path": ".local/storage-protection/2026-11-11/payload",
+   "logical_bytes": 2477641728,
+   "category": "database_dumps_and_run_folders"
+  },
+  {
+   "path": ".local/go-cache",
+   "logical_bytes": 1460924416,
+   "category": "build_caches"
+  },
+  {
+   "path": ".local/golangci-lint-cache",
+   "logical_bytes": 491520,
+   "category": "build_caches"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-4",
+   "logical_bytes": 16374063104,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-4-development",
+   "logical_bytes": 806912,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-5",
+   "logical_bytes": 16384,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-6",
+   "logical_bytes": 40960,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-7",
+   "logical_bytes": 4096,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-8",
+   "logical_bytes": 40960,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/phase-9",
+   "logical_bytes": 40960,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-architecture-v2/validation",
+   "logical_bytes": 3129344,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-audit/phases",
+   "logical_bytes": 52108120064,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-audit/evidence",
+   "logical_bytes": 30007296,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/matchforge-audit/country-display",
+   "logical_bytes": 14778368,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/fallow-verify-cache",
+   "logical_bytes": 4096,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/remediation/codebase-2026-10-30",
+   "logical_bytes": 0,
+   "category": "investigation_output_r3_architecture_v2"
+  },
+  {
+   "path": ".local/foundation/operating-ntc-restore",
+   "logical_bytes": 9761878016,
+   "category": "duplicate_data_and_restore_drill"
+  },
+  {
+   "path": ".local/data-status-remediation/populated/data",
+   "result": "absent"
+  }
+ ]
+}
