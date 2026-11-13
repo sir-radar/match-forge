@@ -158,7 +158,6 @@ running desktop application was not restarted because another task is active.
 
 ## Initial discovery probes (PR #180)
 
-Machine-readable observations: [code-intelligence-benchmark.json](code-intelligence-benchmark.json).
 The five fixed discovery probes were normalization, a manifest contract, a forecast
 adapter, a frontend hook and remediation recovery. Each tool received the same
 symbol string in the same checkout, with one deterministic CLI query per probe;

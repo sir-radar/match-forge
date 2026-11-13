@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -42,6 +43,7 @@ func pathHarness(t *testing.T) (*lifecycleHarness, *fakeProcesses, map[string]st
 	h := newLifecycleHarness(t, databasePool(t))
 	repo, err := filepath.EvalSymlinks(t.TempDir())
 	must(t, err)
+	must(t, exec.Command("git", "init", "-q", repo).Run())
 	paths := map[string]string{"target": filepath.Join(repo, "target"), "cache": filepath.Join(repo, ".local", "go-cache"),
 		"tmp": filepath.Join(repo, ".local", "tmp"), "data": filepath.Join(repo, ".local", "football-data")}
 	for name, p := range paths {
@@ -130,6 +132,19 @@ func TestDatabaseLifecyclePathsExemptionsProtectionAndScanFailure(t *testing.T) 
 	r := h.record(data)
 	_, err = os.Stat(filepath.Join(paths["data"], "a", "data.bin"))
 	expect(t, r.State == LifecycleBlocked && contains(r.Blockers, "path overlaps the operating data root") && err == nil, "the data root was not protected: %+v", r)
+}
+
+func TestDatabaseLifecyclePathsKeepGitTrackedFiles(t *testing.T) {
+	h, processes, paths := pathHarness(t)
+	tracked := filepath.Join(paths["tmp"], "a", "tmp.bin")
+	must(t, exec.Command("git", "-C", h.m.Repository, "add", "-f", tracked).Run())
+	processes.set(ProcessUse{}, nil)
+	h.advance(time.Minute)
+	tmp := pathKey(t, h, paths["tmp"])
+	h.advance(6 * time.Hour)
+	r := h.record(tmp)
+	_, err := os.Stat(tracked)
+	expect(t, r.State == LifecycleBlocked && contains(r.Blockers, "path contains Git-tracked files") && err == nil, "a tracked file was not protected: %+v", r)
 }
 
 func TestDatabaseLifecyclePathsInterruptedDeletion(t *testing.T) {

@@ -25,7 +25,7 @@ Keep one owner per fact. Change the owner first, then the documents that summari
 | Fact | Owner | Summaries to update afterwards |
 | --- | --- | --- |
 | Gate, route, programme and authorization state | `docs/project-status.json` and the owner-decision evidence it lists | `docs/status/current-state.md`, then PLAN.md "Where things stand" |
-| Sequence, invariants, gate definitions | PLAN.md | `docs/roadmap/*`, `docs/README.md` |
+| Sequence, invariants, gate definitions | PLAN.md | `docs/README.md` |
 | Engineering rules | AGENTS.md and `docs/*-engineering.md` | This file only if the authority order changes |
 | Public API fields | `docs/api/openapi.yaml` | `docs/frontend/api-requirements.md` |
 | Provider access and acquisition | `docs/source-acquisition.md` | README and PLAN.md banners that link to it |
@@ -47,11 +47,12 @@ Present-tense wording inside a dated log (for example "now awaits an owner decis
 2. Use the repository's exact identifiers for routes, decisions and statuses (`TERMINAL_FAIL_RUST_PARITY`, not a paraphrase).
 3. Do not describe a proposal as approved, or an authorized protocol-scoped run as production enablement. Rust is the standing example: `rust_simulation_authorized` is `false`, while frozen V3–V5 Rust builds ran as evaluation evidence.
 4. Add new documents to `docs/README.md` and link them from the document that owns their topic.
-5. Relative links and anchors must resolve. Check every changed file.
+   Prefer a section in an existing document to a new file. When a feature is finished, retire its temporary documents in the same PR (AGENTS.md, Documentation lifecycle).
+5. Relative links and anchors must resolve. `make docs-check` checks every maintained document.
 6. Do not edit `docs/project-status.json` by hand to match prose; it needs an owner decision and `make project-status-check`.
 7. Keep to one concern per commit and describe the inconsistency in the message.
 
-For prose-only changes follow AGENTS.md section 12: review the diff and run `git diff --check`. Skip `make check` and integration unless a code, schema or status file changed.
+For prose-only changes follow AGENTS.md section 12: review the diff and run `git diff --check` and `make docs-check`. Skip `make check` and integration unless a code, schema or status file changed.
 
 ## Working in this checkout
 

@@ -279,8 +279,17 @@ the first two directory levels (at most 20,000 entries), so a check never walks
 millions of files; with live use it restarts the window. `min_idle_seconds` gives
 frequently reused caches a longer window (never shorter than five hours).
 
-At run time a path must be strictly inside the repository and must not overlap
-`.git`, `FOOTBALL_DATA_ROOT` or a protected path; otherwise it is `BLOCKED`.
+At run time a path must be strictly inside the repository, must not overlap
+`.git`, `FOOTBALL_DATA_ROOT` or a protected path, and must not contain any file Git
+tracks (checked with `git ls-files`; if Git cannot answer, the path is blocked);
+otherwise it is `BLOCKED`. Tracked documentation is retired by pull request, never
+by this policy.
+
+`.local/tmp` is the place for disposable output: agent notes, generated reports and
+JSON results, ad-hoc test output. Declare it as a `TEMPORARY` path (as in
+`infrastructure/storage-policy.example.json`) to have it deleted five hours after its
+last use. The operating policy does not declare it yet; adding it is a policy change
+recorded under a new owner approval.
 Deletion re-observes the path, records a storage operation (the SQL guard rechecks
 protection), renames the directory to `<path>.matchforge-deleting-<operation>` on
 the same device, measures its allocated bytes, removes it and verifies absence.

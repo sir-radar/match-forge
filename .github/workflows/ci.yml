@@ -52,6 +52,9 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: bash .github/scripts/classify-changes.sh "$BASE_SHA" >> "$GITHUB_OUTPUT"
 
+      - name: Check documentation hygiene
+        run: python3 scripts/check_docs.py
+
   python-unit:
     needs: changes
     if: needs.changes.outputs.code_changed == 'true'

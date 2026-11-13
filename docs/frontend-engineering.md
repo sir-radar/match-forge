@@ -43,3 +43,12 @@
 - Compare changed screens with the corresponding `./web/ui-designs/*.html` references at relevant viewport sizes and interaction states.
 - Run applicable formatting, lint, type checks, component tests, and browser/integration tests according to the root `AGENTS.md` validation policy.
 - Check that changes add no unnecessary custom CSS, duplicate UI/logic, avoidable client-side rendering, unused dependencies, or flaky tests. Report any unavoidable design or rendering deviations.
+
+## 6. Design Reference Notes
+
+The October 2026 design port (fixtures, expanded tabs, performance, external predictions, admin) is implemented; its per-task review, visual and verification reports were retired in favour of the code, tests and Git history.
+
+- `web/ui-designs/matchforge_desktop_fixtures_list_collapsed/screen.png` is not a valid image. Its `code.html` is the reference. Analytics has only `matchforge_analytics/DESIGN.md`.
+- Prototype clubs, model versions, checksums and totals are examples. Production renders API values only.
+- The Simulation evidence and Diagnostics tabs render explicit unavailable or restricted states because no public API exposes those records (`web/components/expanded-fixture.tsx`). Do not infer values for them.
+- The product brief that accompanied the designs is [web/BRIEF.md](../web/BRIEF.md). It describes intent; the API contract and owner decisions decide behaviour.

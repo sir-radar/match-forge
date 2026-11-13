@@ -5,8 +5,8 @@
 ## Start here
 
 - [AGENTS.md](../AGENTS.md) and [CLAUDE.md](../CLAUDE.md): engineering rules and the order in which sources win a conflict.
-- [Current project status](project-status.json) (machine-readable, checked by `make project-status-check`), its [notes](project-status.md) and the [readable summary](status/current-state.md).
-- [Adoption checklist](reconciliation/adoption-checklist.md) before starting any roadmap task.
+- [Current project status](project-status.json) (machine-readable, checked by `make project-status-check`; contract in [ADR 0004](adr/0004-project-status-v2-owner-decisions.md)) and the [readable summary](status/current-state.md).
+- [Documentation lifecycle](#documentation-lifecycle) before adding, finishing or retiring documentation.
 
 ## Authority order
 
@@ -23,15 +23,14 @@ Every file marked *proposed* under `docs/` is a proposal, not an approval. A sta
 - [PLAN.md](../PLAN.md): the control-plane roadmap and gate sequence.
 - [Post-redesign product roadmap (F0–F11)](../MatchForge_Post_Redesign_Extensible_Football_Product_Implementation_Plan_v2_2026-11-09.md): follow-on product work. It sits under PLAN.md's gates and needs its own task authorization.
 - [Unified architecture investigation](architecture/unified-redesign-2026-11-10/README.md): planning recommendations from 10 November, with its [roadmap](architecture/unified-redesign-2026-11-10/roadmap.md), the proposed [P09-01 historical-completeness plan](architecture/unified-redesign-2026-11-10/p09-01-historical-completeness-plan.md) and [ADR 0005](adr/0005-unified-architecture-evolution.md).
-- [Full phase deliverables](roadmap/implementation-phases.md) and [immediate backlog](roadmap/immediate-backlog.md): sections extracted from the original plan.
+- The original 21 September plan, including its phase deliverables, is archived in [supplied-plan-2026-09-21.md](references/supplied-plan-2026-09-21.md). Comparison material only.
 
 ## Architecture / data
 
 - [Architecture](architecture.md), [data platform architecture](data-platform-architecture.md), [data model](data-model.md), [temporal model](temporal-model.md)
 - [Artifact and publication boundaries](architecture/artifact-boundaries.md)
-- [Module layout and source-of-truth ownership](architecture/module-boundaries.md)
 - [Explicit owner and dependency register](governance/ownership-and-dependencies.md)
-- [Provider qualification and data programme](data/data-programme.md), [source acquisition](source-acquisition.md), [competition rules](competition-rules.md)
+- [Source acquisition](source-acquisition.md), [competition rules](competition-rules.md)
 - Ingestion and storage: [canonical ingestion](canonical-ingestion.md), [event datasets](event-datasets.md), [data validation](data-validation.md), [ingestion reports](ingestion-reports.md), [kickoff claims](kickoff-claims.md), [lifecycle claims](lifecycle-claims.md), [recovery](recovery.md), [CLI](cli.md)
 - [Entity crosswalk summary](entity-crosswalk-summary.md)
 
@@ -46,19 +45,19 @@ Every file marked *proposed* under `docs/` is a proposal, not an approval. A sta
 
 - [Backtesting](backtesting.md), [model governance](model-governance.md), [Sprint 2 backtesting contract](sprint2-backtesting-contract.md), [walk-forward target plan](walk-forward-target-plan.md), [Sprint 2 phase gate](sprint2-phase-gate.md)
 - Baselines: [team Elo](team-elo.md), [Dixon–Coles](dixon-coles.md), [corner models](corner-models.md), [corner labels](corner-labels.md)
-- [Evaluation V2 freeze/metrics and authorization](evaluation/evaluation-v2-policy.md), [promotion gates](evaluation/promotion-gates.md)
-- [Research programme and model ladder](models/feature-research.md), [calibration](models/calibration-policy.md)
+- [Evaluation V2 freeze/metrics and authorization](evaluation/evaluation-v2-policy.md)
 - [Phase 3A minimal xG draft pre-registration](governance/phase3a-minimal-xg-preregistration.md)
-- [Portfolio dependency table](governance/feature-portfolio.md), [feasibility notes](governance/feasibility-matrix.md), [experiment ledger template](governance/experiment-register.md)
-- [Decision record template](governance/decision-record-template.md), [decision events directory](governance/decision-events/README.md), [minimal Rust authorization proposal](governance/simulation-authorization-proposal.md), [P02 forecast re-evaluation proposal](governance/p02-forecast-reevaluation-proposal.md)
+- [Portfolio dependency table](governance/feature-portfolio.md), [experiment ledger template](governance/experiment-register.md)
+- [Decision record template](governance/decision-record-template.md), [decision events directory](governance/decision-events/README.md), [minimal Rust authorization proposal](governance/simulation-authorization-proposal.md), [P02 forecast re-evaluation proposal](governance/p02-forecast-reevaluation-proposal.md), [Phase 3A xG-for and Evaluation V2 freeze proposal](governance/phase3a-xg-for-evaluation-v2-freeze-proposal.md), [PitchAPI V5 calibration successor package](governance/pitchapi-v5-calibration-successor-decision-package.md) (superseded)
 - PitchAPI protocol policies: [retrospective V1](evaluation/pitchapi-retrospective-evaluation-v1-policy.md), [domain-stratified V2 metrics](evaluation/pitchapi-domain-stratified-evaluation-v2-metrics.md), Rust policies for [V2](simulation/pitchapi-domain-stratified-v2-rust-policy-proposal.md), [V3](simulation/pitchapi-domain-stratified-v3-rust-policy.md) and [V4](simulation/pitchapi-domain-stratified-v4-rust-policy.md)
 
 ## Simulation, delivery and operations
 
-- [Mandatory validation policy](simulation/mandatory-validation.md), [publication state machine](simulation/publication-state-machine.md), [failure runbook](operations/runbooks/simulation-failure.md), [P02 history re-qualification runbook](operations/runbooks/p02-history-requalification.md)
-- [OpenAPI for the MVP API](api/openapi.yaml), [compatibility/privacy](api/compatibility-policy.md), [superseded original API illustration](api/future-api-illustration.md), [frontend API requirements](frontend/api-requirements.md)
+- [Publication state machine](simulation/publication-state-machine.md), [failure runbook](operations/runbooks/simulation-failure.md), [P02 history re-qualification runbook](operations/runbooks/p02-history-requalification.md)
+- [OpenAPI for the MVP API](api/openapi.yaml), [compatibility/privacy](api/compatibility-policy.md), [frontend API requirements](frontend/api-requirements.md)
 - [Capabilities and enablement](operations/capability-registry.md), [rollback](operations/rollback-policy.md), [monitoring](operations/forecast-monitoring.md)
 - [P0 storage protection and recovery evidence](operations/storage-protection-2026-11-11.md)
+- [Storage cleanup proposal](recovery-cleanup-proposal.md) (P0 proposal; the storage lifecycle below is what was built)
 - [Storage lifecycle operations, capacity policy and approval-only resource manifest](operations/storage-lifecycle.md)
 - [Storage lifecycle rollout, 13 November 2026](evidence/storage-lifecycle-rollout-2026-11-13.json): release `878cd0d`, migrations through `202611130300`, policy active
 - [Local storage cleanup, 13 November 2026](operations/local-storage-cleanup-2026-11-13.md): 134.1 GB deleted, 148.2 GB reclaimed, [evidence](evidence/local-storage-cleanup-2026-11-13.json)
@@ -73,8 +72,8 @@ Every file marked *proposed* under `docs/` is a proposal, not an approval. A sta
 
 ## Engineering standards
 
-- [Backend](backend-engineering.md) and [frontend](frontend-engineering.md) standards, [testing](testing.md), [test matrix](engineering/test-matrix.md), [test fixtures](test-fixtures.md), [CI](ci.md)
-- [Engineering controls](engineering/operational-controls.md), [five definitions of done](engineering/definitions-of-done.md), [governed commit invariants](engineering/governed-commit-invariants.md), [foundation hardening](foundation-hardening.md)
+- [Backend](backend-engineering.md) and [frontend](frontend-engineering.md) standards, [testing](testing.md), [test fixtures](test-fixtures.md), [CI](ci.md)
+- [Governed commit invariants](engineering/governed-commit-invariants.md), [foundation hardening](foundation-hardening.md)
 - [Git delivery](git-delivery.md), [PR template](pr-template.md), [review checklist](review-checklist.md), [writing style](writing-style.md), [model routing](engineering/model-routing.md), [optional code intelligence](engineering/code-intelligence.md)
 - [ADRs](adr/0001-python-managed-runtime-pin.md): [0002](adr/0002-go-127-golangci-analysis-scope.md), [0003](adr/0003-use-commit-pinned-source-acquisition.md), [0004](adr/0004-project-status-v2-owner-decisions.md), [0005](adr/0005-unified-architecture-evolution.md)
 
@@ -87,10 +86,23 @@ Dated reports record what was true when they were written. Do not edit them to m
 - V4: [implementation](V4_IMPLEMENTATION_REPORT.md), [identity admission recovery](V4_IDENTITY_ADMISSION_RECOVERY_REPORT.md), [issue 2 qualification](V4_ISSUE_02_QUALIFICATION_REPORT.md), [issue 2 unblocking](V4_ISSUE_02_UNBLOCKING_REPORT.md), [issue 3 provider expansion](V4_ISSUE_03_PROVIDER_EXPANSION_REPORT.md), [issue 4 access recovery](V4_ISSUE_04_ACCESS_RECOVERY_REPORT.md)
 - Immutable evidence and owner-decision records live in `docs/evidence/` (not listed one by one). Add new evidence as new files; never rewrite existing ones.
 
-## Auditing and source preservation
+## Source archives
 
-- [How to integrate without losing prior progress](reconciliation/adoption-checklist.md); [change log / Astra mapping](reconciliation/change-log.md)
-- [Explicit exclusions](governance/exclusions.md), [research bibliography](references/research-basis.md)
+- [Research bibliography](references/research-basis.md)
 - [Exact supplied PLAN archive](references/supplied-plan-2026-09-21.md), [exact Astra feedback archive](references/astra-feedback-2026-09-21.md)
 
-**Ownership:** Each specialized contract owns field-level rules; root plan owns intent, sequence and release gates; registered evidence/events govern whether a capability is actually authorized/active. Legacy source extracts are design reference and must not override a newer approved contract.
+Sections of the original plan that were once copied into separate files (module boundaries, data programme, feature research, calibration, promotion gates, mandatory Rust validation, test matrix, operational controls, definitions of done, feasibility, exclusions, phase list and backlog) were retired on 13 November 2026. They were word-for-word copies of the archive above and authorized nothing. Read the archive section when you need that design history.
+
+## Documentation lifecycle
+
+Keep the documentation small and current. Every rule here is checked by `make docs-check` where a machine can check it; the rest is a PR review item in the [PR template](pr-template.md#documentation).
+
+1. **Plan.** Update the canonical document for the area (this index names it). Put scratch notes, agent output and generated reports in `.local/tmp/` (git-ignored). Declared as a `TEMPORARY` path, the [five-hour lifecycle](operations/storage-lifecycle.md#build-outputs-caches-and-temporary-directories) deletes it after five idle hours; it never deletes a directory that holds Git-tracked files. Do not add root Markdown files, dated progress notes or a second copy of a plan.
+2. **Build.** Record progress in the PR description, not in new files. Edit the existing plan in place.
+3. **Verify and roll out.** Keep validation, rollback and recovery evidence that an owner decision or `project-status.json` needs, as new files under `docs/evidence/`. Do not retire documents for work that is still rolling out.
+4. **Finish.** In the PR that completes a feature: confirm it is merged, tested and (where applicable) deployed; move the lasting facts (what, why, where in the code, configuration, limits, PR links) into the canonical document as a short section; delete the feature's plans, checklists and reports; fix every link; and list the retired files in the PR description.
+5. **Maintain.** When a finished feature changes, edit its section and remove the superseded text in the same PR.
+
+Never retire: `docs/evidence/**`, `docs/governance/decision-events/**`, `docs/references/**`, files referenced by `project-status.json`, files whose path or SHA-256 an evidence record cites while that record is still current, contracts, schemas, migrations and test fixtures. A file is protected when `make docs-check` or `git grep` finds such a reference; retiring it needs an owner decision.
+
+**Ownership:** Each specialized contract owns field-level rules; root plan owns intent, sequence and release gates; registered evidence/events govern whether a capability is actually authorized/active.

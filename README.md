@@ -115,7 +115,7 @@ flowchart LR
 
 Storage ownership: raw provider bytes live in immutable files, structured state in PostgreSQL, high-volume analytical data in Parquet, model artifacts in immutable files, and Redis holds cache and ephemeral job state only.
 
-See [docs/architecture.md](docs/architecture.md), [module boundaries](docs/architecture/module-boundaries.md) and [artifact boundaries](docs/architecture/artifact-boundaries.md).
+See [docs/architecture.md](docs/architecture.md) and [artifact boundaries](docs/architecture/artifact-boundaries.md).
 
 ## Tech stack
 
@@ -307,7 +307,7 @@ The project also enforces:
 - cyclomatic complexity limits on new or changed code;
 - an automatic architecture boundary check (`make architecture-check`) that stops layers importing across ownership lines.
 
-Never weaken or skip a gate to make a change pass. See [docs/testing.md](docs/testing.md) and the [test matrix](docs/engineering/test-matrix.md).
+Never weaken or skip a gate to make a change pass. See [docs/testing.md](docs/testing.md).
 
 ## Data, providers and responsible use
 
@@ -325,7 +325,7 @@ The [documentation index](docs/README.md) maps every document. Good starting poi
 | Understand the roadmap and gates | [PLAN.md](PLAN.md) |
 | Learn the system boundaries | [docs/architecture.md](docs/architecture.md) |
 | Understand data and time rules | [docs/data-model.md](docs/data-model.md), [docs/temporal-model.md](docs/temporal-model.md), [docs/backtesting.md](docs/backtesting.md) |
-| See model and promotion rules | [docs/model-governance.md](docs/model-governance.md), [docs/evaluation/promotion-gates.md](docs/evaluation/promotion-gates.md) |
+| See model and promotion rules | [docs/model-governance.md](docs/model-governance.md), [docs/evaluation/evaluation-v2-policy.md](docs/evaluation/evaluation-v2-policy.md) |
 | Work on the backend / frontend | [docs/backend-engineering.md](docs/backend-engineering.md), [docs/frontend-engineering.md](docs/frontend-engineering.md) |
 | Run data pipelines | [docs/cli.md](docs/cli.md), [docs/canonical-ingestion.md](docs/canonical-ingestion.md) |
 | Handle backup and recovery | [docs/recovery.md](docs/recovery.md) |

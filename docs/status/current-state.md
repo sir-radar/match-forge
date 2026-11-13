@@ -1,6 +1,6 @@
 # Current state
 
-**Verified against:** `docs/project-status.json` (`updated_at` 2026-11-10), immutable research evidence, and the owner decisions it lists. If this summary and the machine-readable status disagree, `project-status.json` and the append-only evidence win; fix this file.
+**Verified against:** `docs/project-status.json` (`updated_at` 2026-11-13), immutable research evidence, and the owner decisions it lists. If this summary and the machine-readable status disagree, `project-status.json` and the append-only evidence win; fix this file.
 
 MVP implementation is complete and live settlement evidence is still pending. MatchForge publishes the retained rolling-goals Poisson reference as `MVP_FORECAST`. Model research is paused for the MVP (`MODEL_RESEARCH_PAUSED_FOR_MVP`) and the champion has not changed. No capability, model promotion, Rust simulation gate or Architecture V2 cutover is enabled by any roadmap, proposal or research decision.
 
