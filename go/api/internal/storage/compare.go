@@ -265,6 +265,20 @@ func (m *Manager) connectReadOnly(ctx context.Context, auth Authority, target da
 	return conn, nil
 }
 
+// closeAndWait closes the comparison session and waits briefly until PostgreSQL
+// has ended its backend. Closing is asynchronous on the server; without the wait
+// the next inventory can count the finished comparison as an active consumer.
+func (m *Manager) closeAndWait(ctx context.Context, conn *pgx.Conn) {
+	pid := conn.PgConn().PID()
+	_ = conn.Close(ctx)
+	for deadline := time.Now().Add(5 * time.Second); time.Now().Before(deadline); time.Sleep(20 * time.Millisecond) {
+		var present bool
+		if m.Pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE pid=$1)`, pid).Scan(&present) != nil || !present {
+			return
+		}
+	}
+}
+
 func (m *Manager) compareOne(ctx context.Context, resourceID string) error {
 	auth, target, err := m.compareTarget(ctx, resourceID)
 	if err != nil {
@@ -278,7 +292,7 @@ func (m *Manager) compareOne(ctx context.Context, resourceID string) error {
 	if err != nil {
 		return err
 	}
-	defer conn.Close(ctx)
+	defer m.closeAndWait(ctx, conn)
 	tables, finding, unique, err := compareTables(ctx, conn, ref)
 	if err != nil {
 		return err
