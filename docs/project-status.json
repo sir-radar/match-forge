@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-12T22:00:00Z",
+  "updated_at": "2026-11-13T04:15:00Z",
   "unified_architecture_investigation": {
     "status": "PASS_WITH_WARNINGS",
     "scope": "CURRENT_TASK.md revision 3; architecture investigation/planning only",
@@ -4250,14 +4250,29 @@
       "status": "IMPLEMENTED_NOT_DEPLOYED",
       "migrations": [
         "202611130100_storage_lifecycle_tracking",
-        "202611130200_storage_maintenance_runs"
+        "202611130200_storage_maintenance_runs",
+        "202611130300_storage_lifecycle_paths"
       ],
       "resource_classes": [
         "TEST_DATABASE",
-        "WORKTREE"
+        "WORKTREE",
+        "DISPOSABLE_PATH"
       ],
       "inactivity_seconds": 18000,
       "operating_activation": "requires owner approval of the migrations, release and a policy file with lifecycle_cleanup and maintenance"
+    },
+    "local_cleanup": {
+      "report_ref": "docs/operations/local-storage-cleanup-2026-11-13.md",
+      "evidence_ref": "docs/evidence/local-storage-cleanup-2026-11-13.json",
+      "status": "APPLIED",
+      "authorized_by": "owner instruction in session, 2026-11-13",
+      "logical_bytes_deleted": 134118547456,
+      "host_free_bytes_before": 361100079104,
+      "host_free_bytes_after": 509338000000,
+      "database_dumps_deleted": 17,
+      "dumps_with_unique_payload_rows": 0,
+      "original_data_deleted": false,
+      "governed_backup_locations_intact": true
     }
   }
 }
