@@ -34,6 +34,9 @@ type Policy struct {
 	ProtectedPaths        []string          `json:"protected_paths,omitempty"`
 	EvidenceMaxAgeSeconds int               `json:"evidence_max_age_seconds,omitempty"`
 	AutomaticCleanup      []AutomaticPolicy `json:"automatic_cleanup,omitempty"`
+	// LifecycleCleanup enables the owner-approved five-hour cleanup of completed
+	// disposable test databases and merged worktrees. Absent means disabled.
+	LifecycleCleanup *LifecyclePolicy `json:"lifecycle_cleanup,omitempty"`
 }
 
 // ManagedRoot declares a MatchForge-owned directory whose direct children are
@@ -101,6 +104,9 @@ func (p Policy) validateManagement() error {
 		if err := p.validateAutomatic(a); err != nil {
 			return err
 		}
+	}
+	if p.LifecycleCleanup != nil {
+		return p.LifecycleCleanup.validate(p.ProtectedPaths)
 	}
 	return nil
 }

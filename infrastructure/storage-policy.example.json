@@ -15,5 +15,19 @@
   "backup_interval_seconds": 2592000,
   "quarantine_seconds": 2592000,
   "database_warning_bytes": 0,
-  "database_critical_bytes": 0
+  "database_critical_bytes": 0,
+  "lifecycle_cleanup": {
+    "inactivity_seconds": 18000,
+    "check_interval_seconds": 900,
+    "max_per_run": 10,
+    "test_databases": true,
+    "worktrees": {
+      "target_ref": "refs/remotes/origin/main",
+      "roots": [
+        "/absolute/path/to/matchforge/.claude/worktrees"
+      ]
+    },
+    "approved_by": "owner",
+    "approval_record": "docs/evidence/owner-decision-<approval-of-the-five-hour-policy>.json"
+  }
 }

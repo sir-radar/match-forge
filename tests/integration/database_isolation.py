@@ -25,6 +25,8 @@ import hashlib
 import json
 import os
 import secrets
+import socket
+import subprocess
 import sys
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
@@ -345,6 +347,65 @@ def sweep(policy: IsolationPolicy, url: str) -> list[str]:
     return dropped
 
 
+OWNER_PID_ENV = "MATCHFORGE_TEST_OWNER_PID"
+
+_REGISTER_SQL = """
+INSERT INTO football.storage_lifecycle_resources(identity_key, resource_class, backend, identity,
+  location, owner_kind, owner_ref, created_at, last_activity_at)
+VALUES (%s, 'TEST_DATABASE', 'postgres', %s, %s, 'INTEGRATION_HARNESS', %s,
+  clock_timestamp(), clock_timestamp())
+ON CONFLICT (identity_key) DO NOTHING
+"""
+
+
+def _owner_process() -> dict[str, Any]:
+    """The run's owning shell (PID and start time), so cleanup can prove it ended."""
+    pid = int(os.environ.get(OWNER_PID_ENV) or os.getppid())
+    started = subprocess.run(
+        ["ps", "-o", "lstart=", "-p", str(pid)], capture_output=True, text=True, check=True
+    ).stdout
+    return {"host": socket.gethostname(), "pid": pid, "process_started": " ".join(started.split())}
+
+
+def register_lifecycle(operating_url: str, policy: IsolationPolicy, name: str) -> bool:
+    """Record the run's database for the five-hour cleanup policy.
+
+    The record lives next to the authoritative database's storage registry and binds the
+    exact cluster, OID, name and markers. Only the marker digests are stored, never the
+    token. Without a record a leftover database is never cleaned up automatically.
+    """
+    with psycopg.connect(operating_url, autocommit=True, connect_timeout=5) as connection:
+        identity = read_identity(connection)
+        present = connection.execute(
+            "SELECT to_regclass('football.storage_lifecycle_resources') IS NOT NULL"
+        ).fetchone()
+        if not identity.self_authoritative or identity.system_identifier != policy.cluster:
+            return False
+        if present != (True,):
+            return False
+        oid = int(policy.prepared.rsplit(":", 1)[1])
+        owner = _owner_process() | {
+            "marker": marker_for(policy.token),
+            "owned_marker": owned_marker_for(policy.token),
+        }
+        database = {"system_identifier": policy.cluster, "oid": oid, "database": name}
+        connection.execute(
+            _REGISTER_SQL,
+            (
+                f"postgres:{policy.cluster}:{oid}",
+                json.dumps(database),
+                f"{policy.cluster}/{name}",
+                json.dumps(owner),
+            ),
+        )
+        connection.execute(
+            "INSERT INTO football.storage_lifecycle_events(identity_key, event, detail) "
+            "VALUES (%s, 'REGISTERED', %s)",
+            (f"postgres:{policy.cluster}:{oid}", json.dumps({"owner_kind": "INTEGRATION_HARNESS"})),
+        )
+    return True
+
+
 def _protected_from(url: str | None) -> list[str]:
     """Identities of databases that register themselves as authoritative, if reachable."""
     if not url:
@@ -357,10 +418,30 @@ def _protected_from(url: str | None) -> list[str]:
     return [identity.key] if identity.self_authoritative else []
 
 
+def _register_or_warn(operating_url: str, policy: IsolationPolicy, url: str) -> None:
+    """Registration failure never stops a test run; the database stays unregistered."""
+    with psycopg.connect(url, autocommit=True) as connection:
+        name = read_identity(connection).name
+    try:
+        registered = register_lifecycle(operating_url, policy, name)
+    except (psycopg.Error, OSError, subprocess.CalledProcessError, DatabaseIsolationError) as error:
+        print(f"database isolation: lifecycle registration failed: {error}", file=sys.stderr)
+        return
+    if not registered:
+        print(
+            "database isolation: no lifecycle registry; a leftover test database needs "
+            "owner disposition",
+            file=sys.stderr,
+        )
+
+
 def main(argv: list[str]) -> int:
     """``prepare URL [OPERATING_URL]`` prints shell exports; ``verify`` checks the env."""
     if len(argv) >= 2 and argv[0] == "prepare":
-        policy = prepare(argv[1], _protected_from(argv[2] if len(argv) > 2 else None))
+        operating = argv[2] if len(argv) > 2 else None
+        policy = prepare(argv[1], _protected_from(operating))
+        if operating:
+            _register_or_warn(operating, policy, argv[1])
         for key, value in policy.environment().items():
             print(f"{key}={json.dumps(value)}")
         return 0

@@ -169,6 +169,16 @@ func (application *App) storageOperations(response http.ResponseWriter, request 
 	application.respondOperation(response, map[string]any{"operations": operations}, err)
 }
 
+// storageLifecycle reports the five-hour cleanup policy, tracked resources with
+// their eligibility, the audit trail and unregistered test databases.
+func (application *App) storageLifecycle(response http.ResponseWriter, request *http.Request) {
+	if !application.requireStorage(response, request) {
+		return
+	}
+	status, err := application.storage.LifecycleStatus(request.Context())
+	application.respondOperation(response, status, err)
+}
+
 func (application *App) cancelStorageBatch(response http.ResponseWriter, request *http.Request) {
 	if !application.requireStorage(response, request) {
 		return
