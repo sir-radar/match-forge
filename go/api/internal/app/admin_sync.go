@@ -871,8 +871,20 @@ func (runner *CommandSyncRunner) fail(runID string, cause error) {
 	}
 }
 
+// syncRunListLimit bounds the finished history in a listing. Active runs are
+// always listed on top of it: frequent live-lane runs would otherwise push a
+// long bulk run off the page, the console would show the bulk lane as idle,
+// and the next bulk start would be rejected as already running.
+const syncRunListLimit = 50
+
 func (runner *CommandSyncRunner) List(ctx context.Context) ([]SyncRun, error) {
-	rows, err := runner.pool.Query(ctx, syncRunSelect+" WHERE sync_type<>'MANUAL_BACKUP' ORDER BY requested_at DESC LIMIT 50")
+	rows, err := runner.pool.Query(ctx, syncRunSelect+`
+		WHERE sync_type <> 'MANUAL_BACKUP'
+		  AND (status IN ('QUEUED', 'RUNNING') OR run_id IN (
+		      SELECT run_id FROM football.product_sync_runs
+		      WHERE sync_type <> 'MANUAL_BACKUP'
+		      ORDER BY requested_at DESC LIMIT $1))
+		ORDER BY requested_at DESC`, syncRunListLimit)
 	if err != nil {
 		return nil, err
 	}
