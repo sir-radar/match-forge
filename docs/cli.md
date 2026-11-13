@@ -153,6 +153,13 @@ The Make targets require current migrations. Admin Data Sync can stop or
 retry a run; retry preserves the original selectors. Failed providers and
 unqualified history remain explicit in each run summary.
 
+Use `provider-mapping-review --provider fotmob` (or `pitchapi`) to inspect
+unresolved mappings. Supply `--provider-match-id` and `--fixture-id` only for
+an independently verified relationship. Use `development-provider-preview
+--provider fotmob --fixture-id UUID --knowledge-cutoff ISO_TIMESTAMP` for a
+read-only pre-kickoff diagnostic. The target fixture is excluded, provider xG
+definitions stay separate and this path does not publish forecasts.
+
 ### Reviewed team identity corrections
 
 Run the read-only preview with separately reviewed IDs:

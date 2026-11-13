@@ -191,6 +191,11 @@ endpoint and cache mapping. PitchAPI sends its server-side token and requests
 API-Football reads daily and minute quota from distinct response headers,
 defers on `Retry-After` and keeps missing header values unknown.
 
+Detailed operational FotMob/PitchAPI observations are development-only.
+Their conservative knowledge time is actual acquisition, so only subsequent
+eligible cutoffs may use them. Production forecasts and protected evaluations
+do not consume these observations.
+
 Keep original download bytes and registration times. OpenFootball and
 Football-Data.co.uk use immutable `HistoricalSourceManifestV1` records for
 new imports. Football-Data.co.uk ZIP decoding accepts only bounded stored or
