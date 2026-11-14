@@ -60,7 +60,7 @@ func requireProviderSyncSchema(
 			return err
 		}
 		if !ready {
-			return errProductUnavailable
+			return errSyncSchemaPending
 		}
 		return nil
 	}
