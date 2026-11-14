@@ -9,7 +9,12 @@ import (
 )
 
 const externalAgreementSQL = `COALESCE(convert_from(comparison.record_bytes,'UTF8')::jsonb->>'agreement','UNABLE_TO_EVALUATE')`
-const externalEligibleSQL = `(pf.identity_status='VERIFIED' AND ep.effective_match_status='MATCHED'
+
+// A contextual association counts prospectively only when it was made by the
+// outcome-blind policy, or reviewed before kickoff.
+const externalEligibleSQL = `(pf.identity_status='VERIFIED' AND (ep.effective_match_status='MATCHED'
+        OR (ep.effective_match_status='CONTEXTUAL'
+            AND (context.basis='POLICY' OR context.decided_at<pf.kickoff_at)))
     AND ep.date_status IN ('VERIFIED','NOT_APPLICABLE') AND NOT ep.source_revision_conflict
     AND ep.collected_at<pf.kickoff_at AND ep.revision_started_at<pf.kickoff_at
     AND ep.last_observed_at<=statement_timestamp()
@@ -20,6 +25,8 @@ const externalPredictionFromSQL = `
     FROM football.external_prediction_current ep
     JOIN football.external_prediction_sources eps ON eps.source_code=ep.source_code
     LEFT JOIN football.external_prediction_bindings binding ON binding.binding_id=ep.binding_id
+    LEFT JOIN football.external_prediction_context_current context
+      ON context.prediction_id=ep.prediction_id AND ep.effective_match_status<>'MATCHED'
     LEFT JOIN football.product_fixtures pf ON pf.fixture_id=ep.effective_fixture_id
     LEFT JOIN football.product_competitions pc ON pc.competition_id=pf.competition_id
     LEFT JOIN football.product_teams home ON home.team_id=pf.home_team_id
@@ -38,6 +45,18 @@ const externalPredictionFromSQL = `
       AND report_work.horizon='LATEST'
     LEFT JOIN football.external_prediction_current_results result ON result.prediction_id=ep.prediction_id
     WHERE true`
+
+const externalAssociationColumns = `CASE WHEN ep.effective_match_status='MATCHED' THEN 'VERIFIED'
+            WHEN ep.effective_match_status='AMBIGUOUS' AND context.classification IS NULL THEN 'NEEDS_REVIEW'
+            ELSE COALESCE(context.classification,'UNMATCHED') END,
+        CASE WHEN ep.effective_match_status='MATCHED' THEN 'VERIFIED_PROVIDER_ID'
+            WHEN ep.effective_match_status='AMBIGUOUS' AND context.reason IS NULL THEN 'SOURCE_EVIDENCE_CONFLICT'
+            ELSE COALESCE(context.reason,'NOT_EVALUATED') END,
+        context.basis,context.policy_version,context.decided_at,
+        COALESCE(cardinality(context.candidate_fixture_ids),0),home.name,away.name,pc.name,
+        COALESCE(result.evidence->>'fixture_association' IN
+            ('VERIFIED_CANONICAL','VERIFIED_PROVIDER_ONLY','CONTEXTUAL_MATCH'),false),
+        result.evidence->>'blocker',result.evidence->>'evaluation'`
 
 func filteredExternalPredictions(filters ExternalPredictionFilters) (string, []any) {
 	query, args := externalPredictionFromSQL, []any{}
@@ -135,7 +154,7 @@ func externalPredictionRows(ctx context.Context, tx pgx.Tx, query string, args [
         result.home_score,result.away_score,result.score_basis,result.provider_code,
         result.provider_updated_at,report_work.last_error,ep.source_code,pf.identity_status,
         result.evidence->>'fixture_association',
-        ep.date_status,`
+        ep.date_status,` + externalAssociationColumns + `,`
 	query += " ORDER BY ep.prediction_date DESC,ep.collected_at DESC,ep.prediction_id DESC"
 	if page == nil {
 		columns += "COALESCE(current_selection.source_revision_conflict,false)"
@@ -162,7 +181,12 @@ func scanExternalPrediction(row pgx.CollectableRow) (ExternalPrediction, error) 
 		&item.MatchStatus, &comparison, &digest, &forecastID, &item.SettlementState,
 		&item.ActualHomeScore, &item.ActualAwayScore, &item.ResultScoreBasis, &item.ResultProvider,
 		&item.ResultUpdatedAt, &comparisonError, &item.SourceCode, &item.FixtureIdentityStatus,
-		&item.FixtureAssociation, &item.SourceDateStatus, &item.SourceRevisionConflict); err != nil {
+		&item.FixtureAssociation, &item.SourceDateStatus, &item.Association.Classification,
+		&item.Association.Reason, &item.Association.Basis, &item.Association.PolicyVersion,
+		&item.Association.DecidedAt, &item.Association.CandidateCount, &item.Association.FixtureHomeTeam,
+		&item.Association.FixtureAwayTeam, &item.Association.FixtureCompetition,
+		&item.Association.SettlementEligible, &item.Association.SettlementBlocker,
+		&item.Association.Evaluation, &item.SourceRevisionConflict); err != nil {
 		return item, err
 	}
 	if err := attachComparison(&item, forecastID, comparison, digest); err != nil {
@@ -210,7 +234,8 @@ func (store *PostgresProductStore) ExternalPredictionSources(ctx context.Context
 	query, args := filteredExternalPredictions(filters)
 	statement := `WITH filtered AS (SELECT ep.source_code,` + externalEligibleSQL + ` AS prospective,
         ep.collected_at,ep.revision_started_at,pf.kickoff_at,
-        (binding.evidence->>'method'='REVIEWED_VERIFIED_PROVIDER_ID' AND binding.decided_at>=pf.kickoff_at) AS reviewed_late,
+        ((binding.evidence->>'method'='REVIEWED_VERIFIED_PROVIDER_ID' AND binding.decided_at>=pf.kickoff_at)
+          OR (ep.effective_match_status='CONTEXTUAL' AND context.basis='REVIEW' AND context.decided_at>=pf.kickoff_at)) AS reviewed_late,
         result.settlement_state,` + externalAgreementSQL + ` AS agreement ` + query + `),
     metrics AS (SELECT source_code,count(*)::int AS tracked,
         count(*) FILTER(WHERE prospective AND settlement_state IN ('WON','LOST'))::int AS settled,

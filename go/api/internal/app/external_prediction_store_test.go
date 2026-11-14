@@ -197,3 +197,29 @@ func verifyExternalPendingReports(t *testing.T, store *PostgresProductStore) {
 		t.Fatalf("pending validation contributed consensus: %+v", page.Consensus)
 	}
 }
+
+// Seeded by tests/integration/test_external_contextual_matching.py: one pre-kickoff
+// pick linked by the contextual policy, settled without an internal forecast.
+func TestExternalContextualAssociationDatabase(t *testing.T) {
+	store, _ := performanceDatabaseStore(t)
+	ctx := context.Background()
+	day := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
+	page, err := store.ExternalPredictions(ctx, ExternalPredictionFilters{Archive: true, Date: day})
+	if err != nil || len(page.Predictions) != 1 {
+		t.Fatalf("rows=%d error=%v", len(page.Predictions), err)
+	}
+	item := page.Predictions[0]
+	association := item.Association
+	if item.MatchStatus != "CONTEXTUAL" || association.Classification != "CONTEXTUAL_MATCH" ||
+		association.Reason != "UNIQUE_SAME_DAY" || !association.SettlementEligible ||
+		association.Basis == nil || *association.Basis != "POLICY" ||
+		association.Evaluation == nil || *association.Evaluation != "PROSPECTIVE" ||
+		association.FixtureHomeTeam == nil || *association.FixtureHomeTeam != "Home" ||
+		item.SettlementState != "WON" {
+		t.Fatalf("contextual association not exposed: %+v %+v", item, association)
+	}
+	sources, err := store.ExternalPredictionSources(ctx, ExternalPredictionFilters{Source: "manual_import"})
+	if err != nil || len(sources) != 1 || sources[0].SettledSelections != 1 || sources[0].ProspectiveSelections != 1 {
+		t.Fatalf("contextual prospective settlement not counted: %+v error=%v", sources, err)
+	}
+}

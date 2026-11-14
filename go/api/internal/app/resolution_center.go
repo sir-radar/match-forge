@@ -35,7 +35,7 @@ type resolutionRunner interface {
 func (application *App) resolutionRead(response http.ResponseWriter, request *http.Request) {
 	view := request.PathValue("view")
 	switch view {
-	case "identity", "fixtures", "missing", "parity", "cutover", "history", "detail":
+	case "identity", "fixtures", "external", "missing", "parity", "cutover", "history", "detail":
 	default:
 		application.publicError(response, http.StatusBadRequest, "unsupported resolution view")
 		return

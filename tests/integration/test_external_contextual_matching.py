@@ -1,5 +1,7 @@
 """Real-database contextual association, settlement, review and preservation."""
 
+import os
+import subprocess
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, date, datetime, timedelta
 from uuid import UUID
@@ -140,7 +142,8 @@ def add_twin(url: str, *, identity: str, kickoff: datetime = KICKOFF) -> None:
 
 def test_contextual_match_settles_without_native_id_or_internal_forecast(database):
     before = protected(database)
-    prediction = imported(database, pick(), KICKOFF - timedelta(hours=5))
+    # Captured now, before the seeded 2030 kickoff; future captures are never served.
+    prediction = imported(database, pick(), datetime.now(UTC))
     finish(database, 2, 1)
     assert settle(database) == 1
     [decision] = decisions(database, prediction)
@@ -171,6 +174,22 @@ def test_contextual_match_settles_without_native_id_or_internal_forecast(databas
         c.execute("SELECT football.enqueue_external_prediction_refresh(%s)", (prediction,))
     assert settle(database) == 0
     assert len(decisions(database, prediction)) == 1
+    served = subprocess.run(
+        [
+            "go",
+            "test",
+            "./internal/app",
+            "-run",
+            "^TestExternalContextualAssociationDatabase$",
+            "-count=1",
+        ],
+        cwd="go/api",
+        env={**os.environ, "TEST_DATABASE_URL": database},
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    assert served.returncode == 0, served.stdout + served.stderr
 
 
 def test_capture_after_kickoff_is_retrospective_and_correction_appends(database):
@@ -313,3 +332,69 @@ def test_unmatched_prediction_records_its_reason(database):
     assert results(database, prediction)[-1]["evidence"]["fixture_association"] == (
         "FIXTURE_IDENTITY"
     )
+
+
+def test_resolution_center_reviews_external_association(database, tmp_path):
+    from pathlib import Path
+
+    from football.product.resolution_center import execute
+
+    add_twin(database, identity="VERIFIED", kickoff=KICKOFF + timedelta(hours=2))
+    prediction = imported(database, pick(), KICKOFF - timedelta(hours=5))
+    settle(database)
+    before = protected(database)
+    key = f"external_prediction:{prediction}"
+    repo = Path(__file__).resolve().parents[2]
+    with psycopg.connect(database) as c:
+        page = execute(
+            c,
+            repo,
+            tmp_path,
+            {"operation": "read", "view": "external", "query": {"status": "NEEDS_REVIEW"}},
+        )
+        c.rollback()
+        assert [item["case_key"] for item in page["items"]] == [key]
+        request = {
+            "case_key": key,
+            "action": "APPROVE",
+            "reason": "source page lists the earlier kickoff",
+            "candidate": {"fixture_id": str(FIXTURE)},
+        }
+        preview = execute(c, repo, tmp_path, {"operation": "preview", "request": request})
+        c.rollback()
+        assert preview["allowed"] and preview["qualification"]["canonical_identity"] == "UNCHANGED"
+        blocked = execute(
+            c,
+            repo,
+            tmp_path,
+            {
+                "operation": "preview",
+                "request": {**request, "candidate": {"fixture_id": str(UUID(int=5))}},
+            },
+        )
+        c.rollback()
+        assert not blocked["allowed"]
+        applied = execute(
+            c,
+            repo,
+            tmp_path,
+            {
+                "operation": "apply",
+                "actor": REVIEWER,
+                "request": {
+                    **request,
+                    "approved": True,
+                    "request_id": "00000000-0000-4000-8000-000000000001",
+                    "evidence_version": preview["evidence_version"],
+                },
+            },
+        )
+        c.commit()
+    assert applied["case_key"] == key
+    latest = decisions(database, prediction)[-1]
+    assert (latest["basis"], latest["fixture_id"], latest["reviewer"]) == (
+        "REVIEW",
+        FIXTURE,
+        REVIEWER,
+    )
+    assert protected(database) == before
