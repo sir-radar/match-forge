@@ -15,6 +15,7 @@ function actionsFor(key: string, data: RecordValue): string[] {
   if (kind === "stage") return ["REHEARSE_STAGE", "ROLLBACK_STAGE", "SWITCH_STAGE"];
   if (kind === "parity") return ["RECHECK_PARITY"];
   if (["resource", "dataset"].includes(kind)) return ["VERIFY", "RECOVER", "EXCLUDE", "REQUEST_EVIDENCE", "BLOCK", "DEFER"];
+  if (kind === "external_prediction") return ["APPROVE", "REJECT", "REVALIDATE"];
   const actions = ["REVALIDATE", "REQUEST_EVIDENCE", "BLOCK", "DEFER"];
   if (["team", "competition"].includes(kind)) actions.push("APPROVE", "QUARANTINE", "REJECT");
   if (kind === "team" && objectList(data.correction_options).length) actions.push("CORRECT");
@@ -72,7 +73,15 @@ export function ResolutionDecisionForm({ caseKey, data, onApplied }: { caseKey: 
   </section>;
 }
 
+function ExternalCandidateField({ data, candidate, disabled, update }: { data: RecordValue; candidate: Record<string, string>; disabled: boolean; update: (value: Record<string, string>) => void }) {
+  const options = objectList(data.candidates).filter((item, index, all) => all.findIndex((other) => other.effective_fixture_id === item.effective_fixture_id) === index);
+  return <label>Retained candidate fixture<select required disabled={disabled} value={candidate.fixture_id ?? ""} onChange={(event) => update({ fixture_id: event.target.value })}><option value="">Choose retained candidate</option>{options.map((item) => <option key={text(item.effective_fixture_id)} value={text(item.effective_fixture_id)}>{text(item.home_team)} vs {text(item.away_team)} · {text(item.competition)} · {text(item.kickoff_at)} · {text(item.identity_status)}</option>)}</select></label>;
+}
+
 function CandidateFields({ action, data, candidate, disabled, update }: { action: string; data: RecordValue; candidate: Record<string, string>; disabled: boolean; update: (value: Record<string, string>) => void }) {
+  if (data.case_key !== undefined && String(data.case_key).startsWith("external_prediction:")) {
+    return action === "APPROVE" ? <ExternalCandidateField data={data} candidate={candidate} disabled={disabled} update={update} /> : null;
+  }
   if (action === "CORRECT" || action === "REJECT") return <>
     <label>Target mapping<select required disabled={disabled} value={candidate.target_mapping_id ?? ""} onChange={(event) => update({ ...candidate, target_mapping_id: event.target.value })}><option value="">Choose retained candidate</option>{objectList(data.candidates).map((item) => <option key={text(item.mapping_id)} value={text(item.mapping_id)}>{text(item.name)} · {text(item.provider)} · {text(item.mapping_id)}</option>)}</select></label>
     {action === "CORRECT" && <label>Retained contradiction<select required disabled={disabled} value={candidate.original_decision_id ?? ""} onChange={(event) => { const context = objectList(data.correction_options).find((item) => item.original_decision_id === event.target.value); if (context) update({ ...candidate, original_decision_id: text(context.original_decision_id), fixture_registration_id: text(context.fixture_registration_id), orientation: text(context.orientation) }); }}><option value="">Choose fixture evidence</option>{objectList(data.correction_options).map((item) => <option key={text(item.original_decision_id)} value={text(item.original_decision_id)}>{text(item.orientation)} · {text(item.fixture_id)}</option>)}</select></label>}

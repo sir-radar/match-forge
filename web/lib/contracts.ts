@@ -270,6 +270,7 @@ export type ExternalPrediction = {
   selection: string;
   match_status: string;
   fixture_association?: string;
+  association?: ExternalAssociation;
   matchforge_probability: number | null;
   agreement: "AGREES" | "WEAK_SUPPORT" | "DISAGREES" | "UNABLE_TO_EVALUATE";
   settlement_state: "WON" | "LOST" | "VOID" | "PENDING";
@@ -278,6 +279,21 @@ export type ExternalPrediction = {
   result_score_basis: string | null;
   result_provider: string | null;
   result_updated_at: string | null;
+};
+
+export type ExternalAssociation = {
+  classification: "VERIFIED" | "CONTEXTUAL_MATCH" | "NEEDS_REVIEW" | "UNMATCHED";
+  reason: string;
+  basis: "POLICY" | "REVIEW" | null;
+  policy_version: string | null;
+  decided_at: string | null;
+  candidate_count: number;
+  fixture_home_team: string | null;
+  fixture_away_team: string | null;
+  fixture_competition: string | null;
+  settlement_eligible: boolean;
+  settlement_blocker: string | null;
+  evaluation: "PROSPECTIVE" | "RETROSPECTIVE" | null;
 };
 
 export type ExternalSource = {
@@ -633,6 +649,29 @@ function parseTeamStatistics(value: unknown): TeamStatistics {
   return { recent_matches: numeric(item.recent_matches, "recent_matches"), goals_for: numeric(item.goals_for, "goals_for"), goals_against: numeric(item.goals_against, "goals_against"), average_goals_for: numeric(item.average_goals_for, "average_goals_for"), average_goals_against: numeric(item.average_goals_against, "average_goals_against") };
 }
 
+function oneOf<T extends string>(value: unknown, field: string, allowed: readonly T[]): T {
+  if (typeof value !== "string" || !(allowed as readonly string[]).includes(value)) throw new Error(`invalid ${field}`);
+  return value as T;
+}
+
+function parseAssociation(value: unknown): ExternalAssociation {
+  const item = object(value, "association");
+  return {
+    classification: oneOf(item.classification, "association.classification", ["VERIFIED", "CONTEXTUAL_MATCH", "NEEDS_REVIEW", "UNMATCHED"] as const),
+    reason: text(item.reason, "association.reason"),
+    basis: item.basis === null ? null : oneOf(item.basis, "association.basis", ["POLICY", "REVIEW"] as const),
+    policy_version: nullableText(item.policy_version, "association.policy_version"),
+    decided_at: nullableTimestamp(item.decided_at, "association.decided_at"),
+    candidate_count: integer(item.candidate_count, "association.candidate_count", 0),
+    fixture_home_team: nullableText(item.fixture_home_team, "association.fixture_home_team"),
+    fixture_away_team: nullableText(item.fixture_away_team, "association.fixture_away_team"),
+    fixture_competition: nullableText(item.fixture_competition, "association.fixture_competition"),
+    settlement_eligible: boolean(item.settlement_eligible, "association.settlement_eligible"),
+    settlement_blocker: nullableText(item.settlement_blocker, "association.settlement_blocker"),
+    evaluation: item.evaluation === null ? null : oneOf(item.evaluation, "association.evaluation", ["PROSPECTIVE", "RETROSPECTIVE"] as const),
+  };
+}
+
 export function parsePredictions(value: unknown): ExternalPrediction[] {
   const envelope = object(value, "external predictions response");
   return array(envelope.predictions, "predictions").map((entry) => {
@@ -658,6 +697,7 @@ export function parsePredictions(value: unknown): ExternalPrediction[] {
       selection: text(item.selection, "selection"),
       match_status: text(item.match_status, "match_status"),
       ...(item.fixture_association === undefined ? {} : { fixture_association: text(item.fixture_association, "fixture_association") }),
+      ...(item.association === undefined ? {} : { association: parseAssociation(item.association) }),
       matchforge_probability: item.matchforge_probability === null ? null : probability(item.matchforge_probability, "matchforge_probability"),
       comparison_status: comparisonStatus as ExternalPrediction["comparison_status"],
       agreement: agreement as ExternalPrediction["agreement"],
