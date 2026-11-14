@@ -187,7 +187,7 @@ function ResultRecoveryPanel({ date, latest, disabled, onStart }: {
   const validFixture = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(fixture.trim());
   return <section className="coverage-panel" aria-labelledby="result-recovery-title">
     <header><h2 id="result-recovery-title">Result recovery</h2></header>
-    <p>The selected through date is interpreted in UTC. Recovery uses verified fixture mappings and respects provider cooldowns.</p>
+    <p>The selected through date is interpreted in UTC. Recovery uses verified fixture mappings and respects provider cooldowns. Fixture and date requests run immediately; a verified fixture is rechecked for corrections.</p>
     <div className="flex flex-wrap items-end gap-3">
       <button className="rounded-sm border px-3 py-2 text-sm font-medium disabled:opacity-50" type="button" disabled={disabled} onClick={() => onStart({})}>Retry unresolved results</button>
       <button className="rounded-sm border px-3 py-2 text-sm font-medium disabled:opacity-50" type="button" disabled={disabled || !date} onClick={() => onStart({ date })}>Recover selected date</button>
@@ -200,7 +200,15 @@ function ResultRecoveryPanel({ date, latest, disabled, onStart }: {
     </div>
     {latest && <dl>
       <Metric term="Last run" value={formatTime(latest.finished_at)} />
+      <Metric term="Request outcome" value={shortMetric(latest, "request_outcome")} />
+      <Metric term="Results recovered" value={shortMetric(latest, "recovered")} />
+      <Metric term="Corrections found" value={shortMetric(latest, "corrected")} />
+      <Metric term="Checked, still unresolved" value={shortMetric(latest, "unresolved")} />
+      <Metric term="Covered by an active request" value={shortMetric(latest, "coordinated")} />
+      <Metric term="Provider retry after" value={formatOptionalTime(stringMetric(latest.summary, "deferred_until"))} />
       <Metric term="Overdue unresolved" value={shortMetric(latest, "overdue")} />
+      <Metric term="Due now" value={shortMetric(latest, "runnable")} />
+      <Metric term="Never checked" value={shortMetric(latest, "never_checked")} />
       <Metric term="Identity pending" value={shortMetric(latest, "identity_pending")} />
       <Metric term="Without operational route" value={shortMetric(latest, "no_operational_route")} />
       <Metric term="External predictions settled" value={shortMetric(latest, "settled_external_predictions")} />
@@ -269,6 +277,7 @@ function runLabel(run: SyncRun) {
 }
 
 function label(type: SyncType) { const labels: Record<SyncType, string> = { MVP_SYNC: "MVP Sync", OPENFOOTBALL: "OpenFootball", FOOTBALL_DATA_UK: "Football-Data.co.uk", HISTORY_BACKFILL: "Historical Backfill", FORECAST_REFRESH: "Forecast Refresh", CONTEXT_REPORTS: "Context Reports", PUBLIC_REPORTS: "Public Reports", EXTERNAL_PREDICTIONS: "External Predictions", EXTERNAL_PREDICTION_SETTLEMENT: "External Prediction Settlement", ALL_DATA: "Full Data Sync", FOTMOB_SYNC: "FotMob", PITCHAPI_SYNC: "PitchAPI", MANUAL_BACKUP: "Manual Backup", STORAGE_LIFECYCLE: "Storage Lifecycle", RESULT_RECOVERY: "Result Recovery" }; return labels[type]; }
+function formatOptionalTime(value: string | null) { return value ? formatTime(value) : "—"; }
 function formatTime(value: string | null) { return value ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) : "—"; }
 function elapsed(value: string, now: number) { return `${Math.max(0, Math.floor((now - new Date(value).getTime()) / 1000))}s elapsed`; }
 function duration(run: SyncRun, clock: number) { if (!run.started_at) return "—"; const end = run.finished_at ? new Date(run.finished_at).getTime() : clock; return `${Math.max(0, Math.round((end - new Date(run.started_at).getTime()) / 1000))}s`; }
