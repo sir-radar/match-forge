@@ -125,12 +125,12 @@
 <div class="max-w-[1720px] mx-auto flex flex-col gap-space-sm">
 <!-- Primary 9-Control Inputs Grid -->
 <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 lg:grid-cols-9 gap-1.5 items-center">
-<!-- 1. Date Range -->
+<!-- 1. Prediction day -->
 <div class="col-span-2 sm:col-span-2 md:col-span-2 relative">
-<label class="sr-only">Date Range</label>
+<label class="sr-only" for="prediction-day">Prediction day</label>
 <div class="flex items-center h-8 px-2 bg-surface-container border border-surface-container-high focus-within:border-secondary rounded text-on-surface">
 <span class="material-symbols-outlined text-[16px] text-outline mr-1.5">calendar_month</span>
-<input class="bg-transparent text-on-surface font-label-sm text-label-sm font-mono w-full focus:outline-none" title="Date Range Filter" type="text" value="2026-09-28 to 2026-09-29"/>
+<input class="bg-transparent text-on-surface font-label-sm text-label-sm font-mono w-full focus:outline-none" id="prediction-day" type="date" value="2026-09-28"/>
 </div>
 </div>
 <!-- 2. Source Selector -->
@@ -712,24 +712,8 @@
 </tbody>
 </table>
 </div>
-<!-- Pagination & Density Control Footer -->
-<div class="px-gutter-desktop py-space-sm bg-surface-container-low border-t border-surface-container-high flex flex-col sm:flex-row items-center justify-between gap-space-sm font-label-sm text-label-sm">
-<div class="flex items-center gap-space-md text-outline">
-<span>Showing <strong class="text-on-surface font-mono">1–7</strong> of <strong class="text-on-surface font-mono">28</strong> selections (Filtered subset)</span>
-<div class="h-3 w-[1px] bg-surface-container-high hidden sm:block"></div>
-<span class="hidden sm:inline">Partition Checksum: <code class="font-mono text-[10px] text-on-surface-variant">0x8F9A4E2B</code></span>
-</div>
-<div class="flex items-center gap-2">
-<span class="text-outline">Page 1 of 4</span>
-<div class="flex items-center space-x-1">
-<button class="px-2 py-1 bg-surface-container opacity-40 rounded text-on-surface cursor-not-allowed font-mono" disabled="">Prev</button>
-<button class="px-2 py-1 bg-surface-container-high text-primary rounded font-mono border border-primary/30">1</button>
-<button class="px-2 py-1 bg-surface-container hover:bg-surface-bright text-on-surface rounded font-mono">2</button>
-<button class="px-2 py-1 bg-surface-container hover:bg-surface-bright text-on-surface rounded font-mono">3</button>
-<button class="px-2 py-1 bg-surface-container hover:bg-surface-bright text-on-surface rounded font-mono">4</button>
-<button class="px-2 py-1 bg-surface-container hover:bg-surface-bright text-on-surface rounded font-mono">Next</button>
-</div>
-</div>
+<div class="px-gutter-desktop py-space-sm bg-surface-container-low border-t border-surface-container-high font-label-sm text-label-sm text-outline">
+<strong class="text-on-surface font-mono">7</strong> matching selections
 </div>
 </div>
 <!-- Empty State View (Toggleable) -->
@@ -780,7 +764,7 @@
 <h2 class="font-headline-lg text-headline-md font-semibold text-on-surface tracking-tight">Source Access &amp; Adapter Performance Audit</h2>
 </div>
 <p class="font-body-md text-body-md text-on-surface-variant mt-1 max-w-4xl">
-            Metrics reflect the active source, competition, market, and date-range filters. Demonstrates external calibration tracking without back-feeding into MatchForge models.
+            Metrics reflect the active source, competition, market, and selected-day filters. Demonstrates external calibration tracking without back-feeding into MatchForge models.
           </p>
 </div>
 <div class="mt-2 md:mt-0 font-label-sm text-label-sm text-outline flex items-center gap-2">

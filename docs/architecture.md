@@ -1365,6 +1365,32 @@ work transactionally. The public-report worker applies the validation fence
 before comparisons. Pending corrections hide stale comparison and settlement
 outputs. Checkpointed retries preserve immutable selection and settlement history.
 
+Settlement uses verified fixture identity and qualified results. It runs for
+fixtures with no MatchForge forecast. An exact provider ID can also use a
+validated native observation with complete, consistent competition and oriented
+team IDs. A conflicting, quarantined or ambiguous identity stays pending.
+When a verified canonical mapping becomes available, the normal mapping trigger
+queues revalidation and the append-only binding records the canonical fixture.
+
+Imports retain match references, native IDs and displayed kickoff text as
+append-only evidence. An exact recapture can enrich the existing selection.
+Repeated evidence is deduplicated, and conflicting fixture references block
+settlement while preserving the recorded binding. Native-key changes enqueue
+affected captures through the existing settlement and comparison queues.
+A dated R2Bet link can support a binding when a unique retained API-Football
+mapping independently corroborates the native ID, competition, kickoff and
+oriented teams. Source labels alone produce no new bindings. Historical source
+pages can supply missing references for exact retained captures. A verified
+replacement mapping recorded after kickoff can settle a capture when an active
+duplicate resolution and retained provider decision corroborate the same native
+fixture. These reviewed bindings receive no retroactive prospective credit.
+
+External Predictions displays all matching captures for the selected day in
+capture order. Older days are available through the date picker and day
+navigation. The archive API also supports cross-date queries. The existing list
+and fixture APIs still return paginated current selections.
+Consensus and source statistics still use current, prospectively eligible picks.
+
 ### Operational acquisition and historical recovery outcomes
 
 Operational provider sync reports `current_acquisition` and `historical_recovery`

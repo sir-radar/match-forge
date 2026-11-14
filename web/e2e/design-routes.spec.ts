@@ -67,14 +67,14 @@ test("predictions matches the approved external terminal design", async ({ page 
   if (test.info().project.name === "desktop") await page.setViewportSize({ width: 1187, height: 1600 });
   const consoleErrors: string[] = [];
   page.on("console", (message) => { if (message.type() === "error") consoleErrors.push(message.text()); });
-  const predictionRequestPromise = page.waitForRequest((request) => request.url().includes("/v1/external-predictions?") && request.url().includes("date="));
+  const predictionRequestPromise = page.waitForRequest((request) => request.url().includes("/v1/external-predictions/archive?") && request.url().includes("date="));
   await page.goto("/predictions");
   await expect(page.getByRole("heading", { name: "External predictions" })).toBeVisible();
   const consensus = page.locator("section").filter({ has: page.getByRole("heading", { name: "Multi-Source External Consensus" }) });
   await expect(consensus).toBeVisible();
   await expect(consensus.getByText("Home 9 vs Away 9")).toHaveCount(1);
   await expect(page.getByLabel("External selection records table").locator("tbody tr")).toHaveCount(9);
-  await expect(page.getByText(/Page 1 of 1/)).toBeVisible();
+  await expect(page.getByLabel("Rows per page")).toHaveCount(0);
   const selectedDay = await page.getByLabel("Prediction day").inputValue();
   const predictionRequest = await predictionRequestPromise;
   expect(predictionRequest.url()).toContain(`date=${selectedDay}`);
@@ -83,6 +83,44 @@ test("predictions matches the approved external terminal design", async ({ page 
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
   expect(consoleErrors).toEqual([]);
   await page.screenshot({ path: `test-results/${test.info().project.name}-predictions.png`, fullPage: true });
+});
+
+test("a selected day shows and searches all 5001 predictions", async ({ page }) => {
+  const selectedDay = "2026-09-28";
+  const daily = Array.from({ length: 5001 }, (_, index) => ({
+    ...predictions[0], id: `archive-${index}`, home_team: `Archive home ${index}`,
+    away_team: `Archive away ${index}`, prediction_date: selectedDay,
+  }));
+  await page.route("**/v1/external-predictions/archive?**", async (route) => {
+    const query = new URL(route.request().url()).searchParams;
+    const search = query.get("search")?.toLowerCase() ?? "";
+    await route.fulfill({ json: {
+      predictions: query.get("date") === selectedDay
+        ? daily.filter((row) => row.home_team.toLowerCase().includes(search))
+        : [],
+      consensus: [],
+    } });
+  });
+  await page.goto("/predictions");
+  const response = page.waitForResponse((value) => value.url().endsWith(`/archive?date=${selectedDay}`));
+  const start = Date.now();
+  await page.getByLabel("Prediction day").fill(selectedDay);
+  const payload = await response;
+  const table = page.getByLabel("External selection records table");
+  await expect(table.locator("tbody tr")).toHaveCount(5001, { timeout: 10000 });
+  const last = table.getByRole("cell", { name: "Archive home 5000 vs Archive away 5000" });
+  await last.scrollIntoViewIfNeeded();
+  await expect(last).toBeInViewport();
+  const renderMs = Date.now() - start;
+  const heap = await page.evaluate(() =>
+    (window.performance as Performance & { memory?: { usedJSHeapSize: number } }).memory?.usedJSHeapSize
+  );
+  const searchStart = Date.now();
+  await page.getByLabel("Search predictions").fill("Archive home 5000");
+  await expect(table.locator("tbody tr")).toHaveCount(1);
+  await expect(last).toBeVisible();
+  await expect(page.getByRole("button", { name: /Next page|Previous page/ })).toHaveCount(0);
+  console.log(`5001 daily rows, ${(await payload.body()).length} bytes, render and scroll ${renderMs}ms, JS heap ${heap ?? "unavailable"}, search ${Date.now() - searchStart}ms`);
 });
 
 function performancePayload(url: string) {
@@ -99,7 +137,7 @@ function performancePayload(url: string) {
 
 test("prediction action computed contrast and forced-colors focus", async ({ page }) => {
   if (test.info().project.name === "mobile") await page.setViewportSize({ width: 320, height: 800 });
-  await page.route("http://127.0.0.1:8080/v1/external-predictions?**", (route) => route.fulfill({ json: { predictions: [], consensus: [], pagination: {page:1,page_size:20,total_items:0,total_pages:0} } }));
+  await page.route("http://127.0.0.1:8080/v1/external-predictions/archive?**", (route) => route.fulfill({ json: { predictions: [], consensus: [], pagination: {page:1,page_size:20,total_items:0,total_pages:0} } }));
   await page.goto("/predictions");
   const action = page.getByRole("button", { name: "Reset All Filters" });
   await expect(action).toBeVisible();

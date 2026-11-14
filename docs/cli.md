@@ -204,3 +204,33 @@ uv run python -m football.product.cli --database-url "$DATABASE_URL" \
 The binding records the source revision, snapshot, mapping and reason. A retry
 reuses the binding. Mapping revocation queues recovery and retains the original
 capture. See [comparison and settlement rules](architecture.md#external-prediction-comparison).
+
+Use a local directory of dated R2Bet pages named `r2bet-YYYY-MM-DD.html` to
+preview historical bindings. Preserve the acquired bytes so the checksum in
+the report and binding can be verified. Recovery checks both supported
+historical capture digests and reuses the verified native mapping. The default
+is read-only. Use `--apply` only on an isolated restore or under an authorized
+operating-database rollout.
+
+```bash
+uv run python -m football.product.cli recover-external-bindings --archive "$ARCHIVE"
+uv run python -m football.product.cli settle-external-predictions --audit-only
+```
+
+**Settle Finished Predictions** runs the same settlement evaluator as the
+scheduled worker and covers every retained capture. Each prediction commits
+independently. The admin run stores progress and outcome counts. A retry
+counts committed outcomes as already settled. The manual job records potential
+corrections for review and leaves finalized outcomes to the existing correction
+workflow. The CLI reports the exact changed prediction IDs. Audit-only reports
+each retained prediction's eligibility against its stored binding and applies
+the same source-date validation in memory. Run binding recovery and settlement
+on an isolated restore to preview changes that require new bindings. Compare
+binding history, date reviews and result revisions before and after the run.
+
+Before an operating rollout, keep a verified pre-change dump and compare the
+read-only audit against the isolated rehearsal. Apply the approved migration
+and exact association and settlement changes, then verify the outcomes, rerun
+the audit, and compare preservation checksums. Restore into a separate
+database before any rollback decision. Treat later corrections as append-only
+changes and preserve the operating database until the owner approves cutover.

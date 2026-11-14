@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -32,6 +33,9 @@ type FixtureFilters struct {
 }
 
 type ExternalPredictionFilters struct {
+	Archive     bool
+	Search      string
+	Settlement  string
 	Page        int
 	PageSize    int
 	Date        time.Time
@@ -525,6 +529,7 @@ type ExternalPrediction struct {
 	Market                 string     `json:"market"`
 	Selection              string     `json:"selection"`
 	MatchStatus            string     `json:"match_status"`
+	FixtureAssociation     *string    `json:"fixture_association,omitempty"`
 	MatchForgeProbability  *float64   `json:"matchforge_probability"`
 	Agreement              string     `json:"agreement"`
 	SettlementState        string     `json:"settlement_state"`
@@ -736,6 +741,24 @@ func (application *App) externalPredictions(response http.ResponseWriter, reques
 	application.respondProduct(response, items, err)
 }
 
+func (application *App) externalPredictionArchive(response http.ResponseWriter, request *http.Request) {
+	filters, err := externalFilters(request)
+	if err != nil {
+		application.publicError(response, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := applyExternalArchiveFilters(request, &filters); err != nil {
+		application.publicError(response, http.StatusBadRequest, err.Error())
+		return
+	}
+	filters.Archive = true
+	page, err := application.product.ExternalPredictions(request.Context(), filters)
+	response.Header().Set("Cache-Control", "no-store")
+	application.respondProduct(response, map[string]any{
+		"predictions": page.Predictions, "consensus": page.Consensus,
+	}, err)
+}
+
 func (application *App) fixtureExternalPredictions(response http.ResponseWriter, request *http.Request) {
 	filters, err := externalFilters(request)
 	if err != nil {
@@ -753,7 +776,12 @@ func (application *App) externalPredictionSources(response http.ResponseWriter, 
 		application.publicError(response, http.StatusBadRequest, filterErr.Error())
 		return
 	}
+	if err := applyExternalArchiveFilters(request, &filters); err != nil {
+		application.publicError(response, http.StatusBadRequest, err.Error())
+		return
+	}
 	items, err := application.product.ExternalPredictionSources(request.Context(), filters)
+	response.Header().Set("Cache-Control", "no-store")
 	application.respondProduct(response, map[string]any{"sources": items}, err)
 }
 
@@ -791,6 +819,20 @@ func externalFilters(request *http.Request) (ExternalPredictionFilters, error) {
 		return ExternalPredictionFilters{}, errors.New("date_from must not follow date_to")
 	}
 	return filters, nil
+}
+
+func applyExternalArchiveFilters(request *http.Request, filters *ExternalPredictionFilters) error {
+	filters.Search = strings.TrimSpace(request.URL.Query().Get("search"))
+	filters.Settlement = request.URL.Query().Get("settlement")
+	if len(filters.Search) > 256 {
+		return errors.New("search exceeds 256 bytes")
+	}
+	switch filters.Settlement {
+	case "", "PENDING", "WON", "LOST", "VOID":
+	default:
+		return errors.New("invalid settlement filter")
+	}
+	return nil
 }
 
 func (application *App) respondProduct(response http.ResponseWriter, value any, err error) {

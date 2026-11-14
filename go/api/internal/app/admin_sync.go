@@ -49,6 +49,7 @@ const (
 	SyncContextReports      SyncType = "CONTEXT_REPORTS"
 	SyncPublicReports       SyncType = "PUBLIC_REPORTS"
 	SyncExternalPredictions SyncType = "EXTERNAL_PREDICTIONS"
+	SyncExternalSettlement  SyncType = "EXTERNAL_PREDICTION_SETTLEMENT"
 	SyncFotMob              SyncType = "FOTMOB_SYNC"
 	SyncPitchAPI            SyncType = "PITCHAPI_SYNC"
 	SyncAllData             SyncType = "ALL_DATA"
@@ -62,6 +63,7 @@ type SyncRequest struct {
 	Date                    string   `json:"date,omitempty"`
 	FromDate                string   `json:"from_date,omitempty"`
 	Season                  string   `json:"season,omitempty"`
+	Initiator               string   `json:"-"`
 	HistoryProvider         string   `json:"provider,omitempty"`
 	Competition             string   `json:"competition,omitempty"`
 	Country                 string   `json:"country,omitempty"`
@@ -401,7 +403,8 @@ func syncParameters(request SyncRequest) map[string]interface{} {
 		"from_date": request.FromDate, "season": request.Season,
 		"competition": request.Competition, "country": request.Country,
 		"retry_of_run_id": request.RetryOf, "provider": request.HistoryProvider,
-		"scope": request.BackupScope, "unavailable_sha256": request.BackupUnavailableSHA256,
+		"initiator": request.Initiator,
+		"scope":     request.BackupScope, "unavailable_sha256": request.BackupUnavailableSHA256,
 		"governed_sha256": request.BackupGovernedSHA256,
 	} {
 		if value != "" {
@@ -728,7 +731,11 @@ func (runner *CommandSyncRunner) Retry(ctx context.Context, id string) (SyncRun,
 	if run.Type == SyncManualBackup {
 		return SyncRun{}, errSyncRunNotRetryable
 	}
-	return runner.Start(ctx, syncRequestFromRun(run))
+	request := syncRequestFromRun(run)
+	if request.Type == SyncExternalSettlement {
+		request.Initiator = "ADMIN_RETRY"
+	}
+	return runner.Start(ctx, request)
 }
 
 func syncRequestFromRun(run SyncRun) SyncRequest {
@@ -1174,6 +1181,7 @@ func providerSyncCommandArgs(request SyncRequest) ([]string, error) {
 		SyncContextReports:      "refresh-context-reports",
 		SyncPublicReports:       "refresh-public-reports",
 		SyncExternalPredictions: "external-predictions",
+		SyncExternalSettlement:  "settle-external-predictions",
 		SyncFotMob:              "fotmob-sync",
 		SyncPitchAPI:            "pitchapi-sync",
 		SyncAllData:             "sync-all",
@@ -1327,6 +1335,36 @@ func (application *App) startSync(syncType SyncType) http.HandlerFunc {
 		}
 		application.writeJSON(response, http.StatusAccepted, run)
 	}
+}
+
+func (application *App) startExternalSettlement(response http.ResponseWriter, request *http.Request) {
+	decoder := json.NewDecoder(http.MaxBytesReader(response, request.Body, 1024))
+	var body struct{}
+	decoder.DisallowUnknownFields()
+	if request.ContentLength != 0 && decoder.Decode(&body) != nil {
+		application.publicError(response, http.StatusBadRequest, "settlement takes no filters")
+		return
+	}
+	var trailing any
+	if decoder.Decode(&trailing) != io.EOF {
+		application.publicError(response, http.StatusBadRequest, "invalid JSON request")
+		return
+	}
+	run, err := application.syncRunner.Start(request.Context(), SyncRequest{
+		Type: SyncExternalSettlement, Initiator: adminInitiator(request),
+	})
+	if err != nil {
+		application.writeSyncError(response, err)
+		return
+	}
+	application.writeJSON(response, http.StatusAccepted, run)
+}
+
+func adminInitiator(request *http.Request) string {
+	if request.Header.Get("Origin") != "" {
+		return "LOCAL_ADMIN_BROWSER"
+	}
+	return "ADMIN_CLI"
 }
 
 func (application *App) writeSyncError(response http.ResponseWriter, err error) {

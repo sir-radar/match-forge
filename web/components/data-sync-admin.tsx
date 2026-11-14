@@ -19,6 +19,7 @@ const ACTIONS: Action[] = [
   { type: "FOOTBALL_DATA_UK", title: "Football-Data.co.uk", kind: "Historical CSV/ZIP archive", description: "Discover and import completed results from published download archives.", button: "Sync Football-Data.co.uk", start: api.startFootballDataUKSync },
   { type: "FORECAST_REFRESH", title: "Forecast Refresh", kind: "Stored data only", description: "Generate missing MatchForge forecasts from currently stored historical data.", button: "Refresh Forecasts", start: api.startForecastRefresh },
   { type: "EXTERNAL_PREDICTIONS", title: "External Predictions", kind: "Public source collection", description: "Run the existing private-local external prediction collection.", button: "Sync External Predictions", start: api.startExternalPredictionsSync },
+  { type: "EXTERNAL_PREDICTION_SETTLEMENT", title: "External Prediction Settlement", kind: "Stored results", description: "Settle eligible predictions across all dates using verified results.", button: "Settle Finished Predictions", start: api.startExternalPredictionSettlement },
   { type: "ALL_DATA", title: "Full Data Sync", kind: "Complete owner workflow", description: "Fixture range and scores → configured operational providers → historical sources → forecast refresh → external predictions.", button: "Run Full Sync", start: api.startAllDataSync, prominent: true },
 ];
 
@@ -36,12 +37,15 @@ const LIVE_ACTIONS: Action[] = [
 export function DataSyncAdmin({ initialDate }: { initialDate: string }) {
   const state = useSyncAdminState(initialDate);
   const { active, clock, coverage, error, filters, laneErrors, laneBusy, loading, providerConfiguration, retry, runs, setFilters, start, stop, submitting, reload } = state;
-  const renderActions = (actions: Action[]) => actions.map((action) => {
+  const settlement = runs.find((run) => run.sync_type === "EXTERNAL_PREDICTION_SETTLEMENT");
+  const renderActions = (actions: Action[]) => actions
+    .filter((action) => action.type !== "EXTERNAL_PREDICTION_SETTLEMENT" || coverage !== null)
+    .map((action) => {
     const key = action.historyProvider ?? action.type;
     const latest = runs.find((run) => run.status === "SUCCEEDED" && run.sync_type === action.type &&
       run.parameters.provider === action.historyProvider && run.parameters.scheduled_history !== true);
     return <SyncAction key={key} action={action} latest={latest} providerConfiguration={providerConfiguration}
-      disabled={loading || laneBusy(action.type)} busy={submitting[syncLane(action.type)] === key}
+      disabled={loading || laneBusy(action.type) || (action.type === "EXTERNAL_PREDICTION_SETTLEMENT" && error !== null)} busy={submitting[syncLane(action.type)] === key}
       onStart={() => void start(action.type, action.start, action.historyProvider)} />;
   });
 
@@ -53,6 +57,7 @@ export function DataSyncAdmin({ initialDate }: { initialDate: string }) {
     {Object.entries(laneErrors).filter(([, message]) => message).map(([lane, message]) => <div key={lane} className="sync-error" role="alert"><strong>{lane === "LIVE_FOTMOB" ? "FotMob" : lane === "LIVE_PITCHAPI" ? "PitchAPI" : "Bulk"} sync failed</strong><span>{message}</span></div>)}
     {error && <div className="sync-error" role="alert"><strong>Sync request failed</strong><span>{error}</span><button onClick={() => void reload()}>Retry status</button></div>}
     <section className="sync-actions" aria-label="Data synchronization actions">{renderActions(ACTIONS)}</section>
+    {settlement && <SettlementSummary run={settlement} />}
     <section className="coverage-panel" aria-labelledby="live-actions-title">
       <header><h2 id="live-actions-title">Live fixtures and scores</h2></header>
       <div className="sync-actions">{renderActions(LIVE_ACTIONS)}</div>
@@ -83,7 +88,7 @@ function SyncControls({ filters, setFilters }: { filters: Filters; setFilters: D
 
 function SyncStatus({ active, clock, disabled, stopping, stopLabel, onStop }: { active: SyncRun | null; clock: number; disabled: boolean; stopping: boolean; stopLabel: string; onStop: () => void }) {
   return <div className="sync-status" role="status" aria-live="polite">
-    {active ? <><strong>{active.status === "QUEUED" ? "Queued" : "Running"}</strong><span>{runLabel(active)}</span><span aria-hidden="true">{elapsed(active.started_at ?? active.requested_at, clock)}</span><span>{stringMetric(active.summary, "current_phase") ?? "Preparing provider operation"}</span>{active.history_queue && <span>{queueProgress(active)}</span>}<button type="button" aria-label={stopLabel} onClick={onStop} disabled={disabled}>{stopping ? "Stopping…" : "Stop sync"}</button></> : <><strong>Ready</strong><span>No data synchronization is running.</span></>}
+    {active ? <><strong>{active.status === "QUEUED" ? "Queued" : "Running"}</strong><span>{runLabel(active)}</span><span aria-hidden="true">{elapsed(active.started_at ?? active.requested_at, clock)}</span><span>{stringMetric(active.summary, "current_phase") ?? (active.sync_type === "EXTERNAL_PREDICTION_SETTLEMENT" ? "Checking retained predictions" : "Preparing provider operation")}</span>{active.history_queue && <span>{queueProgress(active)}</span>}<button type="button" aria-label={stopLabel} onClick={onStop} disabled={disabled}>{stopping ? "Stopping…" : "Stop sync"}</button></> : <><strong>Ready</strong><span>No data synchronization is running.</span></>}
   </div>;
 }
 
@@ -98,6 +103,46 @@ function SyncAction({ action, latest, providerConfiguration, disabled, busy, onS
     </dl>
     <button type="button" onClick={onStart} disabled={disabled || providerDisabled} aria-busy={busy}>{busy ? "Starting…" : action.button}</button>
   </article>;
+}
+
+const settlementLabels: Record<string, string> = {
+  ALREADY_SETTLED: "Already settled",
+  ALREADY_VOIDED: "Already voided",
+  NEWLY_SETTLED: "Newly settled",
+  NEWLY_VOIDED: "Newly voided",
+  FINALIZED_NEEDS_REVIEW: "Finalized outcomes requiring review",
+  MATCH_NOT_FINISHED: "Match not finished",
+  FIXTURE_IDENTITY: "Fixture association needs verification",
+  AMBIGUOUS_IDENTITY: "Ambiguous fixture identity",
+  IDENTITY_CONFLICT: "Conflicting fixture identity",
+  PROVIDER_FIXTURE_UNVERIFIED: "Provider fixture needs verification",
+  VERIFIED_CANONICAL: "Verified canonical fixture",
+  VERIFIED_PROVIDER_ONLY: "Verified provider fixture",
+  SOURCE_DATE: "Source date could not be verified",
+  RESULT_CONFLICT: "Conflicting result evidence",
+  QUALIFIED_SCORE_UNAVAILABLE: "Qualified regulation score unavailable",
+  UNSUPPORTED_MARKET: "Unsupported market",
+  FAILED: "Processing failed",
+};
+
+function SettlementSummary({ run }: { run: SyncRun }) {
+  const progress = run.summary.settlement;
+  const counts = progress && typeof progress === "object" && "counts" in progress ? progress.counts : null;
+  const metrics = Object.entries(counts && typeof counts === "object" ? counts : {});
+  const associations = progress && typeof progress === "object" && "associations" in progress ? progress.associations : null;
+  const associationMetrics = Object.entries(associations && typeof associations === "object" ? associations : {});
+  const active = run.status === "QUEUED" || run.status === "RUNNING";
+  return <section className="coverage-panel" aria-labelledby="settlement-title">
+    <header><h2 id="settlement-title">Settlement results</h2></header>
+    <p role="status">{active ? "Settlement in progress" : run.status === "SUCCEEDED" ? "Settlement completed" : run.status === "CANCELLED" ? "Settlement stopped" : "Settlement finished with errors"} · Examined {shortMetric(run, "examined")} of {shortMetric(run, "total")}</p>
+    {run.error_message && <p role="alert">{run.error_message}</p>}
+    {metrics.length > 0 && <details><summary>View outcome counts</summary><dl>
+      {metrics.map(([key, value]) => typeof value === "number" && <Metric key={key} term={settlementLabels[key] ?? key} value={value.toLocaleString()} />)}
+    </dl></details>}
+    {associationMetrics.length > 0 && <details><summary>View fixture associations</summary><dl>
+      {associationMetrics.map(([key, value]) => typeof value === "number" && <Metric key={key} term={settlementLabels[key] ?? key} value={value.toLocaleString()} />)}
+    </dl></details>}
+  </section>;
 }
 
 function ProviderConfigurationMetric({ action, configuration }: { action: Action; configuration: ProviderConfiguration }) {
@@ -175,7 +220,7 @@ function runLabel(run: SyncRun) {
   return label(run.sync_type);
 }
 
-function label(type: SyncType) { const labels: Record<SyncType, string> = { MVP_SYNC: "MVP Sync", OPENFOOTBALL: "OpenFootball", FOOTBALL_DATA_UK: "Football-Data.co.uk", HISTORY_BACKFILL: "Historical Backfill", FORECAST_REFRESH: "Forecast Refresh", CONTEXT_REPORTS: "Context Reports", PUBLIC_REPORTS: "Public Reports", EXTERNAL_PREDICTIONS: "External Predictions", ALL_DATA: "Full Data Sync", FOTMOB_SYNC: "FotMob", PITCHAPI_SYNC: "PitchAPI", MANUAL_BACKUP: "Manual Backup", STORAGE_LIFECYCLE: "Storage Lifecycle" }; return labels[type]; }
+function label(type: SyncType) { const labels: Record<SyncType, string> = { MVP_SYNC: "MVP Sync", OPENFOOTBALL: "OpenFootball", FOOTBALL_DATA_UK: "Football-Data.co.uk", HISTORY_BACKFILL: "Historical Backfill", FORECAST_REFRESH: "Forecast Refresh", CONTEXT_REPORTS: "Context Reports", PUBLIC_REPORTS: "Public Reports", EXTERNAL_PREDICTIONS: "External Predictions", EXTERNAL_PREDICTION_SETTLEMENT: "External Prediction Settlement", ALL_DATA: "Full Data Sync", FOTMOB_SYNC: "FotMob", PITCHAPI_SYNC: "PitchAPI", MANUAL_BACKUP: "Manual Backup", STORAGE_LIFECYCLE: "Storage Lifecycle" }; return labels[type]; }
 function formatTime(value: string | null) { return value ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) : "—"; }
 function elapsed(value: string, now: number) { return `${Math.max(0, Math.floor((now - new Date(value).getTime()) / 1000))}s elapsed`; }
 function duration(run: SyncRun, clock: number) { if (!run.started_at) return "—"; const end = run.finished_at ? new Date(run.finished_at).getTime() : clock; return `${Math.max(0, Math.round((end - new Date(run.started_at).getTime()) / 1000))}s`; }

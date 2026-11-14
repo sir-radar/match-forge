@@ -4,13 +4,18 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable, Iterator
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date
 from email.message import Message
 from html.parser import HTMLParser
+from urllib.parse import urljoin, urlsplit
 
 from football.product.domain import map_external_market
-from football.product.external_predictions import ImportedPrediction
+from football.product.external_predictions import (
+    ImportedPrediction,
+    provider_fixture_reference,
+    r2bet_match_id,
+)
 from football.providers.base import UrllibHttpTransport
 
 FetchPage = Callable[[str], str]
@@ -174,6 +179,54 @@ def _mapped_prediction(
     )
 
 
+def _fixture_metadata(row: ImportedPrediction, element: Element) -> ImportedPrediction:
+    links: set[str] = set()
+    native: set[tuple[str, str]] = set()
+    for child in _walk(element):
+        for attr in ("data-link", "href"):
+            if not (value := child.attrs.get(attr)):
+                continue
+            url = urljoin(row.source_page, value)
+            if reference := provider_fixture_reference(url):
+                native.add(reference)
+                links.add(url)
+            elif _r2bet_match_reference(url):
+                links.add(url)
+    displayed_times = {
+        _text(child)
+        for child in _walk(element)
+        if child.tag in {"time", "p", "span"}
+        and re.fullmatch(r"(?:[01]?[0-9]|2[0-3]):[0-5][0-9]", _text(child))
+    }
+    provider, match = next(iter(native)) if len(native) == 1 else (None, None)
+    r2bet_ids = {match_id for url in links if (match_id := r2bet_match_id(url))}
+    return replace(
+        row,
+        provider_code=provider,
+        provider_fixture_id=match,
+        fixture_reference_url=next(iter(links)) if len(links) == 1 else None,
+        source_kickoff_text=next(iter(displayed_times)) if len(displayed_times) == 1 else None,
+        conflicting_fixture_references=tuple(sorted(links))
+        if len(native | {("r2bet", match_id) for match_id in r2bet_ids}) > 1
+        else (),
+    )
+
+
+def _r2bet_match_reference(value: str) -> bool:
+    try:
+        url = urlsplit(value)
+    except ValueError:
+        return False
+    return (
+        url.scheme == "https"
+        and url.netloc.lower() in {"r2bet.com", "www.r2bet.com"}
+        and re.fullmatch(
+            r"(?:/match/[^/]+|/index\.php/match-details/[0-9]+-[^/]+/[^/]+)/?", url.path
+        )
+        is not None
+    )
+
+
 def _split_fixture(value: str) -> tuple[str, str] | None:
     parts = re.split(r"\s+vs\.?\s+", value.strip(), maxsplit=1, flags=re.IGNORECASE)
     if len(parts) != 2 or not all(parts):
@@ -237,7 +290,7 @@ def parse_r2bet(
             raw_selection=values[pick_index].removeprefix("Pick:").strip(),
         )
         if row is not None:
-            rows.append(row)
+            rows.append(_fixture_metadata(row, article))
     return tuple(rows)
 
 
@@ -274,7 +327,7 @@ def parse_1960tips(
             raw_selection=_text(tip),
         )
         if row is not None:
-            rows.append(row)
+            rows.append(_fixture_metadata(row, item))
     return tuple(rows)
 
 
@@ -331,7 +384,7 @@ def parse_slybet(
                 unmapped_market=unmapped_market,
             )
             if row is not None:
-                rows.append(row)
+                rows.append(_fixture_metadata(row, item))
     return tuple(rows)
 
 
@@ -379,7 +432,7 @@ def parse_matchoutlook(
             raw_selection=selection,
         )
         if row is not None:
-            rows.append(row)
+            rows.append(_fixture_metadata(row, item))
     return tuple(rows)
 
 
