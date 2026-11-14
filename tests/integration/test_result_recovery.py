@@ -4,6 +4,7 @@ Provider responses are simulated; identity, canonical, history and scheduling ru
 run against the real schema.
 """
 
+import hashlib
 import json
 from dataclasses import replace
 from datetime import UTC, date, datetime, timedelta
@@ -23,6 +24,7 @@ from football.product.operational_provider_sync import OperationalProviderSync
 from football.product.result_recovery import (
     RecoveryRequest,
     _explain_declined_replay,
+    discover_unmapped_fixtures,
     recover_api_football_results,
     recover_provider_results,
     summarize_recovery,
@@ -254,6 +256,148 @@ def test_recovery_leaves_the_live_sync_reserve_untouched(
     world.due_now(831)
     world.run(reserve=10)
     assert world.calls == [OLD.date()]
+
+
+def _unmapped_retained_final(
+    connection: psycopg.Connection[Any], tmp_path: Path
+) -> tuple[OperationalProviderSync, UUID, Any]:
+    """A verified candidate whose provider mapping is gone but final evidence is retained."""
+    sync, target, _provisional, snapshot, live, kickoff, acquired = (
+        seed_reviewed_operational_fixture(connection, tmp_path)
+    )
+    connection.execute(
+        """UPDATE football.match_provider_mappings m SET valid_to=clock_timestamp()
+           FROM football.providers p WHERE p.id=m.provider_id AND p.code='pitchapi'
+             AND m.provider_match_id=%s AND m.valid_to IS NULL""",
+        (live.provider_match_id,),
+    )
+    connection.execute(
+        "UPDATE football.product_fixtures SET identity_status='VERIFIED' WHERE fixture_id=%s",
+        (target,),
+    )
+    finished = replace(
+        live,
+        status="FINISHED",
+        provider_status="Full Time",
+        home_score=2,
+        away_score=1,
+        minute=90,
+        period="FULL_TIME",
+        source_updated_at=acquired + timedelta(minutes=1),
+        observed_at=acquired + timedelta(minutes=2),
+        result_score_basis="REGULATION_90",
+    )
+    assert sync._store_observation(finished, snapshot, None)
+    connection.commit()
+    assert kickoff < datetime.now(UTC)
+    return sync, target, live
+
+
+def _empty_pitchapi_date(day: date) -> PitchApiResponse:
+    raw = json.dumps({"matches": []}).encode()
+    return PitchApiResponse(
+        f"/v1/date/{day}", datetime.now(UTC), hashlib.sha256(raw).hexdigest(), raw, {}
+    )
+
+
+def test_trusted_retained_evidence_recovers_a_fixture_without_a_provider_mapping(
+    recovery_connection: psycopg.Connection[Any], tmp_path: Path
+) -> None:
+    sync, target, live = _unmapped_retained_final(recovery_connection, tmp_path)
+    discovered = discover_unmapped_fixtures(
+        recovery_connection, "pitchapi", RecoveryRequest(4), sync.kickoff_tolerance
+    )
+    assert [(f.fixture_id, f.provider_match_id) for f in discovered] == [
+        (target, live.provider_match_id)
+    ]
+
+    report = recover_provider_results(
+        sync, _empty_pitchapi_date, normalize_pitchapi_matches, limit=4
+    )
+    assert report["recovered"] == 1 and report["outcomes"] == {"RECOVERED": 1}
+    assert recovery_connection.execute(
+        "SELECT status,home_score,away_score FROM football.product_fixtures WHERE fixture_id=%s",
+        (target,),
+    ).fetchone() == ("FINISHED", 2, 1)
+    # The resolver, not recovery, recorded the mapping and its decision.
+    mapping = recovery_connection.execute(
+        """SELECT m.mapping_method FROM football.match_provider_mappings m
+           JOIN football.providers p ON p.id=m.provider_id AND p.code='pitchapi'
+           WHERE m.provider_match_id=%s AND m.match_id=%s AND m.valid_to IS NULL""",
+        (live.provider_match_id, target),
+    ).fetchone()
+    assert mapping == ("explicit_crosswalk",)
+    recovery_connection.commit()
+    # Mapped now: discovery offers it no more, and a rerun is idempotent.
+    assert (
+        discover_unmapped_fixtures(
+            recovery_connection, "pitchapi", RecoveryRequest(4), sync.kickoff_tolerance
+        )
+        == []
+    )
+
+
+def test_provider_match_mapped_to_another_fixture_is_not_discovered(
+    recovery_connection: psycopg.Connection[Any], tmp_path: Path
+) -> None:
+    sync, target, live = _unmapped_retained_final(recovery_connection, tmp_path)
+    twin = recovery_connection.execute(
+        """SELECT m.match_id FROM football.match_provider_mappings m
+           JOIN football.providers p ON p.id=m.provider_id AND p.code='pitchapi'
+           WHERE m.provider_match_id=%s AND m.match_id<>%s LIMIT 1""",
+        (live.provider_match_id, target),
+    ).fetchone()
+    assert twin is not None
+    # The provider match now identifies a different (duplicate) fixture.
+    recovery_connection.execute(
+        """INSERT INTO football.match_provider_mappings (
+               match_id,provider_id,provider_match_id,valid_from,first_seen_at,last_seen_at,
+               mapping_method,mapping_confidence,source_snapshot_id)
+           SELECT %s,m.provider_id,m.provider_match_id,clock_timestamp(),clock_timestamp(),
+                  clock_timestamp(),'explicit_crosswalk',1,m.source_snapshot_id
+           FROM football.match_provider_mappings m
+           JOIN football.providers p ON p.id=m.provider_id AND p.code='pitchapi'
+           WHERE m.provider_match_id=%s AND m.match_id=%s""",
+        (twin[0], live.provider_match_id, target),
+    )
+    recovery_connection.commit()
+    assert (
+        discover_unmapped_fixtures(
+            recovery_connection, "pitchapi", RecoveryRequest(4), sync.kickoff_tolerance
+        )
+        == []
+    )
+
+
+def test_untrusted_provider_entities_are_never_discovered(
+    recovery_connection: psycopg.Connection[Any], tmp_path: Path
+) -> None:
+    sync, target, _live = _unmapped_retained_final(recovery_connection, tmp_path)
+    before = recovery_connection.execute(
+        "SELECT to_jsonb(f) FROM football.product_fixtures f WHERE fixture_id=%s", (target,)
+    ).fetchone()
+    recovery_connection.execute(
+        """CREATE OR REPLACE FUNCTION football.product_mapping_trusted(
+               kind text, mapping_key uuid, canonical_key uuid)
+           RETURNS boolean LANGUAGE sql STABLE AS 'SELECT false'"""
+    )
+    recovery_connection.commit()
+    assert (
+        discover_unmapped_fixtures(
+            recovery_connection, "pitchapi", RecoveryRequest(4), sync.kickoff_tolerance
+        )
+        == []
+    )
+    report = recover_provider_results(
+        sync, _empty_pitchapi_date, normalize_pitchapi_matches, limit=4
+    )
+    assert report["recovered"] == 0
+    assert (
+        recovery_connection.execute(
+            "SELECT to_jsonb(f) FROM football.product_fixtures f WHERE fixture_id=%s", (target,)
+        ).fetchone()
+        == before
+    )
 
 
 def test_manual_requests_bypass_internal_schedule_and_report_outcomes(
