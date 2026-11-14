@@ -141,6 +141,23 @@ limits, not recovery defects.
   without a recorded reason. Some routed fixtures lack trusted team mappings
   (`IDENTITY_UNRESOLVED`), so "routed" overstates what is recoverable now.
 
+**14 November, later: settlement verified, batches stopped on low yield.**
+With PRs #232, #233, #235 and #236 deployed, settlement settled 15 predictions,
+14 of them without an internal forecast, and a second run changed nothing.
+A probe confirmed the API-Football free-plan window: yesterday to tomorrow (UTC).
+Two more bounded batches, under `AUTHORIZE_PRE_P03_ADDITIONAL_RECOVERY_BATCHES_V1`,
+recovered nothing and were stopped. The backlog is an identity problem, not a
+provider-capacity one:
+
+- 291 candidates have a same-match twin fixture: 39 tier-1 pairs (15 of them
+  both VERIFIED) and 68 tier-2.
+- 121 are blocked by 149 untrusted FotMob team mappings.
+- 746 have only PROVISIONAL PitchAPI identities.
+
+The case keys for the Resolution Center are in the
+[evidence](../../evidence/pre-p03-recovery-batches-and-identity-2026-11-14.json).
+Scheduled recovery needs the live-sync reserve in PR #237 first.
+
 Original preflight list:
 
 - [x] PR #230 merged (`bdb75ab`).
