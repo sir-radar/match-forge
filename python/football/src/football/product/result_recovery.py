@@ -13,7 +13,6 @@ the API-Football budget), which raise before any network request is made.
 
 from __future__ import annotations
 
-import math
 from collections import Counter
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
@@ -212,21 +211,21 @@ def due_fixtures(
 
 
 def select_dates(fixtures: Sequence[DueFixture], limit: int) -> list[tuple[date, list[DueFixture]]]:
-    """Choose at most ``limit`` dates: half newest, half least recently checked.
+    """Choose at most ``limit`` dates: half newest, the rest longest waiting.
 
-    Newly eligible recent fixtures get the first share of every run; the rest goes
-    to whichever dates have waited longest, so an old backlog keeps moving and a
+    Newly eligible recent fixtures get half of every run of two or more dates.
+    The rest goes to the dates that have waited longest since their last check
+    (or, if never checked, since kickoff), so an old backlog keeps moving and a
     large backlog cannot starve recent results.
     """
     days: dict[date, list[DueFixture]] = {}
     for fixture in fixtures:
         days.setdefault(fixture.day, []).append(fixture)
-    floor = datetime.min.replace(tzinfo=UTC)
 
     def waited(day: date) -> tuple[datetime, date]:
-        return min(f.last_checked_at or floor for f in days[day]), day
+        return min(f.last_checked_at or f.kickoff_at for f in days[day]), day
 
-    recent = sorted(days, reverse=True)[: math.ceil(limit / 2)]
+    recent = sorted(days, reverse=True)[: limit // 2]
     rest = sorted((day for day in days if day not in recent), key=waited)
     return [(day, days[day]) for day in (recent + rest)[:limit]]
 

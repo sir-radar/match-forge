@@ -124,6 +124,9 @@ def test_date_selection_reserves_recent_capacity_and_moves_the_backlog() -> None
     # Half the capacity goes to the newest dates, half to the longest-waiting ones.
     assert selected == [recent.day, date(2024, 2, 9), date(2024, 1, 1), date(2024, 1, 2)]
 
+    # A single-date run serves whatever has waited longest.
+    assert [day for day, _ in select_dates([*backlog, recent], 1)] == [date(2024, 1, 1)]
+
     # Repeated runs eventually reach every backlog date: no starvation.
     checked: dict[date, datetime] = {}
     clock = NOW
