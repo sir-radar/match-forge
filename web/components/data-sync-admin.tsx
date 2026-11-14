@@ -221,7 +221,47 @@ function ResultRecoveryPanel({ date, latest, disabled, onStart }: {
       <Metric term="Without operational route" value={shortMetric(latest, "no_operational_route")} />
       <Metric term="External predictions settled" value={shortMetric(latest, "settled_external_predictions")} />
     </dl>}
+    {latest && <ProviderParticipation summary={latest.summary} />}
   </section>;
+}
+
+type Participation = { verified_candidates?: unknown; identity_pending_candidates?: unknown; recovery_route?: unknown; outcomes?: unknown };
+
+// Reads the latest recovery run's own census; it never claims a provider is active
+// beyond what that worker run reported.
+function ProviderParticipation({ summary }: { summary: Record<string, unknown> }) {
+  const participation = recordOf(summary.provider_participation);
+  const configuration = recordOf(summary.provider_configuration);
+  const providers = [...new Set([...Object.keys(participation), ...Object.keys(configuration)])].sort();
+  if (!providers.length) return null;
+  return <details><summary>Provider participation</summary>
+    <table className="w-full text-sm">
+      <thead><tr><th scope="col">Provider</th><th scope="col">Worker configuration</th><th scope="col">Recovery route</th><th scope="col">Verified candidates</th><th scope="col">Identity pending</th><th scope="col">Outcomes</th></tr></thead>
+      <tbody>{providers.map((provider) => {
+        const row = recordOf(participation[provider]) as Participation;
+        const config = recordOf(configuration[provider]);
+        const outcomes = Object.entries(recordOf(row.outcomes)).map(([name, count]) => `${name} ${count}`).join(", ");
+        return <tr key={provider}>
+          <th scope="row">{provider}</th>
+          <td>{configurationLabel(config)}</td>
+          <td>{row.recovery_route === true ? "Yes" : row.recovery_route === false ? "No — mapping only" : "—"}</td>
+          <td>{numberLabel(row.verified_candidates)}</td>
+          <td>{numberLabel(row.identity_pending_candidates)}</td>
+          <td>{outcomes || "—"}</td>
+        </tr>;
+      })}</tbody>
+    </table>
+  </details>;
+}
+
+function recordOf(value: unknown): Record<string, unknown> { return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {}; }
+function numberLabel(value: unknown) { return typeof value === "number" ? value.toLocaleString() : "—"; }
+function configurationLabel(config: Record<string, unknown>) {
+  if (!Object.keys(config).length) return "Not reported";
+  const parts = [config.enabled === true ? "Enabled" : "Disabled"];
+  if (config.credential_present === false) parts.push("credential missing");
+  if (config.request_window_days !== undefined) parts.push(`requests within ${String(config.request_window_days)} day(s)`);
+  return parts.join("; ");
 }
 
 function CoveragePanel({ coverage, loading }: { coverage: HistoricalCoverage | null; loading: boolean }) {

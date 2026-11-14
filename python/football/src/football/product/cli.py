@@ -620,9 +620,25 @@ def _recover_results(
             ),
             errors,
         )
-    return summarize_recovery(
+    summary = summarize_recovery(
         connection, RecoveryRequest(args.limit, args.date, args.fixture_id), results, errors
     )
+    summary["provider_configuration"] = _recovery_provider_configuration()
+    return summary
+
+
+def _recovery_provider_configuration() -> dict[str, dict[str, object]]:
+    """Effective worker configuration per recovery provider; never a secret value."""
+    window = _api_football_recovery_window()
+    return {
+        "fotmob": {"enabled": os.environ.get("MATCHFORGE_FOTMOB_ENABLED") == "true"},
+        "pitchapi": {"enabled": os.environ.get("MATCHFORGE_PITCHAPI_ENABLED") == "true"},
+        "api_football": {
+            "enabled": bool(os.environ.get("API_FOOTBALL_API_KEY")),
+            "credential_present": bool(os.environ.get("API_FOOTBALL_API_KEY")),
+            "request_window_days": "all" if window is None else window,
+        },
+    }
 
 
 def _run_competition_geography(args: argparse.Namespace) -> int:
