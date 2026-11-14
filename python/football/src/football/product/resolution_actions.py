@@ -17,6 +17,7 @@ from football.product.identity_correction import (
 )
 from football.product.operational_provider_sync import OperationalProviderSync
 from football.product.resolution_cases import append_event, case_detail, latest_review
+from football.product.resolution_external import apply_external, qualify_external
 from football.product.resolution_files import enqueue_file_recovery, recovery_plan
 from football.product.resolution_parity import enqueue_parity
 from football.product.resolution_recovery import enqueue_recovery
@@ -61,15 +62,25 @@ def preview(
         "dataset",
         "parity",
         "stage",
+        "external_prediction",
     }:
         raise ValueError("unsupported resolution case")
     qualification: dict[str, Any] = {"status": "QUALIFIED", "reason": "REVIEW_WORKFLOW_ONLY"}
-    if action == "REJECT" and not any(
-        item["mapping_id"] == request.get("candidate", {}).get("target_mapping_id")
-        for item in detail.get("candidates", [])
+    external = request["case_key"].startswith("external_prediction:")
+    if (
+        action == "REJECT"
+        and not external
+        and not any(
+            item["mapping_id"] == request.get("candidate", {}).get("target_mapping_id")
+            for item in detail.get("candidates", [])
+        )
     ):
         qualification = {"status": "BLOCKED", "reason": "Select an exact retained candidate"}
-    if action not in REVIEW_ACTIONS or request["case_key"].startswith(("stage:", "parity:")):
+    if (
+        external
+        or action not in REVIEW_ACTIONS
+        or request["case_key"].startswith(("stage:", "parity:"))
+    ):
         try:
             qualification = qualify_action(connection, root, request, detail, verifier)
         except (ValueError, OSError) as error:
@@ -98,6 +109,8 @@ def qualify_action(
 ) -> dict[str, Any]:
     action, kind = request["action"], request["case_key"].split(":", 1)[0]
     candidate = request.get("candidate", {})
+    if kind == "external_prediction":
+        return qualify_external(request, detail)
     if kind not in {"team", "competition", "fixture", "fixture_record"}:
         return qualify_operation(connection, root, request, detail)
     if action == "REVALIDATE":
@@ -214,6 +227,7 @@ def apply_domain(
     request: dict[str, Any],
     prepared: dict[str, Any],
     verifier: RetainedIdentityVerifier | None = None,
+    actor: str = "",
 ) -> dict[str, Any]:
     kind, identifier = request["case_key"].split(":", 1)
     action = request["action"]
@@ -227,6 +241,8 @@ def apply_domain(
             "verification": detail.get("verification", {"status": detail["status"]}),
             "parity_status": "RECHECK_REQUIRED; DISPOSITION_IS_NOT_FULL_DATA_PARITY",
         }
+    if kind == "external_prediction":
+        return apply_external(connection, request, actor)
     if action in REVIEW_ACTIONS or action == "REVALIDATE":
         return {
             "status": "RECORDED",
@@ -301,10 +317,13 @@ def apply_one(
             raise ValueError("evidence or review changed; preview again before approval")
         if not current["allowed"]:
             raise ValueError("backend qualification blocked this action")
-        result = apply_domain(connection, root, request, current, verifier)
+        result = apply_domain(connection, root, request, current, verifier, actor)
         # Serialize domain datetime values before storing the workflow result.
         result = json_safe(result)
-        recovering = request["action"] in {
+        # External associations refresh through their own settlement queue.
+        recovering = not request["case_key"].startswith("external_prediction:") and request[
+            "action"
+        ] in {
             "APPROVE",
             "CORRECT",
             "QUARANTINE",
