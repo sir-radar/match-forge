@@ -164,6 +164,9 @@ class RecoveryRoute:
     # Returns a deadline while the provider's remaining capacity is reserved for other
     # work (live synchronization); recovery then holds its requests without failing.
     held_until: Callable[[], datetime | None] | None = None
+    # Operational providers whose retained observations can be offered to the identity
+    # resolver for fixtures that have no exact mapping for this provider yet.
+    discovery_tolerance: timedelta | None = None
 
 
 # --------------------------------------------------------------------------- selection
@@ -224,6 +227,81 @@ def due_fixtures(
             "manual": request.manual,
             "horizon": CORRECTION_HORIZON,
             "first": CORRECTION_SCHEDULE[0],
+        },
+    ).fetchall()
+    connection.commit()
+    return [DueFixture(*row) for row in rows]
+
+
+def discover_unmapped_fixtures(
+    connection: Connection[Any],
+    provider: str,
+    request: RecoveryRequest,
+    tolerance: timedelta,
+) -> list[DueFixture]:
+    """Recovery candidates this provider has finished evidence for but no mapping yet.
+
+    Only retained, validated, unlinked final observations qualify, and only when the
+    provider's competition and both team mappings are already trusted and resolve to
+    the candidate's own competition and teams within the resolver's kickoff tolerance.
+    Selection proposes nothing: the existing identity resolver decides whether the
+    observation resolves to the fixture and records the mapping and its decision.
+    """
+    rows = connection.execute(
+        """WITH evidence AS MATERIALIZED (
+            SELECT DISTINCT ON (o.provider_match_id) o.provider_match_id,
+                   o.provider_competition_id,o.provider_home_team_id,
+                   o.provider_away_team_id,o.kickoff_at
+            FROM football.product_provider_fixture_observations o
+            JOIN football.source_snapshots s ON s.id=o.source_snapshot_id
+             AND s.status='validated'
+            WHERE o.provider_code=%(provider)s AND o.canonical_fixture_id IS NULL
+              AND o.canonical_status='FINISHED'
+              AND o.result_score_basis IN ('REGULATION_90','EXTRA_TIME','PENALTY_SHOOTOUT')
+              AND o.home_score IS NOT NULL AND o.away_score IS NOT NULL
+              -- A provider match already mapped to a fixture is a duplicate identity
+              -- for review when it is not this candidate's, never a missing mapping.
+              AND NOT EXISTS (SELECT 1 FROM football.match_provider_mappings m
+                  JOIN football.providers mp ON mp.id=m.provider_id AND mp.code=o.provider_code
+                  WHERE m.provider_match_id=o.provider_match_id AND m.valid_to IS NULL)
+            ORDER BY o.provider_match_id,o.observed_at DESC
+        ), matched AS (
+            SELECT DISTINCT f.fixture_id,e.provider_match_id,f.kickoff_at
+            FROM evidence e
+            JOIN football.providers p ON p.code=%(provider)s
+            JOIN football.competition_provider_mappings cm ON cm.provider_id=p.id
+             AND cm.provider_competition_id=e.provider_competition_id
+             AND cm.valid_to IS NULL AND cm.mapping_confidence=1
+            JOIN football.product_effective_team_mappings hm ON hm.provider_id=p.id
+             AND hm.provider_team_id=e.provider_home_team_id AND hm.valid_to IS NULL
+            JOIN football.product_effective_team_mappings am ON am.provider_id=p.id
+             AND am.provider_team_id=e.provider_away_team_id AND am.valid_to IS NULL
+            JOIN football.product_fixtures f ON f.competition_id=cm.competition_id
+             AND f.home_team_id=hm.effective_team_id AND f.away_team_id=am.effective_team_id
+             AND f.kickoff_at BETWEEN e.kickoff_at-%(tolerance)s AND e.kickoff_at+%(tolerance)s
+             AND f.identity_status='VERIFIED'
+            JOIN football.product_result_recovery_candidates c ON c.fixture_id=f.fixture_id
+            WHERE football.product_mapping_trusted('competition',cm.id,cm.competition_id)
+              AND football.product_mapping_trusted('team',hm.id,hm.effective_team_id)
+              AND football.product_mapping_trusted('team',am.id,am.effective_team_id)
+              AND NOT EXISTS (SELECT 1 FROM football.match_provider_mappings m
+                  WHERE m.match_id=f.fixture_id AND m.provider_id=p.id AND m.valid_to IS NULL)
+              AND (%(fixture)s::uuid IS NULL OR f.fixture_id=%(fixture)s)
+              AND (%(day)s::date IS NULL OR (f.kickoff_at AT TIME ZONE 'UTC')::date=%(day)s)
+        )
+        SELECT m.fixture_id,m.provider_match_id,(m.kickoff_at AT TIME ZONE 'UTC')::date,
+               m.kickoff_at,'RECOVERY',COALESCE(s.attempts,0),s.outcome,s.last_checked_at
+        FROM matched m
+        LEFT JOIN football.product_result_recovery_state s
+          ON s.fixture_id=m.fixture_id AND s.provider_code=%(provider)s
+        WHERE %(manual)s OR s.fixture_id IS NULL OR s.next_check_at<=statement_timestamp()
+        ORDER BY m.kickoff_at,m.fixture_id""",
+        {
+            "provider": provider,
+            "tolerance": tolerance,
+            "fixture": request.fixture_id,
+            "day": request.day,
+            "manual": request.manual,
         },
     ).fetchall()
     connection.commit()
@@ -633,7 +711,12 @@ def _detail(result: ReturnedResult | None) -> str | None:
 def run_recovery(route: RecoveryRoute, request: RecoveryRequest) -> dict[str, object]:
     """Run one bounded recovery pass for a provider."""
     report = RecoveryReport()
-    selected = select_dates(due_fixtures(route.connection, route.provider, request), request.limit)
+    due = due_fixtures(route.connection, route.provider, request)
+    if route.discovery_tolerance is not None:
+        due += discover_unmapped_fixtures(
+            route.connection, route.provider, request, route.discovery_tolerance
+        )
+    selected = select_dates(due, request.limit)
     report.selected_dates = len(selected)
     cooldown = provider_cooldown(route.connection, route.provider)
     if cooldown is not None and selected:
@@ -771,7 +854,13 @@ def operational_route(
     def replay(_day: date, ids: frozenset[str], counts: SyncCounts) -> dict[str, str]:
         return _replay_retained(sync, sorted(ids), counts)
 
-    return RecoveryRoute(sync.provider_code, sync.connection, acquire, replay)
+    return RecoveryRoute(
+        sync.provider_code,
+        sync.connection,
+        acquire,
+        replay,
+        discovery_tolerance=sync.kickoff_tolerance,
+    )
 
 
 def recover_provider_results(
