@@ -70,7 +70,7 @@ Every file marked *proposed* under `docs/` is a proposal, not an approval. A sta
 - Recovery-scope disposition rehearsal on a restored copy, 12 November 2026 (not an owner decision): [evidence](evidence/recovery-disposition-rehearsal-2026-11-12.json)
 - Football-Data.co.uk raw-file binding and path-digest guard rehearsal on a restored copy, 12 November 2026 (not an owner decision): [evidence](evidence/fduk-binding-rehearsal-2026-11-12.json)
 
-- [Pre-P03 acquisition audit](evidence/pre-p03-acquisition-audit-2026-11-13.md), [recovery verification](evidence/pre-p03-recovery-verification-2026-11-14.md), [PR #230 integration](evidence/pre-p03-pr230-integration-2026-11-14.md), [operating rollout](evidence/pre-p03-operating-rollout-2026-11-14.json), [recovery batches and identity](evidence/pre-p03-recovery-batches-and-identity-2026-11-14.json) and [result recovery handoff](architecture/unified-redesign-2026-11-10/PRE_P03_PROVIDER_AND_RESULT_RECOVERY_HANDOFF.md)
+- [Pre-P03 acquisition audit](evidence/pre-p03-acquisition-audit-2026-11-13.md), [recovery verification](evidence/pre-p03-recovery-verification-2026-11-14.md), [PR #230 integration](evidence/pre-p03-pr230-integration-2026-11-14.md), [operating rollout](evidence/pre-p03-operating-rollout-2026-11-14.json), [recovery batches and identity](evidence/pre-p03-recovery-batches-and-identity-2026-11-14.json), [identity remediation](evidence/pre-p03-identity-remediation-2026-11-14.json) and [result recovery handoff](architecture/unified-redesign-2026-11-10/PRE_P03_PROVIDER_AND_RESULT_RECOVERY_HANDOFF.md)
 
 ## Engineering standards
 

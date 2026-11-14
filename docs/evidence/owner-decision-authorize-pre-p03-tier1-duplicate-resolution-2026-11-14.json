@@ -1,0 +1,26 @@
+{
+ "contract": "OwnerDecisionRecordV1",
+ "decision_id": "AUTHORIZE_PRE_P03_TIER1_DUPLICATE_RESOLUTION_V1",
+ "recorded_at": "2026-11-14T08:05:00Z",
+ "title": "Apply 21 previewed tier-1 duplicate fixture resolutions on the operating database",
+ "status": "APPROVED",
+ "owner": "repository owner / sir-radar",
+ "map": "unified-architecture-redesign",
+ "ticket": "Pre-P03 identity remediation",
+ "source": {
+  "execution_instruction": "Owner answer 'Apply all 21' in this session, then the owner ran .local/pre-p03-rollout/apply_tier1.sh with the owner admin credential",
+  "code_git_sha": "532c70154867d4cba2779b9f776f58a136e9eb61"
+ },
+ "authorizes": [
+  "21 Resolution Center RESOLVE_DUPLICATE decisions mapping a FotMob (15) or PitchAPI (6) match onto its verified twin, each re-previewed and applied with its evidence version",
+  "verification of identity, history, settlement and preservation afterwards"
+ ],
+ "requires": [
+  "each case QUALIFIED under EXISTING_REVIEWED_FIXTURE_RULES with retained source bytes verified",
+  "no change to forecasts, settlements or unrelated identities"
+ ],
+ "explicitly_not_authorized": [
+  "VERIFIED-VERIFIED pairs, tier-2 and tier-3 pairs, and any case not in the previewed list",
+  "weakening identity rules or deleting records"
+ ]
+}
