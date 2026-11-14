@@ -393,3 +393,38 @@ def test_lease_coordinates_duplicate_requests_and_expires_after_restart(
         "SELECT count(*) FROM football.product_team_match_history WHERE fixture_id=%s",
         (fixture,),
     ).fetchone() == (1,)
+
+
+def test_api_football_retained_response_recovers_without_a_request(
+    recovery_connection: psycopg.Connection[Any], tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    world = ApiFootballWorld(recovery_connection, tmp_path, monkeypatch, {802: (OLD, "NS")})
+    fixture = world.fixture(802)
+    # A later dated response was retained but never reached the result owners.
+    world.finish(802, 1, 2)
+    acquired = OLD + timedelta(hours=3)
+    world.sync._record_response(f"fixtures-{OLD.date()}", world._response(OLD.date(), acquired))
+    recovery_connection.commit()
+    world.failures.append(AssertionError("retained evidence must not trigger a request"))
+
+    result = world.run()
+    assert result["attempted_requests"] == 0 and world.calls == []
+    assert result["outcomes"] == {"RECOVERED": 1} and result["history_inserted"] == 1
+    assert recovery_connection.execute(
+        """SELECT f.status,f.home_score,f.away_score,h.source_snapshot_id IS NOT NULL,
+                  s.acquired_at
+           FROM football.product_fixtures f
+           JOIN football.product_team_match_history h ON h.fixture_id=f.fixture_id
+           JOIN football.source_snapshots s ON s.id=h.source_snapshot_id
+           WHERE f.fixture_id=%s""",
+        (fixture,),
+    ).fetchone() == ("FINISHED", 1, 2, True, acquired)
+    # Replaying the same retained response again changes nothing.
+    world.due_now(802)
+    world.failures.clear()
+    again = world.run(fixture_id=fixture)
+    assert again["fixtures"] == {str(fixture): "VERIFIED_UNCHANGED"}
+    assert recovery_connection.execute(
+        "SELECT count(*) FROM football.product_match_history_decisions WHERE fixture_id=%s",
+        (fixture,),
+    ).fetchone() == (1,)

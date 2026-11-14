@@ -27,6 +27,7 @@ from football.product.api_football import ApiFootballError
 from football.product.domain import stable_id
 from football.product.external_predictions import settle_external_predictions
 from football.product.fixture_reconciliation import reconcile_product_fixtures
+from football.product.history_requalification import _rows as retained_fixture_rows
 from football.product.history_requests import HistoryDeferred
 from football.product.operational_provider_sync import OperationalProviderSync
 from football.product.operational_support import FixtureObservation, SyncCounts
@@ -143,7 +144,7 @@ class RecoveryRoute:
     provider: str
     connection: Connection[Any]
     acquire: Callable[[date, frozenset[str], SyncCounts], tuple[dict[str, ReturnedResult], UUID]]
-    replay: Callable[[Sequence[str], SyncCounts], None] | None = None
+    replay: Callable[[date, frozenset[str], SyncCounts], None] | None = None
 
 
 # --------------------------------------------------------------------------- selection
@@ -474,7 +475,7 @@ def _acquire_date(
     result = _Acquisition()
     try:
         if route.replay is not None:
-            route.replay([fixture.provider_match_id for fixture in fixtures], counts)
+            route.replay(day, frozenset(f.provider_match_id for f in fixtures), counts)
         current = _canonical(route.connection, [fixture.fixture_id for fixture in fixtures])
         needed = frozenset(
             fixture.provider_match_id
@@ -662,8 +663,8 @@ def operational_route(
             for row in rows
         }, snapshot
 
-    def replay(ids: Sequence[str], counts: SyncCounts) -> None:
-        _replay_retained(sync, ids, counts)
+    def replay(_day: date, ids: frozenset[str], counts: SyncCounts) -> None:
+        _replay_retained(sync, sorted(ids), counts)
 
     return RecoveryRoute(sync.provider_code, sync.connection, acquire, replay)
 
@@ -771,6 +772,42 @@ def _api_football_returned(rows: Sequence[Mapping[str, Any]]) -> dict[str, Retur
     return returned
 
 
+def _replay_api_football(
+    sync: ProductSync, day: date, requested: frozenset[str], counts: SyncCounts
+) -> None:
+    """Re-offer retained, checksum-verified responses for this date before a request.
+
+    The same identity proof and result owners run with each snapshot's original
+    acquisition time; a stored row newer than the snapshot is never overwritten.
+    """
+    snapshots = sync.connection.execute(
+        """SELECT * FROM (
+             SELECT s.id,s.acquired_at,s.manifest_path,s.manifest_sha256
+             FROM football.source_snapshots s
+             JOIN football.providers p ON p.id=s.provider_id AND p.code='api_football'
+             WHERE s.source_identity=%s AND s.status='validated'
+               AND s.acquired_at<=statement_timestamp()
+             ORDER BY s.acquired_at DESC,s.id DESC LIMIT 3) newest
+           ORDER BY acquired_at,id""",
+        (f"fixtures-{day.isoformat()}",),
+    ).fetchall()
+    sync.connection.commit()
+    for snapshot, acquired_at, path, sha256 in snapshots:
+        try:
+            rows = retained_fixture_rows(sync.data_root, path, sha256)
+            with sync.connection.transaction():
+                acquire_locks(sync.connection, (IDENTITY_ADMISSION_LOCK,))
+                eligible = _api_football_terminal_rows(sync, rows, requested, acquired_at)
+                stored = sync._store_fixtures(eligible, snapshot, acquired_at)
+                counts.stored_observations_reconciled += len(stored)
+                counts.history_inserted += sync._qualify_finished_history(
+                    stored, snapshot, acquired_at
+                )
+        except (Error, OSError, ValueError) as error:
+            reason = "RETAINED_REPLAY_BLOCKED: " + (str(error).splitlines() or [""])[0]
+            counts.failure_reasons[reason] = counts.failure_reasons.get(reason, 0) + 1
+
+
 def api_football_route(sync: ProductSync, refresh: OperationalProviderSync) -> RecoveryRoute:
     """API-Football through the MVP fixture owner and its request budget."""
 
@@ -804,7 +841,10 @@ def api_football_route(sync: ProductSync, refresh: OperationalProviderSync) -> R
         ]
         return _api_football_returned(requested_rows), snapshot
 
-    return RecoveryRoute("api_football", sync.connection, acquire)
+    def replay(day: date, requested: frozenset[str], counts: SyncCounts) -> None:
+        _replay_api_football(sync, day, requested, counts)
+
+    return RecoveryRoute("api_football", sync.connection, acquire, replay)
 
 
 def recover_api_football_results(
