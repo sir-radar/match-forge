@@ -161,6 +161,9 @@ class RecoveryRoute:
     # A provider plan may serve only recent dates. Retained evidence is still replayed
     # for any date; only the request is skipped, so quota is not spent on a refusal.
     requestable: Callable[[date], bool] | None = None
+    # Returns a deadline while the provider's remaining capacity is reserved for other
+    # work (live synchronization); recovery then holds its requests without failing.
+    held_until: Callable[[], datetime | None] | None = None
 
 
 # --------------------------------------------------------------------------- selection
@@ -485,12 +488,14 @@ class _Acquisition:
     error: str | None = None
     until: datetime | None = None
     outside_window: bool = False
+    held_until: datetime | None = None
     replay_declined: Mapping[str, str] = field(default_factory=dict)
     # Per-fixture detail; ``error`` stays a stable aggregate key.
     reason: str | None = None
 
 
 OUTSIDE_WINDOW = "OUTSIDE_PROVIDER_DATE_WINDOW"
+API_FOOTBALL_LIVE_RESERVE = "API_FOOTBALL_LIVE_RESERVE"
 # A past date never re-enters a recent-date window; recheck rarely, in case newly
 # retained evidence or a changed plan makes it recoverable.
 OUTSIDE_WINDOW_RECHECK = timedelta(days=7)
@@ -512,8 +517,14 @@ def _acquire_date(
             if fixture.purpose == "CORRECTION"
             or (fixture.fixture_id in current and current[fixture.fixture_id].candidate)
         )
+        held = route.held_until() if needed and route.held_until is not None else None
         if needed and route.requestable is not None and not route.requestable(day):
             result.outside_window = True
+        elif held is not None:
+            result.held_until = held
+            counts.failure_reasons[API_FOOTBALL_LIVE_RESERVE] = (
+                counts.failure_reasons.get(API_FOOTBALL_LIVE_RESERVE, 0) + 1
+            )
         elif needed:
             counts.attempted_requests += 1
             result.returned, result.snapshot = route.acquire(day, needed, counts)
@@ -529,6 +540,26 @@ def _acquire_date(
         cause = (str(failure.__cause__).splitlines() or [""])[0] if failure.__cause__ else ""
         result.reason = f"{result.error}: {cause}"[:300] if cause else result.error
     return result
+
+
+def _disposition(
+    acquired: _Acquisition, fixture: DueFixture, outcome: str, detail: str | None
+) -> tuple[str, str | None, datetime | None]:
+    """Final outcome, operator detail and recheck deadline for one unresolved fixture."""
+    if outcome in RESOLVED:
+        return outcome, detail, acquired.until
+    if acquired.error is not None:
+        status = "PROVIDER_RATE_LIMITED" if acquired.until else "PROVIDER_UNAVAILABLE"
+        return status, acquired.reason or acquired.error, acquired.until
+    if acquired.outside_window:
+        reason = f"{OUTSIDE_WINDOW}: {acquired.reason}" if acquired.reason else OUTSIDE_WINDOW
+        return "PROVIDER_UNAVAILABLE", reason, datetime.now(UTC) + OUTSIDE_WINDOW_RECHECK
+    if acquired.held_until is not None:
+        return "PROVIDER_RATE_LIMITED", API_FOOTBALL_LIVE_RESERVE, acquired.held_until
+    declined = acquired.replay_declined.get(fixture.provider_match_id)
+    if declined is not None:
+        detail = f"{declined}; {detail}" if detail else declined
+    return outcome, detail, acquired.until
 
 
 def _process_date(
@@ -568,18 +599,7 @@ def _process_date(
             result,
             acquired.fetched,
         )
-        detail = _detail(result)
-        recheck = until
-        if error is not None and outcome not in RESOLVED:
-            outcome = "PROVIDER_RATE_LIMITED" if until else "PROVIDER_UNAVAILABLE"
-            detail = acquired.reason or error
-        elif acquired.outside_window and outcome not in RESOLVED:
-            outcome = "PROVIDER_UNAVAILABLE"
-            detail = f"{OUTSIDE_WINDOW}: {acquired.reason}" if acquired.reason else OUTSIDE_WINDOW
-            recheck = datetime.now(UTC) + OUTSIDE_WINDOW_RECHECK
-        elif outcome not in RESOLVED and fixture.provider_match_id in acquired.replay_declined:
-            declined = acquired.replay_declined[fixture.provider_match_id]
-            detail = f"{declined}; {detail}" if detail else declined
+        outcome, detail, recheck = _disposition(acquired, fixture, outcome, _detail(result))
         purpose = "RECOVERY" if after[fixture.fixture_id].candidate else "CORRECTION"
         _store_state(
             connection,
@@ -594,6 +614,9 @@ def _process_date(
         report.record(fixture, outcome)
     connection.commit()
     _release_date(connection, route.provider, day, claimed, error)
+    if until is None and acquired.held_until is not None:
+        report.deferred_until = acquired.held_until
+        return False
     if until is not None:
         report.deferred_until = until
         return False
@@ -891,13 +914,33 @@ def _replay_api_football(
 
 
 def api_football_route(
-    sync: ProductSync, refresh: OperationalProviderSync, window_days: int | None = None
+    sync: ProductSync,
+    refresh: OperationalProviderSync,
+    window_days: int | None = None,
+    reserve: int | None = None,
 ) -> RecoveryRoute:
     """API-Football through the MVP fixture owner and its request budget.
 
     ``window_days`` bounds requests to UTC dates no older than that many days before
-    today; ``None`` requests any date.
+    today; ``None`` requests any date. ``reserve`` keeps that many of the provider's
+    reported remaining daily requests for live synchronization: recovery defers
+    until the next UTC day once remaining requests reach it.
     """
+
+    def held_until() -> datetime | None:
+        if reserve is None:
+            return None
+        row = sync.connection.execute(
+            """SELECT remaining_requests FROM football.provider_request_budgets
+               WHERE provider_code='api_football'
+                 AND window_date=(statement_timestamp() AT TIME ZONE 'UTC')::date"""
+        ).fetchone()
+        sync.connection.commit()
+        remaining = None if row is None else row[0]
+        if remaining is None or remaining > reserve:
+            return None
+        tomorrow = datetime.now(UTC).date() + timedelta(days=1)
+        return datetime.combine(tomorrow, datetime.min.time(), UTC)
 
     def requestable(day: date) -> bool:
         assert window_days is not None
@@ -944,6 +987,7 @@ def api_football_route(
         acquire,
         replay,
         requestable if window_days is not None else None,
+        held_until,
     )
 
 
@@ -955,9 +999,11 @@ def recover_api_football_results(
     day: date | None,
     fixture_id: UUID | None,
     window_days: int | None = None,
+    reserve: int | None = None,
 ) -> dict[str, object]:
     return run_recovery(
-        api_football_route(sync, refresh, window_days), RecoveryRequest(limit, day, fixture_id)
+        api_football_route(sync, refresh, window_days, reserve),
+        RecoveryRequest(limit, day, fixture_id),
     )
 
 

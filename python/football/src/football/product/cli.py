@@ -554,6 +554,14 @@ def _api_football_recovery_window() -> int | None:
     return days
 
 
+def _api_football_recovery_reserve() -> int:
+    """Remaining daily API-Football requests that recovery leaves for live sync."""
+    reserve = int(os.environ.get("MATCHFORGE_API_FOOTBALL_RECOVERY_RESERVE", "50"))
+    if reserve < 0:
+        raise ValueError("MATCHFORGE_API_FOOTBALL_RECOVERY_RESERVE must be >= 0")
+    return reserve
+
+
 def _recover_results(
     connection: psycopg.Connection[Any], args: argparse.Namespace
 ) -> dict[str, object]:
@@ -617,6 +625,7 @@ def _recover_results(
                 day=args.date,
                 fixture_id=args.fixture_id,
                 window_days=_api_football_recovery_window(),
+                reserve=_api_football_recovery_reserve(),
             ),
             errors,
         )
@@ -637,6 +646,7 @@ def _recovery_provider_configuration() -> dict[str, dict[str, object]]:
             "enabled": bool(os.environ.get("API_FOOTBALL_API_KEY")),
             "credential_present": bool(os.environ.get("API_FOOTBALL_API_KEY")),
             "request_window_days": "all" if window is None else window,
+            "live_sync_reserve": _api_football_recovery_reserve(),
         },
     }
 

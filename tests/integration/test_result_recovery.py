@@ -133,6 +133,7 @@ class ApiFootballWorld:
             day=request.get("day"),
             fixture_id=request.get("fixture_id"),
             window_days=request.get("window_days"),
+            reserve=request.get("reserve"),
         )
 
     def state(self, number: int) -> tuple[Any, ...]:
@@ -230,6 +231,29 @@ def test_declined_retained_replay_names_a_rescheduled_kickoff(
     reason = _explain_declined_replay(sync, source)
     assert reason.startswith("PROVIDER_KICKOFF_MOVED ")
     assert f"-> {moved:%Y-%m-%dT%H:%MZ}" in reason and "identity review" in reason
+
+
+def test_recovery_leaves_the_live_sync_reserve_untouched(
+    recovery_connection: psycopg.Connection[Any], tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    world = ApiFootballWorld(recovery_connection, tmp_path, monkeypatch, {831: (OLD, "NS")})
+    recovery_connection.execute(
+        """INSERT INTO football.provider_request_budgets
+           (provider_code,window_date,requests_used,remaining_requests)
+           VALUES('api_football',(statement_timestamp() AT TIME ZONE 'UTC')::date,50,50)
+           ON CONFLICT (provider_code,window_date) DO UPDATE SET remaining_requests=50"""
+    )
+    recovery_connection.commit()
+    report = world.run(reserve=50)
+    assert world.calls == [] and report["attempted_requests"] == 0 and report["failed"] == 0
+    assert report["failure_reasons"] == {"API_FOOTBALL_LIVE_RESERVE": 1}
+    outcome, _purpose, _attempts, _checked, following, _never = world.state(831)
+    assert outcome == "PROVIDER_RATE_LIMITED"
+    assert following.date() == datetime.now(UTC).date() + timedelta(days=1)
+    # Above the reserve the request goes ahead.
+    world.due_now(831)
+    world.run(reserve=10)
+    assert world.calls == [OLD.date()]
 
 
 def test_manual_requests_bypass_internal_schedule_and_report_outcomes(
