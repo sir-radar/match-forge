@@ -126,6 +126,7 @@ class ApiFootballWorld:
             limit=request.get("limit", 4),
             day=request.get("day"),
             fixture_id=request.get("fixture_id"),
+            window_days=request.get("window_days"),
         )
 
     def state(self, number: int) -> tuple[Any, ...]:
@@ -151,6 +152,32 @@ class ApiFootballWorld:
 
 
 OLD = datetime(2026, 10, 9, 23, 50, tzinfo=UTC)
+
+
+def test_dates_outside_the_provider_window_spend_no_request(
+    recovery_connection: psycopg.Connection[Any], tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    recent = datetime.now(UTC).replace(minute=0, second=0, microsecond=0) - timedelta(hours=5)
+    world = ApiFootballWorld(
+        recovery_connection, tmp_path, monkeypatch, {811: (OLD, "NS"), 812: (recent, "NS")}
+    )
+    world.finish(812, 1, 0)
+
+    report = world.run(window_days=1)
+    # Only the recent date is requested; the old one is deferred without a request.
+    assert world.calls == [recent.date()]
+    assert report["attempted_requests"] == 1 and report["recovered"] == 1
+    outcome, _purpose, _attempts, _checked, following, _never = world.state(811)
+    assert outcome == "PROVIDER_UNAVAILABLE"
+    assert following > datetime.now(UTC) + timedelta(days=6)
+    detail = recovery_connection.execute(
+        "SELECT detail FROM football.product_result_recovery_state WHERE fixture_id=%s",
+        (world.fixture(811),),
+    ).fetchone()
+    recovery_connection.commit()
+    assert detail == ("OUTSIDE_PROVIDER_DATE_WINDOW",)
+    # The deferral holds: a later automatic run does not select the old date again.
+    assert world.run(window_days=1)["selected_dates"] == 0 and len(world.calls) == 1
 
 
 def test_manual_requests_bypass_internal_schedule_and_report_outcomes(
