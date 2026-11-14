@@ -83,13 +83,23 @@ populated operating data were not measured; that needs the authorized rollout.
 
 | Check | Result |
 | --- | --- |
-| Recovery unit tests (`python/football/tests/test_result_recovery.py`) | 13 passed |
-| Recovery integration (`tests/integration/test_result_recovery.py`, `test_operational_recovery.py`) | 13 passed |
+| Python unit suite with coverage (`make test`) | 2,342 passed, including 13 recovery unit tests |
+| Recovery integration (`tests/integration/test_result_recovery.py`, `test_operational_recovery.py`) | 14 passed |
+| Recovery, settlement and history acquisition integration on this branch | 69 passed |
 | Same plus external settlement and history acquisition, on a trial merge with PR #230 | 67 passed |
-| Full integration suite on this branch, disposable cluster without the compose services | 1,015 passed, 29 failed; the 29 are compared with main below |
-| Go `go vet` and `go test ./...` | passed |
+| Full integration suite, disposable cluster without the compose services, one shared database | Branch 1,015 passed, 29 failed; main 1,005 passed and the same 29 failed. 16 need the compose stack, a browser or restic; 13 depend on test order in one database and pass when their files run alone, on both |
+| Go `go vet` and `go test ./...`; Rust `cargo test --workspace` (22) | passed |
 | Web unit tests | 258 passed (261 on the PR #230 trial merge) |
-| `pnpm build`, `make web-lint`, `make architecture-check`, `make project-status-check` | passed; one pre-existing lint warning in `forecast-history.test.tsx` |
+| Remaining `make check` targets: format, lint (ruff, mypy, clippy, go vet), architecture, `build` (uv, cargo, Go), project status, docs, web lint, test and build | passed; one pre-existing lint warning in `forecast-history.test.tsx` |
+
+The earlier aggregate pnpm dependency-directory failure did not reproduce:
+`make check` reached and passed the web targets in this worktree once
+`pnpm install --frozen-lockfile` had populated `web/node_modules`. The web
+targets do not depend on `web-install`, so a worktree without `node_modules`
+would fail there. The original error output was not kept, so that cause is
+likely but unconfirmed; no build-system defect was found. The first
+`make check` run did find a real defect: the new integration file was missing
+from `scripts/storage-integration-tests.txt`, which CI uses. It is now listed.
 | Ruff, ruff format and mypy | passed |
 
 Acceptance scenarios covered by the integration tests:
