@@ -13,10 +13,16 @@ from uuid import UUID, uuid4
 
 import psycopg
 import pytest
-from football.product.api_football import ApiFootballClient, ApiFootballError, ApiResponse
+from football.product.api_football import (
+    ApiFootballClient,
+    ApiFootballError,
+    ApiResponse,
+    CapabilityStatus,
+)
 from football.product.operational_provider_sync import OperationalProviderSync
 from football.product.result_recovery import (
     RecoveryRequest,
+    _explain_declined_replay,
     recover_api_football_results,
     recover_provider_results,
     summarize_recovery,
@@ -178,6 +184,52 @@ def test_dates_outside_the_provider_window_spend_no_request(
     assert detail == ("OUTSIDE_PROVIDER_DATE_WINDOW",)
     # The deferral holds: a later automatic run does not select the old date again.
     assert world.run(window_days=1)["selected_dates"] == 0 and len(world.calls) == 1
+
+
+def test_provider_plan_refusal_is_a_durable_scope_disposition(
+    recovery_connection: psycopg.Connection[Any], tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    world = ApiFootballWorld(recovery_connection, tmp_path, monkeypatch, {821: (OLD, "NS")})
+    refusal = (
+        "API-Football rejected /fixtures: {'plan': 'Free plans do not have access to this "
+        "date, try from 2026-11-13 to 2026-11-15.'}"
+    )
+    world.failures.append(
+        ApiFootballError(refusal, capability_status=CapabilityStatus.PLAN_RESTRICTION)
+    )
+    report = world.run()  # no window prefilter: the provider's own refusal decides
+    assert report["attempted_requests"] == 1 and report["failed"] == 0
+    assert report["failure_reasons"] == {"OUTSIDE_PROVIDER_DATE_WINDOW": 1}
+    outcome, _purpose, _attempts, checked, following, _never = world.state(821)
+    assert outcome == "PROVIDER_UNAVAILABLE" and following - checked > timedelta(days=6)
+    detail = recovery_connection.execute(
+        "SELECT detail FROM football.product_result_recovery_state WHERE fixture_id=%s",
+        (world.fixture(821),),
+    ).fetchone()
+    recovery_connection.commit()
+    assert detail is not None and detail[0].startswith("OUTSIDE_PROVIDER_DATE_WINDOW: ")
+    assert "Free plans do not have access" in detail[0]
+    # Not retried hourly: the next automatic run spends no request.
+    assert world.run()["selected_dates"] == 0 and len(world.calls) == 1
+
+
+def test_declined_retained_replay_names_a_rescheduled_kickoff(
+    recovery_connection: psycopg.Connection[Any], tmp_path: Path
+) -> None:
+    sync, _target, _provisional, snapshot, live, kickoff, acquired = (
+        seed_reviewed_operational_fixture(recovery_connection, tmp_path)
+    )
+    recovery_connection.commit()
+    moved = kickoff - timedelta(days=1)
+    source = (
+        live.provider_match_id, live.provider_competition_id, live.provider_home_team_id,
+        live.provider_away_team_id, live.home_team_name, live.away_team_name, moved,
+        "FINISHED", "FT", 3, 2, None, None, None, None, acquired,
+        live.provider_competition_name, snapshot, "REGULATION_90",
+    )  # fmt: skip
+    reason = _explain_declined_replay(sync, source)
+    assert reason.startswith("PROVIDER_KICKOFF_MOVED ")
+    assert f"-> {moved:%Y-%m-%dT%H:%MZ}" in reason and "identity review" in reason
 
 
 def test_manual_requests_bypass_internal_schedule_and_report_outcomes(

@@ -22,7 +22,7 @@ from uuid import UUID
 
 from psycopg import Connection, Error
 
-from football.product.api_football import ApiFootballError
+from football.product.api_football import ApiFootballError, CapabilityStatus
 from football.product.domain import stable_id
 from football.product.external_predictions import settle_external_predictions
 from football.product.fixture_reconciliation import reconcile_product_fixtures
@@ -136,6 +136,19 @@ class ProviderDeferred(Exception):
         self.until = until
 
 
+class ProviderScopeUnsupported(Exception):
+    """The provider refused the requested scope under the account's plan.
+
+    The refusal is the provider's own statement (for example API-Football's
+    "Free plans do not have access to this date"), so the scope is deferred for
+    this provider only and stays eligible for every other provider.
+    """
+
+    def __init__(self, reason: str) -> None:
+        super().__init__(reason)
+        self.reason = reason
+
+
 @dataclass(frozen=True, slots=True)
 class RecoveryRoute:
     """Provider-specific acquisition through the provider's existing ingestion owner."""
@@ -143,7 +156,8 @@ class RecoveryRoute:
     provider: str
     connection: Connection[Any]
     acquire: Callable[[date, frozenset[str], SyncCounts], tuple[dict[str, ReturnedResult], UUID]]
-    replay: Callable[[date, frozenset[str], SyncCounts], None] | None = None
+    # Returns, per provider match id, why retained evidence could not be applied.
+    replay: Callable[[date, frozenset[str], SyncCounts], Mapping[str, str] | None] | None = None
     # A provider plan may serve only recent dates. Retained evidence is still replayed
     # for any date; only the request is skipped, so quota is not spent on a refusal.
     requestable: Callable[[date], bool] | None = None
@@ -471,6 +485,7 @@ class _Acquisition:
     error: str | None = None
     until: datetime | None = None
     outside_window: bool = False
+    replay_declined: Mapping[str, str] = field(default_factory=dict)
     # Per-fixture detail; ``error`` stays a stable aggregate key.
     reason: str | None = None
 
@@ -488,7 +503,8 @@ def _acquire_date(
     result = _Acquisition()
     try:
         if route.replay is not None:
-            route.replay(day, frozenset(f.provider_match_id for f in fixtures), counts)
+            declined = route.replay(day, frozenset(f.provider_match_id for f in fixtures), counts)
+            result.replay_declined = declined or {}
         current = _canonical(route.connection, [fixture.fixture_id for fixture in fixtures])
         needed = frozenset(
             fixture.provider_match_id
@@ -504,6 +520,9 @@ def _acquire_date(
             result.fetched = True
     except ProviderDeferred as deferred:
         result.error, result.until = deferred.reason, deferred.until
+    except ProviderScopeUnsupported as unsupported:
+        result.outside_window, result.reason = True, unsupported.reason
+        counts.failure_reasons[OUTSIDE_WINDOW] = counts.failure_reasons.get(OUTSIDE_WINDOW, 0) + 1
     except (Error, ProviderFetchError, OSError, ValueError) as failure:
         result.error = str(failure).splitlines()[0] or type(failure).__name__
         # Keep the provider's own reason (for example a plan restriction) for operators.
@@ -555,8 +574,12 @@ def _process_date(
             outcome = "PROVIDER_RATE_LIMITED" if until else "PROVIDER_UNAVAILABLE"
             detail = acquired.reason or error
         elif acquired.outside_window and outcome not in RESOLVED:
-            outcome, detail = "PROVIDER_UNAVAILABLE", OUTSIDE_WINDOW
+            outcome = "PROVIDER_UNAVAILABLE"
+            detail = f"{OUTSIDE_WINDOW}: {acquired.reason}" if acquired.reason else OUTSIDE_WINDOW
             recheck = datetime.now(UTC) + OUTSIDE_WINDOW_RECHECK
+        elif outcome not in RESOLVED and fixture.provider_match_id in acquired.replay_declined:
+            declined = acquired.replay_declined[fixture.provider_match_id]
+            detail = f"{declined}; {detail}" if detail else declined
         purpose = "RECOVERY" if after[fixture.fixture_id].candidate else "CORRECTION"
         _store_state(
             connection,
@@ -614,7 +637,7 @@ def run_recovery(route: RecoveryRoute, request: RecoveryRequest) -> dict[str, ob
 
 def _replay_retained(
     sync: OperationalProviderSync, provider_ids: Sequence[str], counts: SyncCounts
-) -> None:
+) -> dict[str, str]:
     """Reprocess the newest validated final observation before requesting the provider.
 
     Retained evidence is replayed through the same identity and canonical rules as
@@ -645,17 +668,52 @@ def _replay_retained(
         (sync.provider_code, list(provider_ids)),
     ).fetchall()
     sync.connection.commit()
+    declined: dict[str, str] = {}
     for source in sources:
         try:
             with sync.connection.transaction():
-                counts.stored_observations_reconciled += int(
-                    sync.reconcile_retained_observation(source) is not None
-                )
+                applied = sync.reconcile_retained_observation(source) is not None
+            counts.stored_observations_reconciled += int(applied)
+            if not applied:
+                declined[str(source[0])] = _explain_declined_replay(sync, source)
         except (Error, ValueError) as error:
             # Blocked evidence stays retained; the fixture's outcome and schedule
             # record the block, and the provider request below still runs.
             reason = "RETAINED_REPLAY_BLOCKED: " + (str(error).splitlines() or [""])[0]
-            counts.failure_reasons[reason] = counts.failure_reasons.get(reason, 0) + 1
+            declined[str(source[0])] = reason
+        else:
+            if applied:
+                continue
+        key = declined[str(source[0])].split(" ", 1)[0]
+        counts.failure_reasons[key] = counts.failure_reasons.get(key, 0) + 1
+    return declined
+
+
+def _explain_declined_replay(sync: OperationalProviderSync, source: tuple[Any, ...]) -> str:
+    """Name why retained final evidence did not resolve to its mapped fixture.
+
+    The identity rules stay unchanged; this only records which rule declined, so a
+    rescheduled match or an unadmitted team is visible and reaches identity review.
+    """
+    mapped = sync.connection.execute(
+        f"""SELECT f.kickoff_at FROM football.match_provider_mappings m
+            JOIN football.providers p ON p.id=m.provider_id AND p.code=%s
+            JOIN football.product_fixtures f ON f.fixture_id=m.match_id
+            WHERE m.provider_match_id=%s AND {_EXACT_MAPPING}""",
+        (sync.provider_code, str(source[0])),
+    ).fetchall()
+    sync.connection.commit()
+    observed = source[6]
+    if len(mapped) == 1 and abs(mapped[0][0] - observed) > sync.kickoff_tolerance:
+        return (
+            f"PROVIDER_KICKOFF_MOVED {mapped[0][0].astimezone(UTC):%Y-%m-%dT%H:%MZ}"
+            f" -> {observed.astimezone(UTC):%Y-%m-%dT%H:%MZ}; identity review required"
+        )
+    if not sync._verified_provider_entities(sync._retained_fixture(source)):
+        sync.connection.commit()
+        return "PROVIDER_ENTITIES_UNTRUSTED: team or competition mapping not admitted"
+    sync.connection.commit()
+    return "IDENTITY_UNRESOLVED: retained evidence did not resolve to one verified fixture"
 
 
 def operational_route(
@@ -687,8 +745,8 @@ def operational_route(
             for row in rows
         }, snapshot
 
-    def replay(_day: date, ids: frozenset[str], counts: SyncCounts) -> None:
-        _replay_retained(sync, sorted(ids), counts)
+    def replay(_day: date, ids: frozenset[str], counts: SyncCounts) -> dict[str, str]:
+        return _replay_retained(sync, sorted(ids), counts)
 
     return RecoveryRoute(sync.provider_code, sync.connection, acquire, replay)
 
@@ -852,6 +910,8 @@ def api_football_route(
             refresh.pacer.wait()
             response = sync.client.fixtures_for_date(day)
         except ApiFootballError as error:
+            if error.capability_status is CapabilityStatus.PLAN_RESTRICTION:
+                raise ProviderScopeUnsupported(str(error)[:300]) from error
             if error.retry_after:
                 raise ProviderDeferred("PROVIDER_COOLDOWN", error.retry_after) from error
             raise ProviderFetchError("PROVIDER_REQUEST_FAILED") from error
@@ -940,9 +1000,45 @@ def recovery_coverage(connection: Connection[Any]) -> dict[str, object]:
            JOIN football.product_result_recovery_candidates c ON c.fixture_id=s.fixture_id
            GROUP BY 1 ORDER BY 1"""
     ).fetchall()
+    participation = connection.execute(
+        f"""SELECT p.code,
+                   count(DISTINCT c.fixture_id) FILTER (WHERE c.identity_status='VERIFIED'),
+                   count(DISTINCT c.fixture_id) FILTER (WHERE c.identity_status<>'VERIFIED')
+            FROM football.product_result_recovery_candidates c
+            JOIN football.match_provider_mappings m ON m.match_id=c.fixture_id AND {_EXACT_MAPPING}
+            JOIN football.providers p ON p.id=m.provider_id
+            GROUP BY 1 ORDER BY 1"""
+    ).fetchall()
+    outcomes = connection.execute(
+        """SELECT s.provider_code,s.outcome,count(*)
+           FROM football.product_result_recovery_state s GROUP BY 1,2"""
+    ).fetchall()
     connection.commit()
     assert row is not None
+    providers: dict[str, dict[str, object]] = {
+        code: {
+            "verified_candidates": verified,
+            "identity_pending_candidates": pending,
+            "recovery_route": code in RECOVERY_PROVIDERS,
+            "outcomes": {},
+        }
+        for code, verified, pending in participation
+    }
+    for code, outcome, count in outcomes:
+        entry = providers.setdefault(
+            code,
+            {
+                "verified_candidates": 0,
+                "identity_pending_candidates": 0,
+                "recovery_route": True,
+                "outcomes": {},
+            },
+        )
+        outcome_counts = entry["outcomes"]
+        assert isinstance(outcome_counts, dict)
+        outcome_counts[outcome] = count
     return {
+        "provider_participation": providers,
         "candidates": row[0],
         "overdue": row[1],
         "identity_pending": row[2],

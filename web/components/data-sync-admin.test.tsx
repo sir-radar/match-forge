@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { within, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { DataSyncAdmin } from "@/components/data-sync-admin";
 
@@ -106,6 +106,30 @@ describe("DataSyncAdmin", () => {
     render(<DataSyncAdmin initialDate="2026-09-30" />);
     expect(await screen.findByRole("alert")).toHaveTextContent("administrative access denied");
     expect(screen.queryByRole("button", { name: "Settle Finished Predictions" })).toBeNull();
+  });
+
+  it("reports provider participation from the latest recovery run", async () => {
+    const run = {
+      run_id: "recovery-one", sync_type: "RESULT_RECOVERY", status: "SUCCEEDED",
+      requested_at: "2026-09-30T10:00:00Z", requested_date: null, started_at: "2026-09-30T10:00:00Z",
+      finished_at: "2026-09-30T10:01:00Z", parameters: {}, log_path: null, error_message: null,
+      summary: {
+        provider_participation: {
+          api_football: { verified_candidates: 1651, identity_pending_candidates: 0, recovery_route: true, outcomes: { RECOVERED: 32 } },
+          football_data_org: { verified_candidates: 5, identity_pending_candidates: 0, recovery_route: false, outcomes: {} },
+        },
+        provider_configuration: { api_football: { enabled: true, credential_present: true, request_window_days: 1 }, fotmob: { enabled: false } },
+      },
+    };
+    vi.stubGlobal("fetch", vi.fn(async () => json({ runs: [run], coverage })));
+    render(<DataSyncAdmin initialDate="2026-09-30" />);
+    const toggle = await screen.findByText("Provider participation");
+    fireEvent.click(toggle);
+    const table = within(toggle.closest("details") as HTMLElement);
+    expect(table.getByRole("row", { name: /^api_football/ })).toHaveTextContent("Enabled; requests within 1 day(s)");
+    expect(table.getByRole("row", { name: /^api_football/ })).toHaveTextContent("RECOVERED 32");
+    expect(table.getByRole("row", { name: /^football_data_org/ })).toHaveTextContent("No — mapping only");
+    expect(table.getByRole("row", { name: /^fotmob/ })).toHaveTextContent("Disabled");
   });
 
   it("keeps the settlement action visible but disabled when status fails", async () => {
