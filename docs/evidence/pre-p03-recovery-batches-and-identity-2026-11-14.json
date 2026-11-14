@@ -1,0 +1,1070 @@
+{
+ "contract": "PreP03RecoveryBatchesEvidenceV1",
+ "decision_id": "AUTHORIZE_PRE_P03_ADDITIONAL_RECOVERY_BATCHES_V1",
+ "recorded_at": "2026-11-14T07:45:00Z",
+ "verdict": "PRE_P03_BLOCKED",
+ "release": {
+  "git_sha": "532c70154867d4cba2779b9f776f58a136e9eb61",
+  "includes": [
+   "#232",
+   "#233",
+   "#234",
+   "#235",
+   "#236"
+  ],
+  "pending_migrations": 0,
+  "result_recovery_interval": "0",
+  "api_football_request_window_days": 1
+ },
+ "api_football_plan": {
+  "probe_at": "2026-11-14T06:20Z",
+  "requests": 2,
+  "provider_response": "Free plans do not have access to this date, try from 2026-11-13 to 2026-11-15.",
+  "conclusion": "requests are limited to yesterday, today and tomorrow (UTC); the recovery window default of 1 day matches"
+ },
+ "settlement": {
+  "runs": [
+   "61a9ecfa-dc29-4eaa-851f-17f7424667a0",
+   "c1efdb66-68d9-4a72-ba5d-74fa2bbce781"
+  ],
+  "first_run": {
+   "examined": 1645,
+   "newly_settled": 15,
+   "already_settled": 53
+  },
+  "second_run": {
+   "newly_settled": 0,
+   "already_settled": 68
+  },
+  "revisions": {
+   "before": 1845,
+   "after": 1860,
+   "after_second_run": 1860
+  },
+  "settled_without_internal_forecast": 14,
+  "external_prediction_rows": "unchanged",
+  "blockers": {
+   "FIXTURE_IDENTITY": 1561,
+   "AMBIGUOUS_IDENTITY": 9,
+   "IDENTITY_CONFLICT": 1,
+   "MATCH_NOT_FINISHED": 4,
+   "QUALIFIED_SCORE_UNAVAILABLE": 1,
+   "UNSUPPORTED_MARKET": 1
+  }
+ },
+ "batches": [
+  {
+   "run_id": "afd57a63-a322-44f5-ac6c-07a76ff1c2c2",
+   "seconds": 164,
+   "wal_bytes": 28248592,
+   "requests": {
+    "api_football": 2,
+    "fotmob": 8,
+    "pitchapi": 1
+   },
+   "recovered": 0,
+   "verified_unchanged": 264,
+   "unresolved": 54,
+   "declined_replay": {
+    "PROVIDER_KICKOFF_MOVED": 12,
+    "IDENTITY_UNRESOLVED": 6,
+    "PROVIDER_ENTITIES_UNTRUSTED": 1
+   }
+  },
+  {
+   "run_id": "6115cd36-fa4a-4d5f-b74b-fb02d28d2a1d",
+   "seconds": 284,
+   "wal_bytes": 87870680,
+   "requests": {
+    "api_football": 0,
+    "fotmob": 8,
+    "pitchapi": 0
+   },
+   "retained_rows_replayed": {
+    "api_football": 2558,
+    "fotmob": 227
+   },
+   "recovered": 0,
+   "verified_unchanged": 2806,
+   "unresolved": 199,
+   "declined_replay": {
+    "PROVIDER_KICKOFF_MOVED": 6,
+    "PROVIDER_ENTITIES_UNTRUSTED": 2
+   }
+  }
+ ],
+ "stop": "two consecutive runs recovered nothing",
+ "finding": "API-Football-only candidates older than yesterday cannot be requested under the plan and their retained snapshots predate the final result; 173 overdue fixtures from 7-8 November now hold OUTSIDE_PROVIDER_DATE_WINDOW with a 7-day recheck instead of hourly retries",
+ "preservation": {
+  "p02": "unchanged",
+  "changed_rows": {
+   "match_provider_mappings": "2, last_seen_at only (FotMob)",
+   "product_provider_fixture_observations": "968 freshness fields; 20 new",
+   "product_sync_runs": "20 new, 1 changed",
+   "source_snapshots": "29 new"
+  },
+  "fixtures_history_forecasts_settlement_changed": 0,
+  "unexplained_differences": 0
+ },
+ "census": {
+  "before": {
+   "candidates": 2624,
+   "verified": 1699,
+   "identity_pending": 925,
+   "api_football_only_verified": 1651
+  },
+  "after": "unchanged; no new recoveries"
+ },
+ "identity": {
+  "duplicate_twins": {
+   "pairs": 370,
+   "candidates": 291,
+   "tier_1_same_teams_competition_kickoff": 39,
+   "tier_1_twin_verified": 15,
+   "tier_1_scores_agree": 28,
+   "tier_2_same_teams_and_kickoff": 68,
+   "tier_3_name_similarity_only": 263,
+   "note": "tier 3 is a review lead, not identity evidence"
+  },
+  "tier_1_cases": [
+   {
+    "candidate": "032c5ff6-da58-52d9-9bde-b86b208952bf",
+    "case_key": "fixture_record:fc7e6eb8-42e1-5ed2-ba9e-5769bbe156c4",
+    "twin_identity": "VERIFIED",
+    "twin_providers": "fotmob",
+    "score": "2-0",
+    "twin_score": "2-0"
+   },
+   {
+    "candidate": "0338418c-c92c-535c-9ea5-88233d18252e",
+    "case_key": "fixture_record:7afc6587-1d52-5541-94e9-a5899cbb3122",
+    "twin_identity": "VERIFIED",
+    "twin_providers": "fotmob",
+    "score": "2-1",
+    "twin_score": "2-1"
+   },
+   {
+    "candidate": "06cfc79b-8384-5ec7-8215-ff01bfc34707",
+    "case_key": "fixture_record:a2689735-cc35-58a4-84cc-4f54b93fe4d4",
+    "twin_identity": "PROVISIONAL",
+    "twin_providers": "fotmob",
+    "score": null,
+    "twin_score": "1-0"
+   },
+   {
+    "candidate": "06f34576-1c11-5db0-9297-a87be9649119",
+    "case_key": "fixture_record:67d6351e-0366-5b11-ac54-3ce26483a0a9",
+    "twin_identity": "PROVISIONAL",
+    "twin_providers": "fotmob",
+    "score": null,
+    "twin_score": "3-1"
+   },
+   {
+    "candidate": "0a2e0fb9-22a4-5779-8c3c-650ec7ef14bc",
+    "case_key": "fixture_record:ccc983ab-5c2b-5034-911d-462fced3a0a3",
+    "twin_identity": "PROVISIONAL",
+    "twin_providers": "fotmob",
+    "score": "4-2",
+    "twin_score": "4-2"
+   },
+   {
+    "candidate": "12358f6c-df9d-5f69-95c7-51b71c8cbe56",
+    "case_key": "fixture_record:22ff60e4-3893-5689-98d9-3d82b1d38912",
+    "twin_identity": "PROVISIONAL",
+    "twin_providers": "fotmob",
+    "score": "1-4",
+    "twin_score": "1-4"
+   },
+   {
+    "candidate": "2924e27c-69e7-5607-b32e-945775b94c57",
+    "case_key": "fixture_record:551e4756-56e8-5e1c-8c1f-24abf9f7d43c",
+    "twin_identity": "PROVISIONAL",
+    "twin_providers": "fotmob",
+    "score": "1-0",
+    "twin_score": "1-0"
+   },
+   {
+    "candidate": "364c86b9-8af2-5017-a119-47c3777fca9d",
+    "case_key": "fixture_record:268c3f62-ca71-5a59-8379-067d6c17b68c",
+    "twin_identity": "PROVISIONAL",
+    "twin_providers": null,
+    "score": "0-1",
+    "twin_score": "0-1"
+   },
+   {
+    "candidate": "3a97a30b-6317-56ac-92a0-e5848c326451",
+    "case_key": "fixture_record:8d39e796-1c49-5637-8f1c-f130b96bbb99",
+    "twin_identity": "VERIFIED",
+    "twin_providers": "fotmob",
+    "score": "3-0",
+    "twin_score": "3-0"
+   },
+   {
+    "candidate": "43233ccb-af6d-52d7-9033-d9f6af7ac26a",
+    "case_key": "fixture_record:bbd14fa3-a8d3-5fd3-a248-75b20d121757",
+    "twin_identity": "VERIFIED",
+    "twin_providers": "fotmob",
+    "score": "1-1",
+    "twin_score": "1-1"
+   },
+   {
+    "candidate": "45703917-0557-5530-b6c2-482ddace8ff7",
+    "case_key": "fixture_record:96eab0d6-bd66-5a94-a876-14140e233be2",
+    "twin_identity": "VERIFIED",
+    "twin_providers": "fotmob",
+    "score": "2-4",
+    "twin_score": "2-4"
+   },
+   {
+    "candidate": "4c5d181f-6333-590d-9654-dfc365836c32",
+    "case_key": "fixture_record:d24dca3b-7930-544e-a117-5d9054fbdf57",
+    "twin_identity": "PROVISIONAL",
+    "twin_providers": "fotmob",
+    "score": null,
+    "twin_score": "3-3"
+   },
+   {
+    "candidate": "4cd7c6e5-4cc6-5c8a-bb02-9b745a85deeb",
+    "case_key": "fixture_record:22d35080-ac83-5110-9163-ac5d63243ec5",
+    "twin_identity": "PROVISIONAL",
+    "twin_providers": "pitchapi",
+    "score": "2-1",
+    "twin_score": "2-1"
+   },
+   {
+    "candidate": "4e74e073-b22b-5c37-96f7-d6ca90b04a4c",
+    "case_key": "fixture_record:3ed70ca2-7d24-5a49-b72a-c6add1ed8106",
+    "twin_identity": "VERIFIED",
+    "twin_providers": "fotmob",
+    "score": "1-0",
+    "twin_score": "1-0"
+   },
+   {
+    "candidate": "5ac40b57-8694-5263-8f07-626be8fc0c8d",
+    "case_key": "fixture_record:a22ea377-692d-5869-970b-54014972af35",
+    "twin_identity": "VERIFIED",
+    "twin_providers": "fotmob",
+    "score": "2-2",
+    "twin_score": "2-2"
+   },
+   {
+    "candidate": "66fa2927-5875-5edd-bef7-9c3a6c2fca27",
+    "case_key": "fixture_record:cbf98d0a-e46a-5078-b87e-e38a3fc961d6",
+    "twin_identity": "VERIFIED",
+    "twin_providers": "fotmob",
+    "score": "1-1",
+    "twin_score": "1-1"
+   },
+   {
+    "candidate": "6dafcd09-10fc-5ed5-b625-172722fd4848",
+    "case_key": "fixture_record:fd33dfce-9cb8-5e93-8fd0-d9933b6754ef",
+    "twin_identity": "VERIFIED",
+    "twin_providers": "fotmob",
+    "score": "1-1",
+    "twin_score": "1-1"
+   },
+   {
+    "candidate": "8e7dbc77-485c-50c1-9233-f33a8a9f9227",
+    "case_key": "fixture_record:1ec7a8e9-cda0-5589-9e41-10e2d286b8da",
+    "twin_identity": "VERIFIED",
+    "twin_providers": "fotmob",
+    "score": "0-4",
+    "twin_score": "0-4"
+   },
+   {
+    "candidate": "97d33845-f968-5668-bed3-8cdf22fd2624",
+    "case_key": "fixture_record:1e58ec1c-29af-584c-b0b3-ea2af67d7462",
+    "twin_identity": "VERIFIED",
+    "twin_providers": "fotmob",
+    "score": "1-0",
+    "twin_score": "1-0"
+   },
+   {
+    "candidate": "9861bf8c-bf48-5c63-8271-6a123f430909",
+    "case_key": "fixture_record:60ba3776-b4aa-57ef-8a6a-b4a3941c19e9",
+    "twin_identity": "VERIFIED",
+    "twin_providers": "fotmob",
+    "score": "2-3",
+    "twin_score": "2-3"
+   },
+   {
+    "candidate": "9aae99b6-e3cc-563c-90dc-f7b759bdd34a",
+    "case_key": "fixture_record:acac7b41-e97c-548e-a8e8-3d7f6db7643a",
+    "twin_identity": "PROVISIONAL",
+    "twin_providers": "pitchapi",
+    "score": "1-1",
+    "twin_score": "1-1"
+   },
+   {
+    "candidate": "ac34fdae-cba6-55e2-856c-af31f0dfab70",
+    "case_key": "fixture_record:2115f07e-2f54-5c96-abf8-df09cb18b46a",
+    "twin_identity": "VERIFIED",
+    "twin_providers": "fotmob",
+    "score": "0-3",
+    "twin_score": "0-3"
+   },
+   {
+    "candidate": "ad290d1a-7cdd-5f73-86b4-7a11b01c53d4",
+    "case_key": "fixture_record:1c4d7b4c-48d8-5908-9ac3-83d5a44a0393",
+    "twin_identity": "PROVISIONAL",
+    "twin_providers": "fotmob",
+    "score": "2-1",
+    "twin_score": "2-1"
+   },
+   {
+    "candidate": "ae2f579e-d40a-58f3-994a-994cd278fa82",
+    "case_key": "fixture_record:812e6ee2-1aa2-50d8-a3c1-6a0274941c3d",
+    "twin_identity": "PROVISIONAL",
+    "twin_providers": "fotmob",
+    "score": "3-1",
+    "twin_score": "3-1"
+   },
+   {
+    "candidate": "b1addf66-8d6d-5329-95bf-b841e52ef7cb",
+    "case_key": "fixture_record:0210e6f7-c701-59e6-86f4-2bccfa40dc92",
+    "twin_identity": "PROVISIONAL",
+    "twin_providers": "pitchapi",
+    "score": null,
+    "twin_score": "1-0"
+   },
+   {
+    "candidate": "b63d8757-b890-5493-b7b0-029e7e06ef85",
+    "case_key": "fixture_record:406cbe9b-e55b-52c1-9109-7b9e8a0f7aaa",
+    "twin_identity": "PROVISIONAL",
+    "twin_providers": "pitchapi",
+    "score": "3-3",
+    "twin_score": "3-3"
+   },
+   {
+    "candidate": "b78d4ebf-a769-5375-b327-62a99db4f021",
+    "case_key": "fixture_record:0e91359d-ae6b-533d-b9e4-8bf164844b7a",
+    "twin_identity": "PROVISIONAL",
+    "twin_providers": "fotmob",
+    "score": null,
+    "twin_score": "0-3"
+   },
+   {
+    "candidate": "ca0047f8-57b5-574b-972d-df1d39e1a454",
+    "case_key": "fixture_record:ff8b2cb5-6ecb-5d6f-b72b-7502f4a0466b",
+    "twin_identity": "VERIFIED",
+    "twin_providers": "pitchapi",
+    "score": "2-0",
+    "twin_score": "2-0"
+   },
+   {
+    "candidate": "cb103a9f-f294-591c-966e-714665d615cb",
+    "case_key": "fixture_record:e35c335d-423a-5f34-bf38-16d1a56a7973",
+    "twin_identity": "PROVISIONAL",
+    "twin_providers": "pitchapi",
+    "score": "4-0",
+    "twin_score": "4-0"
+   },
+   {
+    "candidate": "cc5ae7d1-ff63-558a-82ba-507f8f9d2339",
+    "case_key": "fixture_record:b3c3a335-8ea7-59ae-88bf-e2098be427b7",
+    "twin_identity": "PROVISIONAL",
+    "twin_providers": "pitchapi",
+    "score": null,
+    "twin_score": "4-3"
+   },
+   {
+    "candidate": "cc5ae7d1-ff63-558a-82ba-507f8f9d2339",
+    "case_key": "fixture_record:e00a7ef9-0396-57b0-9457-4b84aa030fc9",
+    "twin_identity": "PROVISIONAL",
+    "twin_providers": "fotmob",
+    "score": null,
+    "twin_score": "4-3"
+   },
+   {
+    "candidate": "d1bc0c11-3c72-54b7-9bfd-6946948475d3",
+    "case_key": "fixture_record:c34b273e-2f80-56cf-923a-6e59b1fc52c6",
+    "twin_identity": "VERIFIED",
+    "twin_providers": "fotmob",
+    "score": "0-1",
+    "twin_score": "0-1"
+   },
+   {
+    "candidate": "d2dd5779-3454-57a3-8b64-36438d717ab2",
+    "case_key": "fixture_record:fd128b12-bfc6-50c9-9454-ce25ec8d7850",
+    "twin_identity": "PROVISIONAL",
+    "twin_providers": "fotmob",
+    "score": null,
+    "twin_score": "2-0"
+   },
+   {
+    "candidate": "d9e49692-316e-57f5-a023-fae4fe8933fe",
+    "case_key": "fixture_record:cf3677e9-9b29-5361-b64c-276f8f91a570",
+    "twin_identity": "PROVISIONAL",
+    "twin_providers": "fotmob",
+    "score": null,
+    "twin_score": "2-3"
+   },
+   {
+    "candidate": "e2991891-e2d3-59f4-a94d-bd5630e0f17d",
+    "case_key": "fixture_record:d8ba8b24-956a-5bd6-acaa-f3eb00e2c30e",
+    "twin_identity": "PROVISIONAL",
+    "twin_providers": "fotmob",
+    "score": "0-3",
+    "twin_score": "0-3"
+   },
+   {
+    "candidate": "eb3af624-0881-5f8c-834a-1f3572742653",
+    "case_key": "fixture_record:9e760ada-5421-54b4-ba82-c213e36cb946",
+    "twin_identity": "PROVISIONAL",
+    "twin_providers": null,
+    "score": null,
+    "twin_score": null
+   },
+   {
+    "candidate": "f3372eef-d4aa-50dd-9957-e79c6dbb2994",
+    "case_key": "fixture_record:0f8e3056-f3b5-548b-aa78-066e0752f5fe",
+    "twin_identity": "PROVISIONAL",
+    "twin_providers": "fotmob",
+    "score": "3-4",
+    "twin_score": "3-4"
+   },
+   {
+    "candidate": "f6e22184-6683-53db-811d-296d3a6d95f0",
+    "case_key": "fixture_record:fc3e0fd3-4b6c-5dfa-a402-cb0c360273ac",
+    "twin_identity": "PROVISIONAL",
+    "twin_providers": "fotmob",
+    "score": null,
+    "twin_score": "1-1"
+   },
+   {
+    "candidate": "ff72ad3d-004f-5bd1-9632-8537199a7671",
+    "case_key": "fixture_record:80090142-4f0b-5b36-ac52-74407196191a",
+    "twin_identity": "PROVISIONAL",
+    "twin_providers": "fotmob",
+    "score": null,
+    "twin_score": "0-1"
+   }
+  ],
+  "fotmob_team_admissions": {
+   "candidates_with_both_teams_mapped": 202,
+   "blocked_by_untrusted_mappings": 121,
+   "mappings": 149,
+   "cases": [
+    {
+     "case_key": "team:01a12cdf-190f-775c-bccf-9ce16b7d6afa",
+     "unblocks": 3
+    },
+    {
+     "case_key": "team:01a12cdf-18ca-7927-b977-e9d558a01ccc",
+     "unblocks": 3
+    },
+    {
+     "case_key": "team:01a12fd0-b5a6-7407-9374-8d31f4164bc6",
+     "unblocks": 3
+    },
+    {
+     "case_key": "team:01a129b2-a473-7d59-88cb-907a16e19efc",
+     "unblocks": 3
+    },
+    {
+     "case_key": "team:01a12fd0-b622-7eca-b277-69e455874755",
+     "unblocks": 3
+    },
+    {
+     "case_key": "team:01a12fd0-b623-7ef2-b03e-899d074746cc",
+     "unblocks": 3
+    },
+    {
+     "case_key": "team:01a12cde-da9e-7d25-91cf-f59e06cc036b",
+     "unblocks": 3
+    },
+    {
+     "case_key": "team:01a12cda-3639-78a0-94e4-7ec24e8861a0",
+     "unblocks": 3
+    },
+    {
+     "case_key": "team:01a12cdf-18fe-7111-b9c4-29d3d95d55d8",
+     "unblocks": 3
+    },
+    {
+     "case_key": "team:01a12fd0-9271-78f2-bc3d-5bcd98a13232",
+     "unblocks": 3
+    },
+    {
+     "case_key": "team:01a12cdf-2f20-7b27-a192-8930704e5b30",
+     "unblocks": 3
+    },
+    {
+     "case_key": "team:01a12cdf-18db-7302-97d7-c047b646fb0e",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a12cdf-18db-7bde-8811-f7216d235a09",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a12cdf-18fe-7a24-bea7-bde2c44925f2",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a12fd0-8867-7b46-81e4-0b9cf3ecd4d8",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a12ac1-4c14-7fb6-8d46-4137a5e2c9b6",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a12cdf-1920-7457-bb61-dbc222d0360d",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a12fd0-9270-79fe-b733-e041c7bcba49",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a12fd0-9419-7df4-950a-06552000e212",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a129b2-a269-7ba2-962c-a48bb98fef2a",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a12cdf-19ed-73b0-9a12-f42450ec39a0",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a12fd0-b5a7-7345-8e6d-8e107f2bb281",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a12cd9-3e60-700c-aef9-15534822dc08",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a12cda-3643-72c6-9da8-6be182b8180c",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a12cda-3643-7b85-b295-0e98c9768648",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a12cde-da90-7484-8fd3-f8462240e292",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a129b2-a19b-70a9-9893-81942b34d0c5",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a12cdf-1361-7e53-ba6f-f65e96701708",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a12cdf-1362-76b4-8295-4bee00c3fb56",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a12cdf-138e-7e7a-9ebc-2b80eaf696c2",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a12cda-360d-7c81-98d9-3e0afb5b87fa",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a12ac1-4b92-78c0-aa89-2840a3d565ba",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a12cda-361f-7602-9a96-d24268c7249f",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a12cde-dd7d-7981-9084-7f95b7d3928b",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a12cdf-2eac-75df-ba8b-6e57e71f1223",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a12cdf-2ead-72b3-b4a5-e84453e64ee3",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a12cdf-2ec3-7a77-9312-398d6530d86e",
+     "unblocks": 2
+    },
+    {
+     "case_key": "team:01a12cd9-3fb5-7698-b6b1-faa44e38676d",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cda-361e-7917-a38c-a4d42d902773",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cda-362d-7888-a110-870cb247c96f",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cda-362f-70a2-8f70-c23c6cf9be61",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cda-3639-7150-9fd2-140b28872e6c",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cda-36b4-7186-89b5-5a72ce5964db",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cda-36b4-7b13-bea4-606142d9d0e3",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cda-36bf-7655-bb65-db5d10d7269f",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cda-36c7-78d0-b2fe-309afdd50f31",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cda-36c8-724d-b269-0bd1b28ed213",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdd-eb68-7987-b915-106471091bb9",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cde-d98f-7099-84fd-7bdcda0c345d",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cde-d996-7114-84fd-d3b914e3aaeb",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cde-d99d-716d-a3c4-314a3075b52f",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cde-d9ac-70cd-8d7f-e7732c0fa13e",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cde-da90-7d25-adbf-1d90ab5b6692",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cde-dbe8-7ac0-b3d4-d0f5c1321b4d",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cde-dbf5-716f-ac69-cb7dcd7ba344",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cde-dc0d-725c-b7e7-7b8025af9751",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cde-dd9c-7387-b9a9-f96bca5f991f",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cde-dd9c-7ce3-a4b4-a02c13ecce92",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cde-e134-7c05-8da9-82f74d2e7614",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cde-e135-75c0-bcf7-c771f60dbad9",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cde-e143-7ff4-82ca-ab913aa2dec1",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cde-e92f-7304-8311-069d7df9a622",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cde-e943-7f91-8b63-eb291a546f5c",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cde-e99e-7b09-9bad-17d1a9c02272",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-0af8-7e8b-8101-6a7e6e0c3ecc",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-0af9-76ce-9490-23c20fd9ee88",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-0b11-730a-ab17-b36f4d356a62",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-0b1d-7fd2-a2e2-eaaebe824e72",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-0b1e-77dc-8fa1-5ee2d93cfbd9",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-0b2e-72d0-b72f-9a7114a278ab",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-0b39-7b33-9902-bc863ae1e534",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-0b41-7512-8817-b6c7298b8177",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-0b4b-7b12-8828-26fe1d913fbc",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-0b4c-7283-9ada-72c15fa8d666",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-1094-76ed-bff8-abe907f2bbe9",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-12a9-7308-b6aa-1367285622b9",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-1369-7b36-8856-3c7d65f62937",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-136a-734b-aa18-a0783b8d40ff",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-1397-7b15-9566-d17d8a43e040",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-153c-753e-9030-4ab52e31e49a",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-155d-790d-b544-26a618964833",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-17a2-7189-ba88-fa56239d7fc5",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-1910-70c6-a840-04b3a37c3570",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-19ae-74cc-9c7b-b269cb43d0fc",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-1a0c-7478-8ac1-428b453d887e",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-1de2-7b80-b8bb-2cf4526135ae",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-1ded-7702-bd29-013f28649657",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-1f8a-77d4-be79-7673fe22eca3",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-200c-7546-87e1-f5724299089a",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-200d-7ee2-8dec-5415189e1a93",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-2297-755f-bda8-6080846bb9bd",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-27bf-798d-aef0-a5c8c6719048",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-2a5c-7a20-bcf4-1f0ed4e41c29",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-2ce9-781b-8aba-76da721b4065",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-2cef-7235-83f0-79b64ec13bfc",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-2e82-7bc3-a0a2-a4d606027ed0",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-2e8d-7d32-ba31-721b7bc4ecbc",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cdf-2e95-798b-8319-3d32d4af2923",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12fd0-5e6a-7bac-961f-443cbbadc7e4",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12fd0-76de-726e-bbd4-ac59f83d9427",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12fd0-83ba-7750-b88d-d1fa0248b662",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12fd0-8451-700b-9359-7e4ba118ac93",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12fd0-8451-7f8c-a5c5-ca692612d147",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12fd0-8866-75b5-bf39-23022c50006e",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12fd0-8947-7d28-83d5-0c4b27c7b477",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12fd0-924e-7300-8f27-c7343ed6097f",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12fd0-9445-7781-ae91-0a2b10938145",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12fd0-9473-76ce-a295-9729b38e0597",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12fd0-b777-7486-921b-4eccfda08178",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12fd0-b79b-76cd-a2b7-25f1c4a1b518",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12fd0-d061-77cd-806a-fbb755c22908",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12fd0-e7d0-73e6-8764-b0738401bc40",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12fd0-e862-7b91-8b82-0597f915a9db",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a129b2-a268-7e7c-ab01-7b41d3896b7a",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a129b2-a276-7700-a6d6-1b1428b54e6c",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a129b2-a277-7096-87eb-8c1c39018309",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a129b2-a287-72ef-9797-d7849a66f221",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a129b2-a2b4-77e1-adf5-1da018866188",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a129b2-a2b4-7fcd-9129-df39ebb522ff",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a129b2-a316-7fc5-8f04-4c0ddf199896",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a129b2-a318-73ff-92d1-01d347ad5196",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a129b2-a46a-7c2b-a9d3-2064cb45ef80",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a129b2-a487-7aa9-8bf2-41145c78ddbe",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a129b2-a497-709c-8826-d0a266299769",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12ac1-4848-7616-8631-f743db3259ef",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12ac1-4850-77db-b8dd-49b956b0ebf8",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12ac1-4858-738f-8094-3c5a63c22bda",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12ac1-4860-72d5-846a-73c526d87293",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12ac1-486e-7d75-8405-67d72d824a1d",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12ac1-4876-77f5-a457-ad14e13f5030",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12ac1-4885-7d4a-8274-1fa6542e433b",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12ac1-488c-7b5c-8e89-e637d962e8f6",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12ac1-49c2-7125-87dd-3d2b9c6de602",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12ac1-4b11-70ba-80e5-6a82b60ea904",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12ac1-4b42-759f-b2ce-0bc83612d6ec",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12ac1-4b53-75dd-ae9c-e9ff7efc1102",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12ac1-4b71-79fb-9104-3a1ba824231f",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12ac1-4b77-7044-9ce0-0842110f96f1",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12ac1-4b7c-7503-b94d-9510061faf59",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12ac1-4b7c-7f00-b2a6-989b95fbbb21",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12ac1-4c1b-740a-a0fb-16e67d8c3c50",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12ac1-4c22-7dbe-b136-41253aa66015",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cd9-3cb1-72de-b036-a7963ede6e3f",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cd9-3e0d-74f0-9a33-002a8dd5f09e",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cd9-3e18-7fcd-b858-b30a85a1ac95",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cd9-3e4d-7eb0-bbae-1732cd086796",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cd9-3e4f-7018-8787-9055d558a588",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cd9-3e58-77f1-9992-acbd51297dc2",
+     "unblocks": 1
+    },
+    {
+     "case_key": "team:01a12cd9-3e5f-792b-a3b2-0848be75b2c8",
+     "unblocks": 1
+    }
+   ]
+  },
+  "pitchapi": "746 candidates are PROVISIONAL; no verified PitchAPI team mapping covers an API-Football-only candidate",
+  "code_gap": "recovery considers a provider's retained evidence only for fixtures with that provider's exact match mapping; 36 API-Football-only candidates have trusted FotMob teams, competition and an observation but no FotMob match mapping"
+ },
+ "external_associations": {
+  "unmatched": 1561,
+  "same_date_name_candidates": 972,
+  "offset_only_candidates": 79,
+  "offset_only_r2bet": 73,
+  "offsets": {
+   "-3": 5,
+   "-2": 9,
+   "-1": 65,
+   "+1": 4,
+   "+2": 1,
+   "+3": 3
+  },
+  "policy": "names and dates alone never bind; the reviewed binding requires a retained native mapping",
+  "r2bet_native_ids": "no R2Bet fixture links are retained in captures, evidence or provenance, and no dated R2Bet archive pages are retained locally; recapture is required before a native-ID review"
+ },
+ "resolution_center": "GET /v1/admin/resolution/fixtures returned 503 'operations data unavailable' after 26 s while recovery batches ran; not retried under load",
+ "scheduled_recovery": {
+  "status": "NOT_ENABLED",
+  "gate": "PR #237 adds a live-sync reserve; without it a 30m schedule can spend up to 96 API-Football requests a day"
+ }
+}

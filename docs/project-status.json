@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-14T04:45:00Z",
+  "updated_at": "2026-11-14T07:45:00Z",
   "unified_architecture_investigation": {
     "status": "PASS_WITH_WARNINGS",
     "scope": "CURRENT_TASK.md revision 3; architecture investigation/planning only",
@@ -96,7 +96,8 @@
     "AUTHORIZE_GOVERNED_SCOPE_ACTIVATION_V1",
     "AUTHORIZE_STORAGE_LIFECYCLE_ROLLOUT_V1",
     "APPROVE_DATED_REPORT_RETIREMENT_V1",
-    "AUTHORIZE_PRE_P03_OPERATING_ROLLOUT_V1"
+    "AUTHORIZE_PRE_P03_OPERATING_ROLLOUT_V1",
+    "AUTHORIZE_PRE_P03_ADDITIONAL_RECOVERY_BATCHES_V1"
   ],
   "closed_routes": [
     {
@@ -4029,18 +4030,24 @@
       "decision_id": "AUTHORIZE_PRE_P03_OPERATING_ROLLOUT_V1",
       "decision_ref": "docs/evidence/owner-decision-authorize-pre-p03-operating-rollout-2026-11-14.json",
       "evidence_ref": "docs/evidence/pre-p03-operating-rollout-2026-11-14.json",
-      "release_git_sha": "6e4b85c33dc28557b2f9cf254b03ef33e77d4344",
+      "release_git_sha": "532c70154867d4cba2779b9f776f58a136e9eb61",
       "migration": "202611140100_result_recovery",
       "migration_status": "APPLIED",
       "result_recovery_interval": "0",
       "preservation": "UNCHANGED_EXCEPT_ATTRIBUTED_RECOVERY",
       "recovered_results": 32,
-      "external_settlement": "FAILED_WORKER_FENCE",
+      "external_settlement": "FUNCTIONAL_IDEMPOTENT",
       "blocking_fixes": [
-        "https://github.com/sir-radar/match-forge/pull/232",
-        "https://github.com/sir-radar/match-forge/pull/233"
+        "https://github.com/sir-radar/match-forge/pull/237"
       ],
-      "scheduled_recovery": "NOT_ENABLED_API_FOOTBALL_RETRY_LOOP"
+      "scheduled_recovery": "NOT_ENABLED_PENDING_LIVE_RESERVE_AND_AUTHORIZATION",
+      "additional_batches": {
+        "decision_id": "AUTHORIZE_PRE_P03_ADDITIONAL_RECOVERY_BATCHES_V1",
+        "decision_ref": "docs/evidence/owner-decision-authorize-pre-p03-additional-recovery-batches-2026-11-14.json",
+        "evidence_ref": "docs/evidence/pre-p03-recovery-batches-and-identity-2026-11-14.json",
+        "recovered_results": 0,
+        "stop": "LOW_YIELD"
+      }
     }
   },
   "unified_architecture_p02": {

@@ -1,0 +1,29 @@
+{
+ "contract": "OwnerDecisionRecordV1",
+ "decision_id": "AUTHORIZE_PRE_P03_ADDITIONAL_RECOVERY_BATCHES_V1",
+ "recorded_at": "2026-11-14T07:05:00Z",
+ "title": "Run additional bounded result recovery batches on the operating database",
+ "status": "APPROVED",
+ "owner": "repository owner / sir-radar",
+ "map": "unified-architecture-redesign",
+ "ticket": "Pre-P03 result recovery",
+ "source": {
+  "execution_instruction": "Owner answer 'Yes, bounded batches' in this session to the question whether to run more bounded recovery batches on operating after PR #236 merged",
+  "code_git_sha": "532c70154867d4cba2779b9f776f58a136e9eb61"
+ },
+ "authorizes": [
+  "bounded RESULT_RECOVERY runs of at most 8 UTC dates per provider each, stopping on unexplained integrity changes, more than 20 API-Football requests in total, or two consecutive runs that recover nothing",
+  "row-hash and P02 preservation comparisons before and after"
+ ],
+ "requires": [
+  "MATCHFORGE_RESULT_RECOVERY_INTERVAL stays 0",
+  "no request for a confirmed out-of-plan API-Football date"
+ ],
+ "explicitly_not_authorized": [
+  "enabling scheduled recovery",
+  "identity admissions, fixture merges or reviewed prediction bindings",
+  "recapturing external prediction pages",
+  "deleting rehearsal databases or operating data"
+ ],
+ "supersession": "Extends AUTHORIZE_PRE_P03_OPERATING_ROLLOUT_V1, which allowed one bounded batch; all its other terms stay in force."
+}
