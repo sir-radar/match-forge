@@ -272,7 +272,7 @@ def _review_date(connection: Connection[Any], prediction_id: UUID) -> None:
         ).fetchone()
         if row is None:
             return
-        source_date, state = _source_date_review(row)
+        source_date, state = source_date_review(row)
         cursor.execute(
             """INSERT INTO football.external_prediction_date_reviews
             (prediction_id,source_date,date_status,reason) VALUES(%s,%s,%s,%s)
@@ -281,7 +281,7 @@ def _review_date(connection: Connection[Any], prediction_id: UUID) -> None:
         )
 
 
-def _source_date_review(row: dict[str, Any]) -> tuple[date | None, str]:
+def source_date_review(row: dict[str, Any]) -> tuple[date | None, str]:
     if row["source_code"] not in ("r2bet", "tips1960"):
         return None, "NOT_APPLICABLE"
     try:
@@ -622,7 +622,7 @@ def _settlement_input(cursor: Cursor[dict[str, Any]], prediction_id: UUID) -> di
     ).fetchone()
     assert row is not None
     if not row["date_reviewed"]:
-        _, row["date_status"] = _source_date_review(row)
+        _, row["date_status"] = source_date_review(row)
     row["score_basis"] = row["canonical_score_basis"]
     if row["score_basis"] == "UNKNOWN" and (row["observed_regulation"] or row["history_provider"]):
         row["score_basis"] = "REGULATION_90"
