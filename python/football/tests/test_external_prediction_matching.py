@@ -305,3 +305,23 @@ def test_provisional_copy_at_the_same_kickoff_uses_the_verified_record() -> None
 def test_two_verified_or_moved_twins_need_review(rival: CandidateFixture) -> None:
     decision = decide(source(), [fixture(key="verified"), rival], COUNTRIES)
     assert (decision.classification, decision.reason) == ("NEEDS_REVIEW", "MULTIPLE_CANDIDATES")
+
+
+def test_decision_evidence_matches_the_cross_language_contract() -> None:
+    import json
+    from pathlib import Path
+
+    from jsonschema import Draft202012Validator
+
+    root = Path(__file__).resolve().parents[3]
+    schema = json.loads(
+        (root / "schemas/contracts/external-prediction-contextual-match-v1.schema.json").read_text()
+    )
+    validator = Draft202012Validator(schema)
+    for decision in (
+        decide(source(), [fixture()], COUNTRIES),
+        decide(source(), [fixture(key="a"), fixture(key="b")], COUNTRIES),
+        decide(source(), [fixture("Everton", "Leeds")], COUNTRIES),
+        decide(source(), [], COUNTRIES),
+    ):
+        validator.validate(decision.evidence(source()))

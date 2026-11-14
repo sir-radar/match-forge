@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://matchforge.local/schemas/contracts/external-prediction-contextual-match-v1.schema.json",
+  "title": "ExternalPredictionContextualMatchV1",
+  "description": "Evidence stored with each football.external_prediction_context_matches decision. External-only: it never establishes canonical fixture, team or provider identity.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["policy_version", "classification", "reason", "fixture_id", "date_relation", "source", "candidates"],
+  "properties": {
+    "policy_version": {"const": "EXTERNAL_PREDICTION_CONTEXTUAL_MATCHING_V1"},
+    "classification": {"enum": ["CONTEXTUAL_MATCH", "NEEDS_REVIEW", "UNMATCHED"]},
+    "reason": {
+      "enum": [
+        "UNIQUE_SAME_DAY", "UNIQUE_MIDNIGHT_ADJACENT", "UNIQUE_EXACT_KICKOFF", "UNIQUE_VERIFIED_TWIN",
+        "MULTIPLE_CANDIDATES", "SOURCE_EVIDENCE_CONFLICT", "CANONICAL_IDENTITY_UNRESOLVED",
+        "WEAK_CORROBORATION", "HOME_AWAY_REVERSED", "COMPETITION_MISMATCH", "DATE_OFFSET",
+        "RESCHEDULED_KICKOFF", "KICKOFF_MISMATCH", "OPPONENT_UNCONFIRMED",
+        "SOURCE_CONTEXT_MISSING", "NO_FIXTURES_FOR_DATE", "NO_CORRESPONDING_FIXTURE", "ONE_TEAM_ONLY",
+        "REVIEWED_ASSOCIATION", "REVIEWED_REJECTION"
+      ]
+    },
+    "fixture_id": {"type": ["string", "null"], "format": "uuid"},
+    "date_relation": {"$ref": "#/$defs/date_relation"},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_code", "prediction_date", "competition", "home_team", "away_team", "source_kickoff_at", "timezones"],
+      "properties": {
+        "source_code": {"type": "string", "minLength": 1},
+        "prediction_date": {"type": "string", "format": "date"},
+        "competition": {"type": "string"},
+        "home_team": {"type": "string"},
+        "away_team": {"type": "string"},
+        "source_kickoff_at": {"type": ["string", "null"], "format": "date-time"},
+        "timezones": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+      }
+    },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "fixture_id", "effective_fixture_id", "kickoff_at", "home_team", "away_team", "competition",
+          "competition_country", "identity_status", "resolution_status", "home_rule", "away_rule",
+          "orientation", "competition_relation", "date_relation"
+        ],
+        "properties": {
+          "fixture_id": {"type": "string", "format": "uuid"},
+          "effective_fixture_id": {"type": "string", "format": "uuid"},
+          "kickoff_at": {"type": "string", "format": "date-time"},
+          "home_team": {"type": "string"},
+          "away_team": {"type": "string"},
+          "competition": {"type": "string"},
+          "competition_country": {"type": "string"},
+          "identity_status": {"enum": ["VERIFIED", "PROVISIONAL", "QUARANTINED"]},
+          "resolution_status": {"type": ["string", "null"]},
+          "home_rule": {"enum": ["EXACT", "VARIANT", null]},
+          "away_rule": {"enum": ["EXACT", "VARIANT", null]},
+          "orientation": {"enum": ["HOME_AWAY", "REVERSED"]},
+          "competition_relation": {"enum": ["MATCH", "COMPATIBLE", "UNKNOWN", "CONFLICT"]},
+          "date_relation": {"$ref": "#/$defs/date_relation"}
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "previous_context_match_id"],
+      "properties": {
+        "action": {"enum": ["ASSOCIATE", "REJECT"]},
+        "previous_context_match_id": {"type": ["string", "null"], "format": "uuid"}
+      }
+    }
+  },
+  "$defs": {
+    "date_relation": {
+      "enum": ["EXACT_KICKOFF", "SAME_DAY", "MIDNIGHT_ADJACENT", "ADJACENT_DAY", "RESCHEDULED", "KICKOFF_MISMATCH", null]
+    }
+  }
+}
