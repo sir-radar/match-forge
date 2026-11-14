@@ -54,8 +54,11 @@ The historical counts above remain the November 11 baseline. Use the
 [pre-P03 result recovery path](design.md#pre-p03-result-recovery) for eligible
 FotMob, PitchAPI and API-Football mappings. P09-01 owns the remaining authentic
 gaps, including missing native mappings, unsupported or partial provider
-coverage and fixtures with insufficient proof. Compare those cohorts after
-pre-P03 rollout. Keep unavailable sources and nonterminal responses visible
+coverage and fixtures with insufficient proof. On 14 November that was 925
+provider-scoped fixtures awaiting identity admission and 11 verified fixtures
+with no recurring route
+([verification record](../../evidence/pre-p03-recovery-verification-2026-11-14.md)).
+Compare those cohorts after pre-P03 rollout. Keep unavailable sources and nonterminal responses visible
 and reuse the existing worker when new evidence becomes eligible.
 
 ### Phase 5: league-season pairing gaps (C7)

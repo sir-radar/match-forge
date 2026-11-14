@@ -162,9 +162,22 @@ Admin Data Sync has a Result recovery action. On a disposable or separately
 authorized database, the CLI equivalent is
 `uv run --locked python -m football.product.cli recover-results`. The optional
 `--date YYYY-MM-DD` selects a UTC kickoff date. `--fixture-id UUID` selects
-an individual fixture and can recheck a finished result. `--limit` bounds
-source dates per provider (default eight). `MATCHFORGE_RESULT_RECOVERY_INTERVAL`
-controls unattended submission. A zero interval disables scheduling.
+an individual fixture and can recheck a finished result. Both run immediately,
+whatever MatchForge's own retry schedule says, but never before a provider's
+retry deadline. `--limit` bounds source dates per provider (default eight); half
+go to the newest due dates and half to the longest-waiting ones.
+`MATCHFORGE_RESULT_RECOVERY_INTERVAL` controls unattended submission. A zero
+interval disables scheduling.
+
+The summary counts outcomes, not fetched resources: `recovered`, `corrected`,
+`verified_unchanged`, `unresolved` and `coordinated` (covered by a concurrent
+request), with per-provider `outcomes` and `deferred_until`. A fixture request
+reports `request_outcome`; when that is not `RECOVERED`, `CORRECTED` or
+`VERIFIED_UNCHANGED`, the status is `COMPLETED_UNRESOLVED` and the Admin run
+fails with the outcome, for example `NOT_RETURNED` or `FIXTURE_NOT_FOUND`. The
+coverage fields (`candidates`, `routed`, `runnable`, `never_checked`,
+`oldest_runnable_age_seconds`, `by_reason`, `dispositions`) describe the
+remaining population.
 
 Use `provider-mapping-review --provider fotmob` (or `pitchapi`) to inspect
 unresolved mappings. Supply `--provider-match-id` and `--fixture-id` only for

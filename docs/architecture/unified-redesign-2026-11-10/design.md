@@ -195,20 +195,46 @@ repeated requests and avoid all-history refresh fanout.
 
 Go submits `RESULT_RECOVERY` through the existing Admin sync runner. The run
 has the existing bulk-lane lease and publication fence. Python selects
-unresolved canonical fixtures and due native provider dates, including past
-dates outside the live polling window. The four-hour P02 overdue threshold
-selects work without assigning a lifecycle state. FotMob and PitchAPI replay
-eligible retained observations before making dated requests. API-Football
-uses the existing persistent daily and minute budget and exact native identity
-checks. Each provider and date has independent retry state.
+unresolved canonical fixtures from `football.product_result_recovery_candidates`,
+including past dates outside the live polling window. The four-hour P02 overdue
+threshold selects work without assigning a lifecycle state. A finished score
+that already qualified history is not a candidate only because its source gives
+no match duration.
 
-Only the established result owners publish scores or qualify history. An
-explicit recheck can acquire a later score for a finished fixture. A newer
+Eligibility belongs to each fixture and provider in
+`football.product_result_recovery_state`, which records the last outcome and the
+next check. Fixtures that share a provider's UTC kickoff date share one request.
+A 15-minute lease on that date in `football.product_provider_refresh_state`
+only stops duplicate concurrent requests; it is released when the date
+finishes and carries no freshness delay. A checked fixture therefore never
+suppresses a newly eligible fixture on the same date. An operator's fixture or
+date request ignores MatchForge's own schedule. Provider deadlines and quotas
+still apply to every request: they are enforced by `HistoryRequestBudget` and
+the API-Football budget, and the latest provider deadline also gates the next
+pass. A new exact mapping makes a blocked fixture due at once.
+
+Each run splits its date limit between the newest due dates and the dates that
+have waited longest. Retry delays grow with the fixture's age and repeated
+outcome: 15 minutes to 2 hours in the first two days, up to 7 days after 90
+days. No unresolved, routed fixture is abandoned. Each outcome is named:
+`RECOVERED`, `CORRECTED`, `VERIFIED_UNCHANGED`, `NOT_RETURNED`,
+`NOT_YET_PUBLISHED`, `SCORE_BASIS_UNAVAILABLE`, `IDENTITY_UNRESOLVED`,
+`RESULT_CONFLICT`, `QUALIFICATION_FAILED`, `PROVIDER_UNAVAILABLE` or
+`PROVIDER_RATE_LIMITED`. A successful request is never counted as a recovery.
+
+FotMob and PitchAPI replay the newest validated final observation with a stated
+duration before making dated requests, keeping the original snapshot and
+acquisition time. Correction discovery rechecks a finished, mapped result 1, 7
+and 28 days after kickoff and then stops, so unchanged history is not
+downloaded again. An operator recheck of a verified fixture is always
+available.
+
+Only the established result owners publish scores or qualify history. A newer
 API-Football regulation-time correction uses the existing versioned history
 decision path when the preceding score was also sourced from API-Football.
-Other conflicting evidence remains available for review. Result and observation
-updates enqueue the existing external settlement work without requiring a
-forecast.
+Other conflicting evidence is classified as `RESULT_CONFLICT` and remains
+available for review. Result and observation updates enqueue the existing
+external settlement work without requiring a forecast.
 
 History scopes can be refreshed after completion. The catalogue cache does
 not control result acquisition. P03 owns live scheduling, fairness and
