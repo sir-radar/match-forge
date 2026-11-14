@@ -1139,11 +1139,29 @@ def test_result_recovery_settles_without_internal_forecast():
 
     with isolated_database() as url, psycopg.connect(url) as connection:
         _seed_fixture(connection)
-        assert (
-            import_predictions(
-                connection, (selection(),), collected_at=KICKOFF - timedelta(hours=3)
-            )
-            == 1
+        # A matched external prediction with a reviewed source date and no
+        # internal MatchForge forecast for the fixture.
+        connection.execute(
+            """INSERT INTO football.external_predictions
+            (prediction_id,revision_sha256,source_code,source_page,prediction_date,
+             original_date_text,collected_at,fixture_id,competition_text,home_team_text,
+             away_team_text,market,selection,match_status)
+            VALUES(%s,%s,'manual_import','synthetic',%s,%s,%s,%s,
+             'Test','Home','Away','RESULT_1X2','HOME_WIN','MATCHED')""",
+            (
+                PREDICTION,
+                "f" * 64,
+                KICKOFF.date(),
+                KICKOFF.date().isoformat(),
+                KICKOFF - timedelta(hours=3),
+                FIXTURE,
+            ),
+        )
+        connection.execute(
+            """INSERT INTO football.external_prediction_date_reviews
+               (prediction_id,source_date,date_status,reason)
+               VALUES(%s,%s,'VERIFIED','synthetic verified source date')""",
+            (PREDICTION, KICKOFF.date()),
         )
         connection.execute(
             """UPDATE football.product_fixtures SET status='FINISHED',home_score=2,away_score=1,
