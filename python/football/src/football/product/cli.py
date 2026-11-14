@@ -540,6 +540,20 @@ def _live_pitchapi_client(
     )
 
 
+def _api_football_recovery_window() -> int | None:
+    """Days before today that API-Football may be asked for; "all" removes the bound.
+
+    The plan observed in operation refuses older dates but still charges the request.
+    """
+    value = os.environ.get("MATCHFORGE_API_FOOTBALL_RECOVERY_WINDOW_DAYS", "1").strip()
+    if value.casefold() == "all":
+        return None
+    days = int(value)
+    if days < 0:
+        raise ValueError("MATCHFORGE_API_FOOTBALL_RECOVERY_WINDOW_DAYS must be >= 0 or 'all'")
+    return days
+
+
 def _recover_results(
     connection: psycopg.Connection[Any], args: argparse.Namespace
 ) -> dict[str, object]:
@@ -602,6 +616,7 @@ def _recover_results(
                 limit=args.limit,
                 day=args.date,
                 fixture_id=args.fixture_id,
+                window_days=_api_football_recovery_window(),
             ),
             errors,
         )
