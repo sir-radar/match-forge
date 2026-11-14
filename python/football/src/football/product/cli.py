@@ -1046,17 +1046,9 @@ def _history_worker_factory(
 
 
 def _run_external_settlement(args: argparse.Namespace) -> int:
-    def progress(snapshot: dict[str, Any]) -> None:
-        if sync_run_id is None:
-            return
-        with connection.transaction():
-            connection.execute(
-                """UPDATE football.product_sync_runs SET summary=%s::jsonb
-                WHERE run_id=%s AND worker_id=%s AND status='RUNNING'
-                    AND heartbeat_at>=clock_timestamp()-interval '2 minutes'""",
-                (json.dumps({"settlement": snapshot}), sync_run_id, str(sync_run_id)),
-            )
-
+    # The Go runner owns sync-run rows: a worker session carries the run identity and
+    # the worker fence rejects its writes to football.product_sync_runs. Settlement
+    # therefore reports through its final summary line, like every other worker.
     sync_run_id = _sync_run_id()
     requested_at = datetime.now(UTC)
     with psycopg.connect(args.database_url) as connection:
@@ -1066,7 +1058,7 @@ def _run_external_settlement(args: argparse.Namespace) -> int:
             with connection.transaction():
                 result = reconcile_external_predictions(connection, requested_at, audit_only=True)
         else:
-            result = reconcile_external_predictions(connection, requested_at, progress=progress)
+            result = reconcile_external_predictions(connection, requested_at)
     failed = result["counts"].get("FAILED", 0)
     if sync_run_id is not None:
         # Job history exposes aggregate counts. The operator CLI can report exact IDs.
