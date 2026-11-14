@@ -255,6 +255,19 @@ the same source-date validation in memory. Run binding recovery and settlement
 on an isolated restore to preview changes that require new bindings. Compare
 binding history, date reviews and result revisions before and after the run.
 
+Contextual matching links picks without a native ID under
+[the contextual policy](architecture.md#contextual-association). Preview it
+read-only, then apply it to a bounded batch; each run resumes where the last
+stopped and skips verified associations and owner reviews:
+
+```bash
+uv run python -m football.product.cli external-match-audit --output .local/tmp/census.json
+uv run python -m football.product.cli external-contextual-backfill --limit 200
+```
+
+The census reports per-source, competition and date classifications, the
+blind check against verified bindings and perturbed negative controls.
+
 Before an operating rollout, keep a verified pre-change dump and compare the
 read-only audit against the isolated rehearsal. Apply the approved migration
 and exact association and settlement changes, then verify the outcomes, rerun

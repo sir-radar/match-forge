@@ -1390,6 +1390,40 @@ replacement mapping recorded after kickoff can settle a capture when an active
 duplicate resolution and retained provider decision corroborate the same native
 fixture. These reviewed bindings receive no retroactive prospective credit.
 
+#### Contextual association
+
+`EXTERNAL_PREDICTION_CONTEXTUAL_MATCHING_V1` links a pick without a verified
+native ID to one existing fixture for external settlement only. It never
+creates provider mappings, identity admissions, duplicate resolutions or
+history rows, and verified bindings always take precedence. The policy reads
+teams, competition, kickoff and identity resolutions, never status or scores:
+
+- Team names match exactly, through retained aliases, or by abbreviation or
+  omitted trailing words. Women's, youth and reserve markers must agree.
+- Country, tier and cup-or-league facts in the source label can conflict;
+  free-text competition names only support a match.
+- The kickoff must fall on the source's publication day in its timezone
+  (R2Bet UTC+01:00; others UTC or the collector's day), or within three hours
+  of that day's midnight.
+- Exactly one fixture must survive after confirmed duplicate resolutions. A
+  single VERIFIED record whose rivals are PROVISIONAL copies at the identical
+  kickoff qualifies; any other twin, a reversal, a date offset, a reschedule,
+  conflicting source evidence or a missing competition with abbreviated names
+  goes to review.
+
+Decisions are appended to `football.external_prediction_context_matches`
+with the candidate set and reasons (`NEEDS_REVIEW` and `UNMATCHED` included)
+and the [evidence contract](../schemas/contracts/external-prediction-contextual-match-v1.schema.json).
+Fixture, alias, competition and resolution changes reopen affected open picks
+through the existing settlement queue. An owner review in the Resolution
+Center holds until a REVALIDATE. A revoked or superseded association appends a
+`PENDING` settlement revision.
+
+A contextual match settles only on a VERIFIED fixture under the existing
+result rules. It counts prospectively when the capture precedes kickoff with a
+verified source date and the association was made by the policy or reviewed
+before kickoff; otherwise the settlement is labelled `RETROSPECTIVE`.
+
 External Predictions displays all matching captures for the selected day in
 capture order. Older days are available through the date picker and day
 navigation. The archive API also supports cross-date queries. The existing list
