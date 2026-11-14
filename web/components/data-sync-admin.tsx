@@ -37,16 +37,23 @@ const LIVE_ACTIONS: Action[] = [
 
 export function DataSyncAdmin({ initialDate }: { initialDate: string }) {
   const state = useSyncAdminState(initialDate);
-  const { active, clock, coverage, error, filters, laneErrors, laneBusy, loading, providerConfiguration, recover, refreshHistory, retry, runs, setFilters, start, stop, submitting, reload } = state;
+  const { accessDenied, active, clock, coverage, error, filters, laneErrors, laneBusy, loading, providerConfiguration, recover, refreshHistory, retry, runs, setFilters, start, stop, submitting, reload } = state;
   const settlement = runs.find((run) => run.sync_type === "EXTERNAL_PREDICTION_SETTLEMENT");
+  // Settlement stays visible while status is loading or temporarily failing;
+  // only a denied admin request hides it. A disabled button says why.
+  const settlementBlocked = loading ? "Checking sync status…"
+    : error !== null ? "Sync status is unavailable. Use Retry status before settling."
+    : laneBusy("EXTERNAL_PREDICTION_SETTLEMENT") ? "Another bulk job (result recovery, history backfill or settlement) is running."
+    : undefined;
   const renderActions = (actions: Action[]) => actions
-    .filter((action) => action.type !== "EXTERNAL_PREDICTION_SETTLEMENT" || coverage !== null)
+    .filter((action) => action.type !== "EXTERNAL_PREDICTION_SETTLEMENT" || !accessDenied)
     .map((action) => {
     const key = action.historyProvider ?? action.type;
     const latest = runs.find((run) => run.status === "SUCCEEDED" && run.sync_type === action.type &&
       run.parameters.provider === action.historyProvider && run.parameters.scheduled_history !== true);
     return <SyncAction key={key} action={action} latest={latest} providerConfiguration={providerConfiguration}
       disabled={loading || laneBusy(action.type) || (action.type === "EXTERNAL_PREDICTION_SETTLEMENT" && error !== null)} busy={submitting[syncLane(action.type)] === key}
+      disabledReason={action.type === "EXTERNAL_PREDICTION_SETTLEMENT" ? settlementBlocked : undefined}
       onStart={() => void start(action.type, action.start, action.historyProvider)} />;
   });
 
@@ -109,7 +116,7 @@ function SyncStatus({ active, clock, disabled, stopping, stopLabel, onStop }: { 
   </div>;
 }
 
-function SyncAction({ action, latest, providerConfiguration, disabled, busy, onStart }: { action: Action; latest?: SyncRun; providerConfiguration: ProviderConfiguration; disabled: boolean; busy: boolean; onStart: () => void }) {
+function SyncAction({ action, latest, providerConfiguration, disabled, disabledReason, busy, onStart }: { action: Action; latest?: SyncRun; providerConfiguration: ProviderConfiguration; disabled: boolean; disabledReason?: string; busy: boolean; onStart: () => void }) {
   const providerDisabled = action.historyProvider !== undefined && !providerConfiguration[`${action.historyProvider}_enabled`];
   return <article className={`sync-action${action.prominent ? " prominent" : ""}`}>
     <div><small>{action.kind}</small><h2>{action.title}</h2><p>{action.description}</p></div>
@@ -118,7 +125,8 @@ function SyncAction({ action, latest, providerConfiguration, disabled, busy, onS
       <ProviderConfigurationMetric action={action} configuration={providerConfiguration} />
       <ActionMetrics action={action} latest={latest} />
     </dl>
-    <button type="button" onClick={onStart} disabled={disabled || providerDisabled} aria-busy={busy}>{busy ? "Starting…" : action.button}</button>
+    <button type="button" onClick={onStart} disabled={disabled || providerDisabled} aria-busy={busy} aria-describedby={disabled && disabledReason ? `${action.type}-blocked` : undefined}>{busy ? "Starting…" : action.button}</button>
+    {disabled && disabledReason && <p id={`${action.type}-blocked`} className="sync-action-reason">{disabledReason}</p>}
   </article>;
 }
 

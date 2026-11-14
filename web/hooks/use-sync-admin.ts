@@ -26,6 +26,7 @@ function useSyncStatus() {
   const [providerConfiguration, setProviderConfiguration] = useState<ProviderConfiguration>({ fotmob_enabled: false, pitchapi_enabled: false, operational_sync_interval: "0s" });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [accessDenied, setAccessDenied] = useState(false);
   const [clock, setClock] = useState(0);
   const mounted = useRef(false);
   const latestRuns = useRef<SyncRun[]>([]);
@@ -61,10 +62,10 @@ function useSyncStatus() {
         incoming.push(await api.syncRun(run.run_id, controller.signal));
       }
       if (!currentRequest(generation, controller.signal)) return;
-      publish(incoming); setCoverage(response.coverage); setProviderConfiguration(response.provider_configuration); setError(null);
+      publish(incoming); setCoverage(response.coverage); setProviderConfiguration(response.provider_configuration); setError(null); setAccessDenied(false);
     } catch (cause) {
       if (!currentRequest(generation, controller.signal)) return;
-      setError(errorMessage(cause));
+      setError(errorMessage(cause)); setAccessDenied(cause instanceof ApiError && cause.status === 403);
     } finally {
       if (currentRequest(generation, controller.signal)) setLoading(false);
     }
@@ -94,11 +95,11 @@ function useSyncStatus() {
     return () => { stopped = true; window.clearTimeout(timer); window.clearInterval(clockTimer); document.removeEventListener("visibilitychange", visible); invalidate(); };
   }, [hasActive, loading, invalidate, reload]);
 
-  return { active, clock, coverage, error, loading, providerConfiguration, runs, latestRuns, mounted, publish, reload, invalidate, setClock };
+  return { accessDenied, active, clock, coverage, error, loading, providerConfiguration, runs, latestRuns, mounted, publish, reload, invalidate, setClock };
 }
 
 export function useSyncAdminState(initialDate: string) {
-  const { active, clock, coverage, error, loading, providerConfiguration, runs, latestRuns, mounted, publish, reload, invalidate, setClock } = useSyncStatus();
+  const { accessDenied, active, clock, coverage, error, loading, providerConfiguration, runs, latestRuns, mounted, publish, reload, invalidate, setClock } = useSyncStatus();
   const [filters, setFilters] = useState<SyncFilters>({ date: initialDate, from_date: "", season: "", competition: "", country: "" });
   const [submitting, setSubmitting] = useState<Record<string, string | undefined>>({});
   const [laneErrors, setLaneErrors] = useState<Record<string, string | undefined>>({});
@@ -137,10 +138,14 @@ export function useSyncAdminState(initialDate: string) {
     }));
   const stop = (run: SyncRun) => mutate(run.sync_type, `STOP:${run.run_id}`, () => api.stopSyncRun(run.run_id), true);
   const retry = (run: SyncRun) => mutate(run.sync_type, `RETRY:${run.run_id}`, () => api.retrySyncRun(run.run_id));
-  return { active, clock, coverage, error, laneErrors, filters, loading, providerConfiguration, recover, refreshHistory, retry, runs, setFilters, start, stop, submitting, reload, laneBusy };
+  return { accessDenied, active, clock, coverage, error, laneErrors, filters, loading, providerConfiguration, recover, refreshHistory, retry, runs, setFilters, start, stop, submitting, reload, laneBusy };
 }
 
 function errorMessage(cause: unknown): string {
+  // Go's router answers an unknown route with a 404 that carries no JSON error.
+  if (cause instanceof ApiError && cause.status === 404 && cause.message === "Request failed (404)") {
+    return "The running API does not support this action. Restart the API from the current release.";
+  }
   if (cause instanceof ApiError) return cause.status >= 500 ? `The API could not start or read the sync. ${cause.message}` : cause.message;
   return cause instanceof Error ? `Network or response error: ${cause.message}` : "Unknown synchronization error.";
 }

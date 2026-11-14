@@ -115,6 +115,25 @@ func TestAdminSyncStartRoutesUseFixedTypes(t *testing.T) {
 	}
 }
 
+func TestAdminSyncStartExplainsPendingMigration(t *testing.T) {
+	for _, test := range []struct {
+		err  error
+		want string
+	}{
+		{err: errSyncSchemaPending, want: "run make migrate"},
+		{err: errProductUnavailable, want: "data synchronization is unavailable"},
+	} {
+		runner := &syncRunnerStub{startErr: test.err}
+		request := localAdminTestRequest(http.MethodPost, "/v1/admin/sync/settle-external-predictions", strings.NewReader(`{}`))
+		request.Header.Set("Content-Type", "application/json")
+		response := httptest.NewRecorder()
+		newAdminTestApp(runner).Handler().ServeHTTP(response, request)
+		if response.Code != http.StatusServiceUnavailable || !strings.Contains(response.Body.String(), test.want) {
+			t.Fatalf("response = %d %s", response.Code, response.Body.String())
+		}
+	}
+}
+
 func TestAdminSyncPassesFixtureBackfillStartDate(t *testing.T) {
 	runner := &syncRunnerStub{}
 	request := localAdminTestRequest(

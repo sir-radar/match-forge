@@ -108,6 +108,25 @@ describe("DataSyncAdmin", () => {
     expect(screen.queryByRole("button", { name: "Settle Finished Predictions" })).toBeNull();
   });
 
+  it("keeps the settlement action visible but disabled when status fails", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => json({ error: "data synchronization failed" }, 500)));
+    render(<DataSyncAdmin initialDate="2026-09-30" />);
+    expect(await screen.findByRole("alert")).toHaveTextContent("data synchronization failed");
+    const button = screen.getByRole("button", { name: "Settle Finished Predictions" });
+    expect(button).toBeDisabled();
+    expect(button).toHaveAccessibleDescription("Sync status is unavailable. Use Retry status before settling.");
+  });
+
+  it("explains a settlement request the running API release does not support", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) =>
+      init?.method === "POST" ? new Response("404 page not found", { status: 404 }) : json({ runs: [], coverage })));
+    render(<DataSyncAdmin initialDate="2026-09-30" />);
+    const button = await screen.findByRole("button", { name: "Settle Finished Predictions" });
+    await waitFor(() => expect(button).toBeEnabled());
+    fireEvent.click(button);
+    expect(await screen.findByRole("alert")).toHaveTextContent("The running API does not support this action.");
+  });
+
   it("submits settlement without date filters and shows durable partial results", async () => {
     const run = {
       run_id: "settlement-one", sync_type: "EXTERNAL_PREDICTION_SETTLEMENT",

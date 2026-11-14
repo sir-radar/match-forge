@@ -30,6 +30,8 @@ var (
 	errSyncRunNotFound     = errors.New("sync run not found")
 	errSyncRunNotActive    = errors.New("sync run is not active")
 	errSyncRunNotRetryable = errors.New("only failed or cancelled sync runs can be retried")
+	// errSyncSchemaPending marks a sync type whose database migration is not applied.
+	errSyncSchemaPending = fmt.Errorf("%w: database migration required", errProductUnavailable)
 )
 
 type syncConflictError struct {
@@ -1422,6 +1424,15 @@ func adminInitiator(request *http.Request) string {
 	return "ADMIN_CLI"
 }
 
+// unavailableSyncMessage tells an operator whether a pending migration, rather
+// than a transient failure, keeps a sync type from starting.
+func unavailableSyncMessage(err error) string {
+	if errors.Is(err, errSyncSchemaPending) {
+		return "this sync needs a database migration that is not applied; run make migrate"
+	}
+	return "data synchronization is unavailable"
+}
+
 func (application *App) writeSyncError(response http.ResponseWriter, err error) {
 	if errors.Is(err, context.DeadlineExceeded) {
 		application.publicError(response, http.StatusGatewayTimeout, "request timed out")
@@ -1447,7 +1458,7 @@ func (application *App) writeSyncError(response http.ResponseWriter, err error) 
 		message = err.Error()
 	} else if errors.Is(err, errProductUnavailable) {
 		status = http.StatusServiceUnavailable
-		message = "data synchronization is unavailable"
+		message = unavailableSyncMessage(err)
 	}
 	application.writeJSON(response, status, map[string]string{"error": message})
 }
