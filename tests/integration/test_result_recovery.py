@@ -303,6 +303,35 @@ def test_autonomous_correction_discovery_is_bounded_and_keeps_history(
     assert len(world.calls) == 3
 
 
+def test_correction_after_the_schedule_is_reingested_by_a_targeted_request(
+    recovery_connection: psycopg.Connection[Any], tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Past the 28-day schedule, automatic runs stop; targeted checks still correct.
+
+    This is the P09 handoff: broad historical correction discovery selects fixtures or
+    dates and submits them through the same request, without new architecture.
+    """
+    kickoff = (datetime.now(UTC) - timedelta(days=120)).replace(second=0, microsecond=0)
+    world = ApiFootballWorld(recovery_connection, tmp_path, monkeypatch, {803: (kickoff, "NS")})
+    fixture = world.fixture(803)
+    world.finish(803, 1, 0)
+    assert world.run()["outcomes"] == {"RECOVERED": 1}
+    assert world.state(803)[5]  # No further scheduled check for a 120-day-old result.
+
+    world.finish(803, 1, 1)
+    assert world.run()["selected_dates"] == 0 and len(world.calls) == 1
+
+    corrected = world.run(fixture_id=fixture)
+    assert corrected["outcomes"] == {"CORRECTED": 1} and corrected["corrected"] == 1
+    assert recovery_connection.execute(
+        """SELECT home_goals,away_goals FROM football.product_match_history_decisions
+           WHERE fixture_id=%s ORDER BY decided_at,decision_id""",
+        (fixture,),
+    ).fetchall() == [(1, 0), (1, 1)]
+    assert world.run(day=kickoff.astimezone(UTC).date())["outcomes"] == {"VERIFIED_UNCHANGED": 1}
+    assert world.state(803)[5] and len(world.calls) == 3
+
+
 def test_retained_evidence_recovers_without_a_provider_request(
     recovery_connection: psycopg.Connection[Any], tmp_path: Path
 ) -> None:
