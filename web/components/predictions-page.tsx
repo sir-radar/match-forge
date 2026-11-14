@@ -9,6 +9,7 @@ import { DISPLAY_TIME_ZONE } from "@/lib/display-date";
 import { api } from "@/lib/api";
 import { EXTERNAL_SETTLEMENT_CHANGED } from "@/lib/external-settlement";
 import type { ExternalPrediction, ExternalSource, ExternalConsensus } from "@/lib/contracts";
+import { AssociationSummary } from "@/components/external-association";
 
 
 
@@ -403,7 +404,7 @@ function Results({ items, refreshing }: { items: ExternalPrediction[]; refreshin
                 <TD className="text-[#bbcabf]">{item.competition}</TD>
                 <TD><strong className="font-['Space_Grotesk',system-ui,sans-serif] text-[15px] font-semibold">{item.home_team} <span className="font-normal text-[#86948a]">vs</span> {item.away_team}</strong>{item.source_revision_conflict && <p className="text-amber-300">Conflicting picks at the same capture time</p>}{item.fixture_association === "VERIFIED_PROVIDER_ONLY"
                   ? <p className="text-[#bbcabf]">Verified provider fixture</p>
-                  : item.match_status !== "MATCHED" && <p className="text-[#bbcabf]">{status(item.match_status)} fixture</p>}</TD>
+                  : <AssociationSummary item={item} />}</TD>
                 <TD className="text-center text-[#86948a]">{kickoffTime(item.kickoff_at)}</TD>
                 <TD className="text-[#bbcabf]">{market(item.market)}</TD>
                 <TD><span className={`rounded-sm border border-[#353943] bg-[#1c1f29] px-2 py-0.5 font-semibold ${tone(item.agreement)}`}>{item.selection}</span></TD>

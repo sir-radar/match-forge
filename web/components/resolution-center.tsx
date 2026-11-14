@@ -10,13 +10,14 @@ import { resolutionApi, resolutionViews, text, type RecordValue, type Resolution
 
 type Filters = { q: string; provider: string; status: string; kind: string };
 const EMPTY_FILTERS: Filters = { q: "", provider: "", status: "", kind: "" };
-const VIEW_LABELS: Record<ResolutionView, string> = { identity: "Identity Review", fixtures: "Fixture Review", missing: "Missing Data", parity: "Migration Parity", cutover: "Cutover Controls", history: "Resolution History" };
+const VIEW_LABELS: Record<ResolutionView, string> = { identity: "Identity Review", fixtures: "Fixture Review", external: "External Predictions", missing: "Missing Data", parity: "Migration Parity", cutover: "Cutover Controls", history: "Resolution History" };
 const IDENTITY_STATUSES = ["VERIFIED", "NEEDS_REVIEW", "CONTRADICTORY", "UNRESOLVED", "BLOCKED"];
 const FIXTURE_STATUSES = ["AUTO_ACCEPTED", "MANUAL_ACCEPTED", "REVIEW_REQUIRED"];
 const HISTORY_STATUSES = ["ORIGIN_ANCHOR", "CROSSWALK", "REVOKED", "UNIQUE", "DUPLICATE_RESOLVED", "AMBIGUOUS_QUARANTINED", "IMPOSSIBLE_TEAM_SCHEDULE_QUARANTINED"];
 const FILTER_OPTIONS: Record<ResolutionView, { statuses: string[]; entities: string[] }> = {
   identity: { statuses: IDENTITY_STATUSES, entities: ["team", "competition"] },
   fixtures: { statuses: [...IDENTITY_STATUSES, ...FIXTURE_STATUSES], entities: ["fixture"] },
+  external: { statuses: ["NEEDS_REVIEW", "UNMATCHED", "CONTEXTUAL_MATCH"], entities: ["external_prediction"] },
   missing: { statuses: ["BLOCKED"], entities: ["resource", "dataset"] },
   parity: { statuses: ["PASS", "FAIL", "BLOCKED", "NOT_RUN"], entities: [] },
   cutover: { statuses: ["BLOCKED", "NOT_RUN"], entities: [] },
@@ -82,11 +83,12 @@ function CaseFilters({ view, filters, update, loading, reload }: { view: Resolut
 function CaseResults({ data, view, page, loading, inspect, changePage, selected, toggle }: { selected: string[]; toggle: (key: string) => void; data: ResolutionPage; view: ResolutionView; page: number; loading: boolean; inspect: (key: string, button: HTMLButtonElement) => void; changePage: (page: number) => void }) {
   return <>
     <p role="status">{data.total.toLocaleString()} {view === "history" ? "history entries" : "cases"} in this scope. {Object.entries(data.counts).map(([status, count]) => `${status}: ${count.toLocaleString()}`).join(" · ")}</p>
+    {view === "external" && <p>External prediction associations are external-only. Approving or rejecting one never changes canonical fixtures, teams or provider mappings.</p>}
     {view === "history" && <p>History preserves repeated decisions and fixture resolution records. Use Identity Review and Fixture Review to inspect current cases.</p>}
     {data.scope && <p className="resolution-scope">{data.scope.replaceAll("_", " ")}</p>}
     {!!data.blockers?.length && <details><summary>Required migration blockers ({data.blockers.length})</summary><ul>{data.blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul></details>}
     {!!data.groups.length && <CaseGroups groups={data.groups} history={view === "history"} />}
-    {!data.items.length ? <EmptyState title="No cases in this scope" detail="Change the filters or recheck after new evidence arrives." /> : <CaseTable selected={selected} toggle={toggle} selectable={["identity", "fixtures"].includes(view)} items={data.items} inspectable={["identity", "fixtures", "missing", "parity", "cutover"].includes(view)} inspect={inspect} />}
+    {!data.items.length ? <EmptyState title="No cases in this scope" detail="Change the filters or recheck after new evidence arrives." /> : <CaseTable selected={selected} toggle={toggle} selectable={["identity", "fixtures"].includes(view)} items={data.items} inspectable={["identity", "fixtures", "external", "missing", "parity", "cutover"].includes(view)} inspect={inspect} />}
     <div className="resolution-pagination"><button disabled={page <= 1 || loading} onClick={() => changePage(page - 1)}>Previous page</button><span>Page {page}</span><button disabled={page * data.page_size >= data.total || loading} onClick={() => changePage(page + 1)}>Next page</button></div>
   </>;
 }
@@ -115,7 +117,7 @@ function CaseReview({ caseKey, close, history, onApplied }: { onApplied: () => v
     <h2 tabIndex={-1} ref={heading}>Review {caseKey}</h2><button onClick={close}>Close case</button><button onClick={() => setRetry((value) => value + 1)}>Recheck case evidence</button><button onClick={() => history(caseKey)}>Show resolution history</button>
     {error && <ResourceError message={error} retry={() => { setError(undefined); setRetry((value) => value + 1); }} />}
     {!data && !error && <ResourceLoading label="Loading retained evidence" />}
-    {data && <><p>Status: {text(data.status)}</p><Evidence value={data} />{["team", "competition", "fixture", "fixture_record", "resource", "dataset", "parity", "stage"].includes(caseKey.split(":")[0]) && <ResolutionDecisionForm caseKey={caseKey} data={data} onApplied={() => { onApplied(); setRetry((value) => value + 1); }} />}</>}
+    {data && <><p>Status: {text(data.status)}</p><Evidence value={data} />{["team", "competition", "fixture", "fixture_record", "external_prediction", "resource", "dataset", "parity", "stage"].includes(caseKey.split(":")[0]) && <ResolutionDecisionForm caseKey={caseKey} data={data} onApplied={() => { onApplied(); setRetry((value) => value + 1); }} />}</>}
   </section>;
 }
 

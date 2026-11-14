@@ -510,34 +510,52 @@ type ExternalConsensus struct {
 }
 
 type ExternalPrediction struct {
-	SourceCode             string     `json:"source_code"`
-	FixtureIdentityStatus  *string    `json:"fixture_identity_status"`
-	SourceDateStatus       string     `json:"source_date_status"`
-	SourceRevisionConflict bool       `json:"source_revision_conflict"`
-	ComparisonStatus       string     `json:"comparison_status,omitempty"`
-	ID                     string     `json:"id"`
-	Source                 string     `json:"source"`
-	SourcePage             string     `json:"source_page"`
-	PredictionDate         string     `json:"prediction_date"`
-	OriginalDateText       string     `json:"original_date_text"`
-	CollectedAt            time.Time  `json:"collected_at"`
-	FixtureID              *string    `json:"fixture_id"`
-	KickoffAt              *time.Time `json:"kickoff_at"`
-	Competition            string     `json:"competition"`
-	HomeTeam               string     `json:"home_team"`
-	AwayTeam               string     `json:"away_team"`
-	Market                 string     `json:"market"`
-	Selection              string     `json:"selection"`
-	MatchStatus            string     `json:"match_status"`
-	FixtureAssociation     *string    `json:"fixture_association,omitempty"`
-	MatchForgeProbability  *float64   `json:"matchforge_probability"`
-	Agreement              string     `json:"agreement"`
-	SettlementState        string     `json:"settlement_state"`
-	ActualHomeScore        *int       `json:"actual_home_score"`
-	ActualAwayScore        *int       `json:"actual_away_score"`
-	ResultScoreBasis       *string    `json:"result_score_basis"`
-	ResultProvider         *string    `json:"result_provider"`
-	ResultUpdatedAt        *time.Time `json:"result_updated_at"`
+	SourceCode             string              `json:"source_code"`
+	FixtureIdentityStatus  *string             `json:"fixture_identity_status"`
+	SourceDateStatus       string              `json:"source_date_status"`
+	SourceRevisionConflict bool                `json:"source_revision_conflict"`
+	ComparisonStatus       string              `json:"comparison_status,omitempty"`
+	ID                     string              `json:"id"`
+	Source                 string              `json:"source"`
+	SourcePage             string              `json:"source_page"`
+	PredictionDate         string              `json:"prediction_date"`
+	OriginalDateText       string              `json:"original_date_text"`
+	CollectedAt            time.Time           `json:"collected_at"`
+	FixtureID              *string             `json:"fixture_id"`
+	KickoffAt              *time.Time          `json:"kickoff_at"`
+	Competition            string              `json:"competition"`
+	HomeTeam               string              `json:"home_team"`
+	AwayTeam               string              `json:"away_team"`
+	Market                 string              `json:"market"`
+	Selection              string              `json:"selection"`
+	MatchStatus            string              `json:"match_status"`
+	FixtureAssociation     *string             `json:"fixture_association,omitempty"`
+	Association            ExternalAssociation `json:"association"`
+	MatchForgeProbability  *float64            `json:"matchforge_probability"`
+	Agreement              string              `json:"agreement"`
+	SettlementState        string              `json:"settlement_state"`
+	ActualHomeScore        *int                `json:"actual_home_score"`
+	ActualAwayScore        *int                `json:"actual_away_score"`
+	ResultScoreBasis       *string             `json:"result_score_basis"`
+	ResultProvider         *string             `json:"result_provider"`
+	ResultUpdatedAt        *time.Time          `json:"result_updated_at"`
+}
+
+// ExternalAssociation explains how a pick was linked to a MatchForge fixture.
+// Contextual links are external-only and never change canonical identity.
+type ExternalAssociation struct {
+	Classification     string     `json:"classification"`
+	Reason             string     `json:"reason"`
+	Basis              *string    `json:"basis"`
+	PolicyVersion      *string    `json:"policy_version"`
+	DecidedAt          *time.Time `json:"decided_at"`
+	CandidateCount     int        `json:"candidate_count"`
+	FixtureHomeTeam    *string    `json:"fixture_home_team"`
+	FixtureAwayTeam    *string    `json:"fixture_away_team"`
+	FixtureCompetition *string    `json:"fixture_competition"`
+	SettlementEligible bool       `json:"settlement_eligible"`
+	SettlementBlocker  *string    `json:"settlement_blocker"`
+	Evaluation         *string    `json:"evaluation"`
 }
 
 type ExternalPredictionSource struct {

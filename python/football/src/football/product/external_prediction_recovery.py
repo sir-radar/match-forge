@@ -20,11 +20,16 @@ from football.product.domain import (
     external_settlement_state,
     sha256_json,
 )
+from football.product.external_prediction_association import refresh_contextual_association
+from football.product.external_prediction_matching import POLICY_VERSION
 from football.product.external_prediction_sources import ParserBrokenError, source_prediction_date
 from football.product.external_predictions import ImportedPrediction, verified_r2bet_mapping
 
 SETTLEMENT_BATCH_LIMIT = 128
 FINAL_STATES = frozenset({"WON", "LOST", "VOID"})
+SETTLEABLE_ASSOCIATIONS = frozenset(
+    {"VERIFIED_CANONICAL", "VERIFIED_PROVIDER_ONLY", "CONTEXTUAL_MATCH"}
+)
 LOGGER = logging.getLogger(__name__)
 
 
@@ -272,7 +277,7 @@ def _review_date(connection: Connection[Any], prediction_id: UUID) -> None:
         ).fetchone()
         if row is None:
             return
-        source_date, state = _source_date_review(row)
+        source_date, state = source_date_review(row)
         cursor.execute(
             """INSERT INTO football.external_prediction_date_reviews
             (prediction_id,source_date,date_status,reason) VALUES(%s,%s,%s,%s)
@@ -281,7 +286,7 @@ def _review_date(connection: Connection[Any], prediction_id: UUID) -> None:
         )
 
 
-def _source_date_review(row: dict[str, Any]) -> tuple[date | None, str]:
+def source_date_review(row: dict[str, Any]) -> tuple[date | None, str]:
     if row["source_code"] not in ("r2bet", "tips1960"):
         return None, "NOT_APPLICABLE"
     try:
@@ -386,6 +391,54 @@ def reconcile_external_predictions(
     return result
 
 
+def backfill_contextual_associations(
+    connection: Connection[Any], requested_at: datetime, *, limit: int
+) -> dict[str, Any]:
+    """Process at most limit open predictions without a decision under the current policy.
+
+    Each prediction commits on its own, so a stopped run resumes where it ended.
+    Verified associations and owner reviews are never selected.
+    """
+    if requested_at.utcoffset() is None:
+        raise ValueError("external settlement requires an aware request time")
+    if type(limit) is not int or limit < 1:
+        raise ValueError("backfill limit must be a positive integer")
+    with connection.transaction():
+        selected = connection.execute(
+            """SELECT ep.prediction_id FROM football.external_prediction_effective ep
+            LEFT JOIN football.external_prediction_context_current context USING (prediction_id)
+            WHERE ep.effective_match_status<>'MATCHED'
+              AND (context.prediction_id IS NULL
+                   OR (context.basis='POLICY' AND context.policy_version<>%s))
+            ORDER BY ep.prediction_date,ep.prediction_id LIMIT %s""",
+            (POLICY_VERSION, limit),
+        ).fetchall()
+    counts: Counter[str] = Counter()
+    associations: Counter[str] = Counter()
+    for (prediction_id,) in selected:
+        category, _, association = _process_prediction(
+            connection, prediction_id, requested_at, manual=True
+        )
+        counts[category] += 1
+        associations[association] += 1
+    with connection.transaction():
+        remaining = connection.execute(
+            """SELECT count(*) FROM football.external_prediction_effective ep
+            LEFT JOIN football.external_prediction_context_current context USING (prediction_id)
+            WHERE ep.effective_match_status<>'MATCHED'
+              AND (context.prediction_id IS NULL
+                   OR (context.basis='POLICY' AND context.policy_version<>%s))""",
+            (POLICY_VERSION,),
+        ).fetchone()
+    return {
+        "policy_version": POLICY_VERSION,
+        "processed": len(selected),
+        "remaining": remaining[0] if remaining else 0,
+        "counts": dict(counts),
+        "associations": dict(associations),
+    }
+
+
 def _unrecoverable_settlement_error(connection: Connection[Any], error: Error) -> bool:
     return connection.closed or isinstance(error, ObjectNotInPrerequisiteState)
 
@@ -410,6 +463,7 @@ def _process_prediction(
         if not _lock_prediction(cursor, prediction_id, manual=manual):
             return "DEFERRED", 0, "DEFERRED"
         refresh_prediction_binding(connection, prediction_id)
+        refresh_contextual_association(cursor, prediction_id)
         _review_date(connection, prediction_id)
         row = _settlement_input(cursor, prediction_id)
         state, reason = _evaluate(row)
@@ -489,7 +543,12 @@ WHERE o.provider_code=identity.provider_code AND o.provider_match_id=identity.pr
 
 def _settlement_input(cursor: Cursor[dict[str, Any]], prediction_id: UUID) -> dict[str, Any]:
     row = cursor.execute(
-        """SELECT ep.market,ep.selection,ep.binding_id,ep.date_status,
+        """SELECT ep.market,ep.selection,ep.binding_id,ep.date_status,ep.collected_at,
+            fixture.kickoff_at,context.context_match_id,context.basis AS context_basis,
+            context.policy_version,context.decided_at AS context_decided_at,
+            CASE WHEN ep.effective_match_status='CONTEXTUAL' THEN fixture.fixture_id END
+                AS context_fixture_id,
+            binding.evidence->>'method' AS binding_method,binding.decided_at AS binding_decided_at,
             ep.source_code,ep.original_date_text,ep.prediction_date,
             review.prediction_id IS NOT NULL AS date_reviewed,
             ep.effective_match_status, identity.provider_code AS native_provider,
@@ -540,6 +599,9 @@ def _settlement_input(cursor: Cursor[dict[str, Any]], prediction_id: UUID) -> di
         FROM football.external_prediction_effective ep
         JOIN football.external_prediction_fixture_identity identity USING (prediction_id)
         LEFT JOIN football.external_prediction_date_reviews review USING (prediction_id)
+        LEFT JOIN football.external_prediction_bindings binding ON binding.binding_id=ep.binding_id
+        LEFT JOIN football.external_prediction_context_current context
+            ON context.prediction_id=ep.prediction_id AND ep.effective_match_status='CONTEXTUAL'
         LEFT JOIN football.product_fixtures fixture
             ON fixture.fixture_id=ep.effective_fixture_id
         LEFT JOIN LATERAL (
@@ -622,7 +684,7 @@ def _settlement_input(cursor: Cursor[dict[str, Any]], prediction_id: UUID) -> di
     ).fetchone()
     assert row is not None
     if not row["date_reviewed"]:
-        _, row["date_status"] = _source_date_review(row)
+        _, row["date_status"] = source_date_review(row)
     row["score_basis"] = row["canonical_score_basis"]
     if row["score_basis"] == "UNKNOWN" and (row["observed_regulation"] or row["history_provider"]):
         row["score_basis"] = "REGULATION_90"
@@ -640,6 +702,13 @@ def _association(row: dict[str, Any]) -> str:
         return "IDENTITY_CONFLICT"
     if row["effective_match_status"] == "AMBIGUOUS":
         return "AMBIGUOUS_IDENTITY"
+    if row["effective_match_status"] == "CONTEXTUAL":
+        # External-only association; a provisional record has no qualified result yet.
+        return (
+            "CONTEXTUAL_MATCH"
+            if row["identity_status"] == "VERIFIED"
+            else "CONTEXTUAL_FIXTURE_PROVISIONAL"
+        )
     if row["native_fixture"]:
         return "VERIFIED_PROVIDER_ONLY"
     if _verified_association(row):
@@ -649,7 +718,7 @@ def _association(row: dict[str, Any]) -> str:
 
 def _evaluate(row: dict[str, Any]) -> tuple[str, str | None]:
     association = _association(row)
-    if association not in {"VERIFIED_CANONICAL", "VERIFIED_PROVIDER_ONLY"}:
+    if association not in SETTLEABLE_ASSOCIATIONS:
         return "PENDING", association
     if row["date_status"] not in ("VERIFIED", "NOT_APPLICABLE"):
         return "PENDING", "SOURCE_DATE"
@@ -670,6 +739,42 @@ def _evaluate(row: dict[str, Any]) -> tuple[str, str | None]:
     if row["fixture_status"] != "FINISHED":
         return state, "MATCH_NOT_FINISHED"
     return state, "QUALIFIED_SCORE_UNAVAILABLE"
+
+
+def _association_evidence(row: dict[str, Any]) -> dict[str, Any]:
+    """How the fixture was associated and whether the result may count prospectively."""
+    if row["context_match_id"] is None:
+        basis = "VERIFIED" if _verified_association(row) else None
+        decided_at = row["binding_decided_at"] if row["binding_method"] else None
+        reviewed = row["binding_method"] == "REVIEWED_VERIFIED_PROVIDER_ID"
+    else:
+        basis = "CONTEXTUAL_" + row["context_basis"]
+        decided_at = row["context_decided_at"]
+        reviewed = row["context_basis"] == "REVIEW"
+    return {
+        "association_basis": basis,
+        "context_match_id": str(row["context_match_id"]) if row["context_match_id"] else None,
+        "policy_version": row["policy_version"],
+        "evaluation": _evaluation(row, basis, reviewed, decided_at),
+    }
+
+
+def _evaluation(
+    row: dict[str, Any], basis: str | None, reviewed: bool, decided_at: datetime | None
+) -> str | None:
+    """PROSPECTIVE only for a pre-kickoff capture with a verified source date.
+
+    An outcome-blind policy match may be made after kickoff. A human review after
+    kickoff could see the result, so it is retrospective, as for reviewed bindings.
+    """
+    if basis is None or row["kickoff_at"] is None:
+        return None
+    prospective = (
+        row["date_status"] in ("VERIFIED", "NOT_APPLICABLE")
+        and row["collected_at"] < row["kickoff_at"]
+        and not (reviewed and decided_at is not None and decided_at >= row["kickoff_at"])
+    )
+    return "PROSPECTIVE" if prospective else "RETROSPECTIVE"
 
 
 def _latest_result(cursor: Cursor[dict[str, Any]], prediction_id: UUID) -> dict[str, Any] | None:
@@ -725,6 +830,11 @@ def _append_settlement(
             "settlement_state": state,
         }
         | ({"blocker": reason} if reason else {})
+        | (
+            {"context_fixture_id": str(row["context_fixture_id"])}
+            if row["context_fixture_id"]
+            else {}
+        )
         | ({"native_match_id": row["native_match_id"]} if row["native_fixture"] else {})
     )
     if previous and previous["evidence"].get("result_fingerprint") == fingerprint:
@@ -768,6 +878,7 @@ def _append_settlement(
                     "native_snapshot_id": row["native_snapshot_id"],
                     "native_match_id": row["native_match_id"],
                     "fixture_association": _association(row),
+                    **_association_evidence(row),
                 },
                 sort_keys=True,
             ),

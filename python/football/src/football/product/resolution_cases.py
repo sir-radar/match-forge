@@ -12,6 +12,7 @@ from psycopg.types.json import Jsonb
 from football.product.domain import sha256_json
 from football.product.identity_admission import RetainedIdentityVerifier
 from football.product.resolution_data import data_detail
+from football.product.resolution_external import EXTERNAL_CASES, external_detail
 from football.product.resolution_identity import mapping_detail
 
 MAPPING_CASES = """
@@ -117,7 +118,12 @@ WITH cases AS (
 
 
 def case_page(connection: Connection[Any], view: str, query: dict[str, Any]) -> dict[str, Any]:
-    cte = {"identity": MAPPING_CASES, "fixtures": FIXTURE_CASES, "history": HISTORY_CASES}[view]
+    cte = {
+        "identity": MAPPING_CASES,
+        "fixtures": FIXTURE_CASES,
+        "external": EXTERNAL_CASES,
+        "history": HISTORY_CASES,
+    }[view]
     if view == "history" and review_ready(connection):
         review_sql = """ UNION ALL SELECT case_key,event_id::text,'',split_part(case_key,':',1),
             action,action,reason,recorded_at,'resolution_review_events',to_jsonb(e)
@@ -268,6 +274,8 @@ def case_detail(
         result = fixture_detail(connection, key)
     elif kind == "fixture_record":
         result = fixture_record_detail(connection, key)
+    elif kind == "external_prediction":
+        result = external_detail(connection, key)
     elif kind in {"resource", "dataset"}:
         result = data_detail(connection, root, key)
     elif kind in {"stage", "parity"}:

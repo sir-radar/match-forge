@@ -4,7 +4,7 @@ export type Decision = { case_key: string; action: string; reason: string; candi
 export type Preview = { case_key: string; action: string; detail: RecordValue; candidate: Record<string, string>; reason: string; allowed: boolean; evidence_version: string; qualification: RecordValue };
 export type RecordValue = Record<string, unknown>;
 export type ResolutionPage = { items: RecordValue[]; page: number; page_size: number; total: number; counts: Record<string, number>; groups: RecordValue[]; scope?: string; blockers?: string[] };
-export const resolutionViews = ["identity", "fixtures", "missing", "parity", "cutover", "history"] as const;
+export const resolutionViews = ["identity", "fixtures", "external", "missing", "parity", "cutover", "history"] as const;
 export type ResolutionView = (typeof resolutionViews)[number];
 const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8080";
 

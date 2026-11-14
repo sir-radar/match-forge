@@ -228,6 +228,16 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Classify retained predictions in a read-only transaction",
     )
+    match_audit = commands.add_parser(
+        "external-match-audit",
+        help="Read-only census of external prediction associations under the contextual policy",
+    )
+    match_audit.add_argument("--output", type=Path, required=True)
+    backfill = commands.add_parser(
+        "external-contextual-backfill",
+        help="Apply contextual matching and settlement to a bounded batch of open predictions",
+    )
+    backfill.add_argument("--limit", type=int, required=True)
     review = commands.add_parser("provider-mapping-review")
     review.add_argument("--provider", choices=("fotmob", "pitchapi"))
     review.add_argument("--limit", type=int, default=100)
@@ -249,10 +259,17 @@ def main(argv: list[str] | None = None) -> int:
         return {"work-metrics": _run_work_metrics, "domain-metrics": _run_domain_metrics}[
             args.command
         ](args)
-    if args.command in {"external-predictions", "settle-external-predictions"}:
+    if args.command in {
+        "external-predictions",
+        "settle-external-predictions",
+        "external-match-audit",
+        "external-contextual-backfill",
+    }:
         return {
             "external-predictions": _run_external_predictions,
             "settle-external-predictions": _run_external_settlement,
+            "external-match-audit": _run_external_match_audit,
+            "external-contextual-backfill": _run_external_contextual_backfill,
         }[args.command](args)
     if args.command == "refresh-competition-geography":
         return _run_competition_geography(args)
@@ -1115,6 +1132,32 @@ def _run_external_settlement(args: argparse.Namespace) -> int:
         )
     )
     return 1 if failed else 0
+
+
+def _run_external_match_audit(args: argparse.Namespace) -> int:
+    from football.product.external_match_audit import census
+
+    with psycopg.connect(args.database_url) as connection:
+        connection.read_only = True
+        connection.isolation_level = psycopg.IsolationLevel.REPEATABLE_READ
+        with connection.transaction():
+            result = census(connection)
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    result.pop("predictions")
+    for key in ("by_competition", "by_prediction_date"):
+        result.pop(key)
+    print(json.dumps(result, sort_keys=True))
+    return 0
+
+
+def _run_external_contextual_backfill(args: argparse.Namespace) -> int:
+    from football.product.external_prediction_recovery import backfill_contextual_associations
+
+    with psycopg.connect(args.database_url) as connection:
+        result = backfill_contextual_associations(connection, datetime.now(UTC), limit=args.limit)
+    print(json.dumps(result, sort_keys=True))
+    return 0
 
 
 def _run_external_predictions(args: argparse.Namespace) -> int:

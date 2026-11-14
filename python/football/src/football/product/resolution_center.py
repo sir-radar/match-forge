@@ -21,7 +21,7 @@ from football.product.resolution_data import missing_page
 from football.product.resolution_migration import migration_page
 from football.product.resolution_recovery import run_pending_recovery
 
-VIEWS = {"identity", "fixtures", "missing", "parity", "cutover", "history", "detail"}
+VIEWS = {"identity", "fixtures", "external", "missing", "parity", "cutover", "history", "detail"}
 
 ACTIONS = {
     "APPROVE",
@@ -117,7 +117,7 @@ def read_view(
     validate_query(query)
     if view not in VIEWS:
         raise ValueError("unsupported resolution view")
-    if view in {"identity", "fixtures", "history"}:
+    if view in {"identity", "fixtures", "external", "history"}:
         return case_page(connection, view, query)
     if view == "missing":
         return missing_page(connection, root, query)

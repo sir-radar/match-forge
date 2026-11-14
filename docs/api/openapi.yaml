@@ -552,7 +552,7 @@ paths:
         Resolution decisions and cutover actions are not enabled by this route.
       security: [ { AdminCLI: [] }, { AdminBrowserOrigin: [] } ]
       parameters:
-        - { name: view, in: path, required: true, schema: { type: string, enum: [identity, fixtures, missing, parity, cutover, history, detail] } }
+        - { name: view, in: path, required: true, schema: { type: string, enum: [identity, fixtures, external, missing, parity, cutover, history, detail] } }
         - { $ref: '#/components/parameters/AdminPage' }
         - { $ref: '#/components/parameters/AdminPageSize' }
         - { name: q, in: query, schema: { type: string, maxLength: 256 } }
@@ -1323,6 +1323,7 @@ components:
         selection: {"type": "string"}
         match_status: {"type": "string"}
         fixture_association: {type: string, description: Latest verified or blocked fixture association when recorded by settlement validation.}
+        association: {$ref: '#/components/schemas/ExternalAssociation'}
         matchforge_probability: {"type": ["number", "null"]}
         comparison_status: {type: string, enum: [READY, PENDING, FAILED, UNSUPPORTED, NO_FORECAST, UNMATCHED, QUARANTINED]}
         agreement: {"type": "string"}
@@ -1332,6 +1333,27 @@ components:
         result_score_basis: {"type": ["string", "null"]}
         result_provider: {"type": ["string", "null"]}
         result_updated_at: {"type": ["string", "null"], "format": "date-time"}
+    ExternalAssociation:
+      type: object
+      additionalProperties: false
+      description: >-
+        How the pick is linked to a MatchForge fixture. VERIFIED uses a verified native
+        mapping. CONTEXTUAL_MATCH comes from EXTERNAL_PREDICTION_CONTEXTUAL_MATCHING_V1 or an
+        owner review; it is external-only and never changes canonical fixture identity.
+      required: [classification, reason, basis, policy_version, decided_at, candidate_count, fixture_home_team, fixture_away_team, fixture_competition, settlement_eligible, settlement_blocker, evaluation]
+      properties:
+        classification: {type: string, enum: [VERIFIED, CONTEXTUAL_MATCH, NEEDS_REVIEW, UNMATCHED]}
+        reason: {type: string, description: Policy reason such as UNIQUE_SAME_DAY, MULTIPLE_CANDIDATES or NO_CORRESPONDING_FIXTURE; NOT_EVALUATED before matching runs.}
+        basis: {type: [string, 'null'], enum: [POLICY, REVIEW, null]}
+        policy_version: {type: [string, 'null']}
+        decided_at: {type: [string, 'null'], format: date-time}
+        candidate_count: {type: integer, minimum: 0}
+        fixture_home_team: {type: [string, 'null']}
+        fixture_away_team: {type: [string, 'null']}
+        fixture_competition: {type: [string, 'null']}
+        settlement_eligible: {type: boolean}
+        settlement_blocker: {type: [string, 'null']}
+        evaluation: {type: [string, 'null'], enum: [PROSPECTIVE, RETROSPECTIVE, null], description: RETROSPECTIVE results never count as verified prospective accuracy.}
     ExternalPredictionSource:
       type: object
       additionalProperties: false
