@@ -6,12 +6,14 @@ scores are never selected, so the association cannot depend on the outcome.
 
 from __future__ import annotations
 
+import json
 from datetime import UTC, date, datetime, time
 from typing import Any
 from uuid import UUID
 
 from psycopg import Cursor
 
+from football.product.domain import sha256_json
 from football.product.external_match_context import country_key
 from football.product.external_prediction_matching import (
     CandidateFixture,
@@ -128,3 +130,121 @@ def _candidate(row: dict[str, Any]) -> CandidateFixture:
         resolution_status=row["resolution_status"],
         earlier_kickoffs=tuple(row["earlier_kickoffs"]),
     )
+
+
+CURRENT_CONTEXT = """
+SELECT * FROM football.external_prediction_context_current WHERE prediction_id=%s
+"""
+
+
+def refresh_contextual_association(
+    cursor: Cursor[dict[str, Any]], prediction_id: UUID, *, retry: bool = False
+) -> bool:
+    """Append a policy decision when it differs from the current one.
+
+    Runs inside the caller's worker transaction, which holds the prediction's
+    refresh lock. A verified association is never touched, and an owner review
+    holds until the owner asks for a retry.
+    """
+    effective = cursor.execute(
+        "SELECT effective_match_status FROM football.external_prediction_effective "
+        "WHERE prediction_id=%s",
+        (prediction_id,),
+    ).fetchone()
+    if effective is None or effective["effective_match_status"] == "MATCHED":
+        return False
+    current = cursor.execute(CURRENT_CONTEXT, (prediction_id,)).fetchone()
+    if current is not None and current["basis"] == "REVIEW" and not retry:
+        return False
+    source, decision = contextual_decision(cursor, prediction_id)
+    evidence = decision.evidence(source)
+    return _append(cursor, prediction_id, current, "POLICY", decision.classification, evidence)
+
+
+def review_contextual_association(
+    cursor: Cursor[dict[str, Any]],
+    prediction_id: UUID,
+    fixture_id: UUID | None,
+    *,
+    reason: str,
+    reviewer: str,
+) -> bool:
+    """Record an owner's association (a retained candidate) or rejection.
+
+    The review is external-only: it changes no canonical identity, mapping or history.
+    """
+    if not reason.strip():
+        raise ValueError("a review reason is required")
+    current = cursor.execute(CURRENT_CONTEXT, (prediction_id,)).fetchone()
+    if current is None:
+        raise ValueError("no contextual decision to review; run matching first")
+    candidates = {str(item) for item in current["candidate_fixture_ids"]}
+    if fixture_id is not None and str(fixture_id) not in candidates:
+        raise ValueError("choose one of the retained candidate fixtures")
+    evidence = {
+        **current["evidence"],
+        "classification": "CONTEXTUAL_MATCH" if fixture_id else "UNMATCHED",
+        "reason": "REVIEWED_ASSOCIATION" if fixture_id else "REVIEWED_REJECTION",
+        "fixture_id": str(fixture_id) if fixture_id else None,
+        "review": {
+            "action": "ASSOCIATE" if fixture_id else "REJECT",
+            "previous_context_match_id": str(current["context_match_id"]),
+        },
+    }
+    if fixture_id:
+        chosen = next(
+            c for c in evidence["candidates"] if c["effective_fixture_id"] == str(fixture_id)
+        )
+        evidence["date_relation"] = chosen["date_relation"]
+    else:
+        evidence["date_relation"] = None
+    return _append(
+        cursor,
+        prediction_id,
+        current,
+        "REVIEW",
+        evidence["classification"],
+        evidence,
+        review=(reason.strip(), reviewer),
+    )
+
+
+def _append(
+    cursor: Cursor[dict[str, Any]],
+    prediction_id: UUID,
+    current: dict[str, Any] | None,
+    basis: str,
+    classification: str,
+    evidence: dict[str, Any],
+    *,
+    review: tuple[str, str] | None = None,
+) -> bool:
+    digest = sha256_json(evidence)
+    if current is not None and current["evidence_sha256"] == digest and current["basis"] == basis:
+        return False
+    # Members and representatives both reopen this prediction when their resolution changes.
+    candidates = sorted(
+        {c["fixture_id"] for c in evidence["candidates"]}
+        | {c["effective_fixture_id"] for c in evidence["candidates"]}
+    )
+    cursor.execute(
+        """INSERT INTO football.external_prediction_context_matches
+        (prediction_id,previous_context_match_id,policy_version,basis,classification,reason,
+         fixture_id,candidate_fixture_ids,evidence,evidence_sha256,review_reason,reviewer)
+        VALUES(%s,%s,%s,%s,%s,%s,%s,%s::uuid[],%s::jsonb,%s,%s,%s)""",
+        (
+            prediction_id,
+            current["context_match_id"] if current else None,
+            evidence["policy_version"],
+            basis,
+            classification,
+            evidence["reason"],
+            evidence["fixture_id"],
+            candidates,
+            json.dumps(evidence, sort_keys=True),
+            digest,
+            review[0] if review else None,
+            review[1] if review else None,
+        ),
+    )
+    return True

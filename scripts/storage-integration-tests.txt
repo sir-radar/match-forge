@@ -72,6 +72,7 @@ browser tests/integration/test_product_score_bucket_upgrade.py
 storage tests/integration/test_product_analytics.py
 storage tests/integration/test_public_reports.py
 storage tests/integration/test_external_prediction_recovery.py
+storage tests/integration/test_external_contextual_matching.py
 browser tests/integration/test_remediation_browser.py
 storage tests/integration/test_serving_limits.py
 storage tests/integration/test_result_recovery.py
