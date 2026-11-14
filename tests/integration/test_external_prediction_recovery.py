@@ -634,6 +634,44 @@ def test_manual_settlement_revisits_completed_work_across_entire_history(report_
         ).fetchone() == (130,)
 
 
+def test_admin_settlement_worker_runs_inside_the_sync_run_fence(report_database, monkeypatch):
+    """The Go runner gives every worker session the sync-run identity; such a
+    session may not write sync-run rows, so settlement must not report progress there."""
+    from football.product.cli import main
+
+    with psycopg.connect(report_database) as c:
+        c.execute(
+            """INSERT INTO football.external_predictions
+            (prediction_id,revision_sha256,source_code,source_page,prediction_date,
+             original_date_text,collected_at,fixture_id,competition_text,home_team_text,
+             away_team_text,market,selection,match_status)
+            SELECT id,encode(sha256(convert_to(id::text,'UTF8')),'hex'), 'manual_import',
+                'archive/'||id,DATE '2001-01-01','2001-01-01',TIMESTAMPTZ '2001-01-01 12:00Z',
+                %s,'Test','Home','Away','RESULT_1X2','AWAY_WIN','MATCHED'
+            FROM (SELECT uuidv7() AS id FROM generate_series(1,129)) rows""",
+            (FIXTURE,),
+        )
+        run_id = str(uuid4())
+        c.execute(
+            """INSERT INTO football.product_sync_runs
+            (run_id,sync_type,status,started_at,worker_id,heartbeat_at)
+            VALUES(%s,'EXTERNAL_PREDICTION_SETTLEMENT','RUNNING',clock_timestamp(),%s,
+                   clock_timestamp())""",
+            (run_id, run_id),
+        )
+        c.commit()
+    monkeypatch.setenv("MATCHFORGE_SYNC_RUN_ID", run_id)
+    monkeypatch.setenv(
+        "PGOPTIONS", f"-c matchforge.sync_run_id={run_id} -c matchforge.sync_worker_id={run_id}"
+    )
+    assert main(["--database-url", report_database, "settle-external-predictions"]) == 0
+    monkeypatch.delenv("PGOPTIONS")
+    with psycopg.connect(report_database) as c:
+        assert c.execute(
+            "SELECT count(*) FROM football.external_prediction_latest_results"
+        ).fetchone() == (130,)
+
+
 def test_manual_settlement_reports_conflicts_and_preserves_finalized_revision(report_database):
     from football.product.external_prediction_recovery import reconcile_external_predictions
 
