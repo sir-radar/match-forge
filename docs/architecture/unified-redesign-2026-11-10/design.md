@@ -227,7 +227,11 @@ duration before making dated requests, keeping the original snapshot and
 acquisition time. Correction discovery rechecks a finished, mapped result 1, 7
 and 28 days after kickoff and then stops, so unchanged history is not
 downloaded again. An operator recheck of a verified fixture is always
-available.
+available. A correction published after 28 days is not found automatically.
+P09 owns that discovery: it selects fixtures or dates from source revision,
+fingerprint or reconciliation evidence and submits them as ordinary fixture or
+date requests, which record `CORRECTED` and append the history decision
+without a new scheduler.
 
 Only the established result owners publish scores or qualify history. A newer
 API-Football regulation-time correction uses the existing versioned history

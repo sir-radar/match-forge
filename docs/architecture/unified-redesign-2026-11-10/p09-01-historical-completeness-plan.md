@@ -61,6 +61,14 @@ with no recurring route
 Compare those cohorts after pre-P03 rollout. Keep unavailable sources and nonterminal responses visible
 and reuse the existing worker when new evidence becomes eligible.
 
+P09-01 also owns correction discovery for results older than the pre-P03
+schedule (1, 7 and 28 days after kickoff). Select candidates from provider
+revision or fingerprint changes and historical reconciliation, not by polling
+every match, and submit each as a pre-P03 fixture or date request
+(`POST /v1/admin/sync/result-recovery`). That path already records `CORRECTED`
+and appends the history decision for any age
+(`test_correction_after_the_schedule_is_reingested_by_a_targeted_request`).
+
 ### Phase 5: league-season pairing gaps (C7)
 
 - **Select:** `league_coverage` records in state `CANDIDATE_MISSING_MATCHES`.

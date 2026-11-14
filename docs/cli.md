@@ -167,7 +167,10 @@ whatever MatchForge's own retry schedule says, but never before a provider's
 retry deadline. `--limit` bounds source dates per provider (default eight); half
 go to the newest due dates and half to the longest-waiting ones.
 `MATCHFORGE_RESULT_RECOVERY_INTERVAL` controls unattended submission. A zero
-interval disables scheduling.
+interval disables scheduling. Start at `30m` after rollout: recent fixtures are
+retried no sooner than every 15 minutes, and API-Football's daily quota, not
+the interval, limits backlog progress
+([measurements](evidence/pre-p03-pr230-integration-2026-11-14.md#capacity)).
 
 The summary counts outcomes, not fetched resources: `recovered`, `corrected`,
 `verified_unchanged`, `unresolved` and `coordinated` (covered by a concurrent
