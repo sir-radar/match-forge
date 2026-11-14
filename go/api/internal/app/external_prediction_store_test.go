@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"slices"
 	"testing"
 	"time"
 )
@@ -210,13 +212,12 @@ func TestExternalContextualAssociationDatabase(t *testing.T) {
 	}
 	item := page.Predictions[0]
 	association := item.Association
-	if item.MatchStatus != "CONTEXTUAL" || association.Classification != "CONTEXTUAL_MATCH" ||
-		association.Reason != "UNIQUE_SAME_DAY" || !association.SettlementEligible ||
-		association.Basis == nil || *association.Basis != "POLICY" ||
-		association.Evaluation == nil || *association.Evaluation != "PROSPECTIVE" ||
-		association.FixtureHomeTeam == nil || *association.FixtureHomeTeam != "Home" ||
-		item.SettlementState != "WON" {
-		t.Fatalf("contextual association not exposed: %+v %+v", item, association)
+	got := []string{item.MatchStatus, association.Classification, association.Reason,
+		fmt.Sprint(association.SettlementEligible), valueOrEmpty(association.Basis),
+		valueOrEmpty(association.Evaluation), valueOrEmpty(association.FixtureHomeTeam), item.SettlementState}
+	want := []string{"CONTEXTUAL", "CONTEXTUAL_MATCH", "UNIQUE_SAME_DAY", "true", "POLICY", "PROSPECTIVE", "Home", "WON"}
+	if !slices.Equal(got, want) {
+		t.Fatalf("contextual association not exposed: got %v want %v", got, want)
 	}
 	sources, err := store.ExternalPredictionSources(ctx, ExternalPredictionFilters{Source: "manual_import"})
 	if err != nil || len(sources) != 1 || sources[0].SettledSelections != 1 || sources[0].ProspectiveSelections != 1 {
