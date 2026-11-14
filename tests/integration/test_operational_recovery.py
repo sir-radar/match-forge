@@ -368,26 +368,35 @@ def test_independent_result_recovery_retries_and_keeps_source_score_basis(
 
     blocked = recover_provider_results(sync, fetch, normalize_pitchapi_matches, limit=1)
     assert blocked["failure_reasons"] == {"PROVIDER_RETRY_AFTER": 1}
+    assert blocked["outcomes"] == {"PROVIDER_RATE_LIMITED": 1} and blocked["recovered"] == 0
+    # The provider deadline lives with the fixture; the shared date lease is released.
     assert connection.execute(
-        """SELECT next_attempt_at,last_error FROM football.product_provider_refresh_state
-           WHERE provider_code='pitchapi' AND resource_name=%s""",
-        (f"result-recovery-{kickoff.date()}",),
-    ).fetchone() == (until, "PROVIDER_RETRY_AFTER")
+        """SELECT s.outcome,s.next_check_at,r.next_attempt_at<=clock_timestamp(),r.last_error
+           FROM football.product_result_recovery_state s
+           JOIN football.product_provider_refresh_state r
+             ON r.provider_code=s.provider_code AND r.resource_name=%s
+           WHERE s.fixture_id=%s AND s.provider_code='pitchapi'""",
+        (f"result-recovery-{kickoff.date()}", fixture),
+    ).fetchone() == ("PROVIDER_RATE_LIMITED", until, True, "PROVIDER_RETRY_AFTER")
     connection.commit()
+    # An operator request is told about the genuine provider deadline and sends nothing.
     skipped = recover_provider_results(
         sync, fetch, normalize_pitchapi_matches, limit=1, fixture_id=fixture
     )
     assert skipped["attempted_requests"] == 0 and calls == 1
+    assert skipped["fixtures"] == {str(fixture): "PROVIDER_RATE_LIMITED"}
+    assert skipped["deferred_until"] == until.isoformat()
     connection.execute(
-        """UPDATE football.product_provider_refresh_state SET next_attempt_at=now()
-           WHERE provider_code='pitchapi' AND resource_name=%s""",
-        (f"result-recovery-{kickoff.date()}",),
+        """UPDATE football.product_result_recovery_state SET next_check_at=now()
+           WHERE fixture_id=%s AND provider_code='pitchapi'""",
+        (fixture,),
     )
     connection.commit()
     completed = recover_provider_results(
         sync, fetch, normalize_pitchapi_matches, limit=1, fixture_id=fixture
     )
     assert completed["updated"] == 1 and calls == 2
+    assert completed["fixtures"] == {str(fixture): "RECOVERED"} and completed["recovered"] == 1
     assert connection.execute(
         """SELECT status,home_score,away_score,result_score_basis
            FROM football.product_fixtures WHERE fixture_id=%s""",
@@ -468,7 +477,9 @@ def test_api_football_recovers_after_quota_reset_and_checks_native_identity(
     assert blocked["failure_reasons"] == {"PROVIDER_COOLDOWN": 1}
     still_blocked = recover_api_football_results(sync, refresh, limit=1, day=None, fixture_id=None)
     assert still_blocked["attempted_requests"] == 0 and calls == 1
-    connection.execute("UPDATE football.product_provider_refresh_state SET next_attempt_at=now()")
+    assert still_blocked["selected_dates"] == 0
+    # Quota reset: the provider deadline recorded on the fixture has passed.
+    connection.execute("UPDATE football.product_result_recovery_state SET next_check_at=now()")
     connection.commit()
     fixture["fixture"]["status"] = {"short": "FT"}
     fixture["goals"] = {"home": 2, "away": 0}
@@ -478,8 +489,8 @@ def test_api_football_recovers_after_quota_reset_and_checks_native_identity(
         "SELECT status,home_score,away_score,result_score_basis FROM football.product_fixtures"
     ).fetchone() == ("FINISHED", 2, 0, "REGULATION_90")
 
+    assert finished["recovered"] == 1
     cutoff = connection.execute("SELECT clock_timestamp()").fetchone()[0]
-    connection.execute("UPDATE football.product_provider_refresh_state SET next_attempt_at=now()")
     connection.commit()
     fetched_at += timedelta(days=1)
     fixture["goals"] = {"home": 2, "away": 2}
@@ -487,6 +498,9 @@ def test_api_football_recovers_after_quota_reset_and_checks_native_identity(
         sync, refresh, limit=1, day=None, fixture_id=fixture_id
     )
     assert corrected["updated"] == 1 and calls == 3
+    # An operator recheck of a verified result is not suppressed by the recovery
+    # that just ran, and it reports the correction it found.
+    assert corrected["fixtures"] == {str(fixture_id): "CORRECTED"}
     assert connection.execute(
         """SELECT home_goals,away_goals,decided_at<=%s
            FROM football.product_match_history_decisions

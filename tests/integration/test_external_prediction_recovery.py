@@ -1162,3 +1162,14 @@ def test_result_recovery_settles_without_internal_forecast():
         ).fetchall() == [("WON",)]
         connection.commit()
         assert finish_result_recovery(connection)["settled_external_predictions"] == 0
+        # A recovered correction re-evaluates the prediction append-only, once.
+        connection.execute(
+            "UPDATE football.product_fixtures SET home_score=1 WHERE fixture_id=%s", (FIXTURE,)
+        )
+        connection.commit()
+        assert finish_result_recovery(connection)["settled_external_predictions"] == 1
+        assert finish_result_recovery(connection)["settled_external_predictions"] == 0
+        assert connection.execute(
+            """SELECT settlement_state FROM football.external_prediction_result_revisions
+               ORDER BY revision_sequence"""
+        ).fetchall() == [("WON",), ("LOST",)]

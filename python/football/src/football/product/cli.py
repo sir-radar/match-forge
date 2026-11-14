@@ -48,9 +48,10 @@ from football.product.public_reports import (
     run_pending_public_reports,
 )
 from football.product.result_recovery import (
-    finish_result_recovery,
+    RecoveryRequest,
     recover_api_football_results,
     recover_provider_results,
+    summarize_recovery,
 )
 from football.product.sync import HistoryWorkerFactory, ProductSync
 from football.providers.base import ProviderFetchError, UrllibHttpTransport
@@ -604,12 +605,9 @@ def _recover_results(
             ),
             errors,
         )
-    return {
-        "status": "COMPLETED_WITH_ERRORS" if errors else "COMPLETED",
-        "providers": results,
-        "errors": errors,
-        **finish_result_recovery(connection),
-    }
+    return summarize_recovery(
+        connection, RecoveryRequest(args.limit, args.date, args.fixture_id), results, errors
+    )
 
 
 def _run_competition_geography(args: argparse.Namespace) -> int:

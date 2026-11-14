@@ -594,6 +594,15 @@ func syncCompletion(summary map[string]interface{}, request SyncRequest) (string
 			return "FAILED", &message
 		}
 	}
+	if summary["status"] == "COMPLETED_UNRESOLVED" {
+		// The run worked, but the result an operator asked for was not recovered.
+		// Never report that as success; the summary names the outcome.
+		message := "requested result was not recovered"
+		if outcome, _ := summary["request_outcome"].(string); outcome != "" {
+			message += ": " + outcome
+		}
+		return "FAILED", &message
+	}
 	if summary["status"] != "COMPLETED_WITH_ERRORS" && summary["status"] != "FAILED" {
 		return "SUCCEEDED", nil
 	}
