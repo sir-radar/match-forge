@@ -1,21 +1,18 @@
 # Pre-P03 provider and result recovery handoff
 
-**Verdict: PRE_P03_BLOCKED.** The code is integrated with PR #230 and passes local checks; `PRE_P03_CODE_READY` needs green CI on the final head.
-`PRE_P03_OPERATING_READY` and
-`PRE_P03_READY` need the authorizations under
-[Outstanding owner decisions](#14-outstanding-owner-decisions).
+**Verdict: PRE_P03_BLOCKED.** The merged code is `PRE_P03_CODE_READY` (PR #231 merged as `6e4b85c`, CI green). The operating rollout began on 14 November under `AUTHORIZE_PRE_P03_OPERATING_ROLLOUT_V1` and stopped on two defects; see [13. Rollout](#13-rollout) and the [rollout evidence](../../evidence/pre-p03-operating-rollout-2026-11-14.json).
 
 | State | Status |
 | --- | --- |
 | Implemented | Yes, on `ft/pre-p03-result-recovery` |
 | Integrated with PR #230 | Yes, rebased onto `bdb75ab` |
 | Tested locally | Yes; full integration failures are environment or ordering only |
-| Verified in CI | Pending on the final head; see PR #231 |
+| Verified in CI | Yes, on merge `6e4b85c` |
 | Migration and preservation rehearsed on populated data | Yes, on an existing isolated restore |
 | Recovery rehearsed on populated data | No; needs an isolated evidence root |
-| Merged | No |
-| Deployed or activated | No |
-| Verified against operating data | Read-only census only |
+| Merged | Yes, `6e4b85c` |
+| Deployed or activated | Migration applied and release running; scheduled recovery off |
+| Verified against operating data | Fixture, date and bounded batch runs on 14 November |
 
 Evidence: the [branch verification record](../../evidence/pre-p03-recovery-verification-2026-11-14.md),
 the [PR #230 integration record](../../evidence/pre-p03-pr230-integration-2026-11-14.md)
@@ -115,20 +112,49 @@ limits, not recovery defects.
 
 ## 13. Rollout
 
-Not started. Preflight, all of which must hold first:
+**14 November: partially applied, stopped.** Owner decision
+`AUTHORIZE_PRE_P03_OPERATING_ROLLOUT_V1`
+([record](../../evidence/owner-decision-authorize-pre-p03-operating-rollout-2026-11-14.json),
+[evidence](../../evidence/pre-p03-operating-rollout-2026-11-14.json)).
+
+- Backup: a snapshot-consistent logical dump (`ef1ea98b…`) restored in an
+  isolated cluster, with P02 hashes identical to operating. The NTC drive was
+  disconnected; the last Restic point is `02376823` (12 November).
+- Migration `202611140100_result_recovery` applied at 04:23 UTC in 6.3 s, none
+  pending, with `MATCHFORGE_RESULT_RECOVERY_INTERVAL=0`.
+- Recovery: one fixture (score basis recovered), one UTC date (27 recovered
+  with one API-Football request) and one bounded batch (4 same-day results).
+  That is 32 results and 31 newly qualified history rows from validated
+  snapshots. Every protected-row change was attributed to these runs, and P02
+  hashes are unchanged.
+- Stopped:
+  1. Admin external settlement fails inside the worker fence before settling
+     anything; the fix is PR #233.
+  2. API-Football rejects date requests outside a narrow window, and 7 of 8
+     batch requests failed while spending quota. A failed date is retried after
+     5 minutes, backing off to at most 1 hour, so a `30m` schedule would exhaust
+     the 100-request day. Scheduled recovery must stay off until this is fixed.
+- Admin hid "Settle Finished Predictions" until the status request finished;
+  the fix is PR #232.
+- Limits observed: 29 of 38 retained-evidence candidates have a provider
+  kickoff that moved from the canonical one, and their replay is declined
+  without a recorded reason. Some routed fixtures lack trusted team mappings
+  (`IDENTITY_UNRESOLVED`), so "routed" overstates what is recoverable now.
+
+Original preflight list:
 
 - [x] PR #230 merged (`bdb75ab`).
 - [x] PR #231 integrated against that `main`.
-- [ ] CI green on the final head.
-- [ ] PR #231 merged; the merge commit is the build to deploy (API, web, worker).
+- [x] CI green on the final head.
+- [x] PR #231 merged; the merge commit is the build to deploy (API, web, worker).
 - [x] Migration chain verified from `202611130600`.
-- [ ] Fresh operating backup taken and independently restored under the
-      [recovery policy](../../recovery.md).
-- [ ] P02 preservation baseline and the 21-table row hashes captured on
+- [x] Fresh operating backup taken and independently restored under the
+      [recovery policy](../../recovery.md) (logical dump; not a Restic point).
+- [x] P02 preservation baseline and the 21-table row hashes captured on
       operating data.
-- [ ] Runtime versions, Git SHA and migration status recorded.
-- [ ] Active work and leases audited; no bulk-lane run active.
-- [ ] Provider budgets reviewed for the day.
+- [x] Runtime versions, Git SHA and migration status recorded.
+- [x] Active work and leases audited; no bulk-lane run active.
+- [x] Provider budgets reviewed for the day.
 - [x] Rollback compatibility documented above.
 
 Activation, after authorization:
@@ -156,6 +182,15 @@ Activation, after authorization:
 
 ## 14. Outstanding owner decisions
 
+Items 2 and 3 below were decided on 14 November. Open now:
+
+- review and merge PR #232 and PR #233;
+- choose the API-Football recovery fix (skip or long-defer dates outside the
+  plan's window, and record the rejection text);
+- then resume the rollout from settlement verification and scheduled recovery.
+
+The list as written before the rollout:
+
 1. **Isolated evidence root for the populated recovery pass.** Authorize an
    isolated copy (or copy-on-write clone) of `FOOTBALL_DATA_ROOT` for the reused
    restore, so a bounded recovery pass (one fixture, one date, then up to eight
@@ -166,8 +201,8 @@ Activation, after authorization:
 3. **Operating rollout:** apply the migration, deploy the merge build and run
    the activation steps above.
 
-`docs/project-status.json` still records `PRE_P03_BLOCKED` and
-`NOT_AUTHORIZED_OR_APPLIED`; it changes only with those decisions.
+`docs/project-status.json` records `PRE_P03_BLOCKED` with operating rollout
+`PARTIALLY_APPLIED_STOPPED`.
 
 ## 15. P03 readiness
 
