@@ -158,6 +158,18 @@ The case keys for the Resolution Center are in the
 [evidence](../../evidence/pre-p03-recovery-batches-and-identity-2026-11-14.json).
 Scheduled recovery needs the live-sync reserve in PR #237 first.
 
+**14 November, identity remediation.**
+
+- Cross-provider discovery (PR #239) finds 0 pure mapping gaps on operating;
+  the 36 audit candidates were duplicate twins or moved kickoffs.
+- Under `AUTHORIZE_PRE_P03_TIER1_DUPLICATE_RESOLUTION_V1`, 17 of the 21
+  previewed tier-1 duplicates were resolved through the Resolution Center:
+  16 candidates resolved, 15 with qualified history.
+- The other 4 were refused correctly: 2 twins were already quarantined, and 2
+  are three-way duplicates blocked by the history identity guard. Their FotMob
+  follow-ups preview QUALIFIED.
+- See the [evidence](../../evidence/pre-p03-identity-remediation-2026-11-14.json).
+
 Original preflight list:
 
 - [x] PR #230 merged (`bdb75ab`).

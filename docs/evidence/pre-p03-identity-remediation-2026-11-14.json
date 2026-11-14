@@ -1,0 +1,262 @@
+{
+ "contract": "PreP03IdentityRemediationEvidenceV1",
+ "recorded_at": "2026-11-14T08:45:00Z",
+ "verdict": "PRE_P03_BLOCKED",
+ "cross_provider_discovery": {
+  "pr": "https://github.com/sir-radar/match-forge/pull/239",
+  "root_cause": "recovery selected provider work only for fixtures already mapped to that provider",
+  "operating_discoverable_now": {
+   "fotmob": 0,
+   "pitchapi": 0
+  },
+  "query_seconds": {
+   "fotmob": 12.5,
+   "pitchapi": 0.1
+  },
+  "audit_36": "looser estimate; under the resolver's rules the cases are duplicate twins or kickoffs moved beyond the 30-minute tolerance"
+ },
+ "tier1": {
+  "decision_id": "AUTHORIZE_PRE_P03_TIER1_DUPLICATE_RESOLUTION_V1",
+  "previewed": 21,
+  "qualified": 21,
+  "applied": 17,
+  "candidates_resolved": 16,
+  "history_qualified": 15,
+  "score_only_no_history": {
+   "candidate": "b1addf66",
+   "reason": "PitchAPI result has no stated duration (UNKNOWN basis, SOURCE_DATA_INCOMPLETE); policy keeps it out of history"
+  },
+  "refused": [
+   {
+    "case": "fixture:pitchapi:m_3xh6Zh",
+    "reason": "twin AMBIGUOUS_QUARANTINED since 2026-10-22"
+   },
+   {
+    "case": "fixture:pitchapi:m_1inyoQ",
+    "reason": "twin AMBIGUOUS_QUARANTINED since 2026-10-22"
+   },
+   {
+    "case": "fixture:pitchapi:m_1hdWAG",
+    "reason": "history identity guard: three-way duplicate; FotMob 1000014606 fixture 16964f8a already holds history 2-1",
+    "follow_up_preview": "fixture:fotmob:1000014606 QUALIFIED"
+   },
+   {
+    "case": "fixture:pitchapi:m_0V2Cm4",
+    "reason": "history identity guard: three-way duplicate; FotMob 5803626 fixture fed5885f already holds history 4-0",
+    "follow_up_preview": "fixture:fotmob:5803626 QUALIFIED"
+   }
+  ],
+  "error_reporting_finding": "resolution_center maps every database error, including the history identity guard, to 503 'Resolution evidence unavailable or busy'",
+  "cases": [
+   {
+    "case_key": "fixture:fotmob:5109656",
+    "candidate": "06cfc79b",
+    "mapped_to_candidate": true,
+    "twin_resolution": "DUPLICATE_RESOLVED",
+    "candidate_now": "FINISHED 1-0",
+    "history_rows": 1,
+    "still_recovery_candidate": false
+   },
+   {
+    "case_key": "fixture:fotmob:5071412",
+    "candidate": "06f34576",
+    "mapped_to_candidate": true,
+    "twin_resolution": "DUPLICATE_RESOLVED",
+    "candidate_now": "FINISHED 3-1",
+    "history_rows": 1,
+    "still_recovery_candidate": false
+   },
+   {
+    "case_key": "fixture:fotmob:5908661",
+    "candidate": "0a2e0fb9",
+    "mapped_to_candidate": true,
+    "twin_resolution": "DUPLICATE_RESOLVED",
+    "candidate_now": "FINISHED 4-2",
+    "history_rows": 1,
+    "still_recovery_candidate": false
+   },
+   {
+    "case_key": "fixture:fotmob:5908658",
+    "candidate": "12358f6c",
+    "mapped_to_candidate": true,
+    "twin_resolution": "DUPLICATE_RESOLVED",
+    "candidate_now": "FINISHED 1-4",
+    "history_rows": 1,
+    "still_recovery_candidate": false
+   },
+   {
+    "case_key": "fixture:fotmob:5190759",
+    "candidate": "2924e27c",
+    "mapped_to_candidate": true,
+    "twin_resolution": "DUPLICATE_RESOLVED",
+    "candidate_now": "FINISHED 1-0",
+    "history_rows": 1,
+    "still_recovery_candidate": false
+   },
+   {
+    "case_key": "fixture:fotmob:5071416",
+    "candidate": "4c5d181f",
+    "mapped_to_candidate": true,
+    "twin_resolution": "DUPLICATE_RESOLVED",
+    "candidate_now": "FINISHED 3-3",
+    "history_rows": 1,
+    "still_recovery_candidate": false
+   },
+   {
+    "case_key": "fixture:pitchapi:m_1hdWAG",
+    "candidate": "4cd7c6e5",
+    "mapped_to_candidate": false,
+    "twin_resolution": "",
+    "candidate_now": "FINISHED 2-1",
+    "history_rows": 0,
+    "still_recovery_candidate": true
+   },
+   {
+    "case_key": "fixture:pitchapi:m_3xh6Zh",
+    "candidate": "9aae99b6",
+    "mapped_to_candidate": false,
+    "twin_resolution": "AMBIGUOUS_QUARANTINED",
+    "candidate_now": "FINISHED 1-1",
+    "history_rows": 0,
+    "still_recovery_candidate": true
+   },
+   {
+    "case_key": "fixture:fotmob:5861296",
+    "candidate": "ad290d1a",
+    "mapped_to_candidate": true,
+    "twin_resolution": "DUPLICATE_RESOLVED",
+    "candidate_now": "FINISHED 2-1",
+    "history_rows": 1,
+    "still_recovery_candidate": false
+   },
+   {
+    "case_key": "fixture:fotmob:1000018156",
+    "candidate": "ae2f579e",
+    "mapped_to_candidate": true,
+    "twin_resolution": "DUPLICATE_RESOLVED",
+    "candidate_now": "FINISHED 3-1",
+    "history_rows": 1,
+    "still_recovery_candidate": false
+   },
+   {
+    "case_key": "fixture:pitchapi:m_37ZmZY",
+    "candidate": "b1addf66",
+    "mapped_to_candidate": true,
+    "twin_resolution": "DUPLICATE_RESOLVED",
+    "candidate_now": "FINISHED 1-0",
+    "history_rows": 0,
+    "still_recovery_candidate": true
+   },
+   {
+    "case_key": "fixture:pitchapi:m_1inyoQ",
+    "candidate": "b63d8757",
+    "mapped_to_candidate": false,
+    "twin_resolution": "AMBIGUOUS_QUARANTINED",
+    "candidate_now": "FINISHED 3-3",
+    "history_rows": 0,
+    "still_recovery_candidate": true
+   },
+   {
+    "case_key": "fixture:fotmob:5071415",
+    "candidate": "b78d4ebf",
+    "mapped_to_candidate": true,
+    "twin_resolution": "DUPLICATE_RESOLVED",
+    "candidate_now": "FINISHED 0-3",
+    "history_rows": 1,
+    "still_recovery_candidate": false
+   },
+   {
+    "case_key": "fixture:pitchapi:m_0V2Cm4",
+    "candidate": "cb103a9f",
+    "mapped_to_candidate": false,
+    "twin_resolution": "",
+    "candidate_now": "FINISHED 4-0",
+    "history_rows": 0,
+    "still_recovery_candidate": true
+   },
+   {
+    "case_key": "fixture:pitchapi:m_497Zbx",
+    "candidate": "cc5ae7d1",
+    "mapped_to_candidate": true,
+    "twin_resolution": "DUPLICATE_RESOLVED",
+    "candidate_now": "FINISHED 4-3",
+    "history_rows": 1,
+    "still_recovery_candidate": false
+   },
+   {
+    "case_key": "fixture:fotmob:5109361",
+    "candidate": "cc5ae7d1",
+    "mapped_to_candidate": true,
+    "twin_resolution": "DUPLICATE_RESOLVED",
+    "candidate_now": "FINISHED 4-3",
+    "history_rows": 1,
+    "still_recovery_candidate": false
+   },
+   {
+    "case_key": "fixture:fotmob:5071414",
+    "candidate": "d2dd5779",
+    "mapped_to_candidate": true,
+    "twin_resolution": "DUPLICATE_RESOLVED",
+    "candidate_now": "FINISHED 2-0",
+    "history_rows": 1,
+    "still_recovery_candidate": false
+   },
+   {
+    "case_key": "fixture:fotmob:5071411",
+    "candidate": "d9e49692",
+    "mapped_to_candidate": true,
+    "twin_resolution": "DUPLICATE_RESOLVED",
+    "candidate_now": "FINISHED 2-3",
+    "history_rows": 1,
+    "still_recovery_candidate": false
+   },
+   {
+    "case_key": "fixture:fotmob:5837219",
+    "candidate": "e2991891",
+    "mapped_to_candidate": true,
+    "twin_resolution": "DUPLICATE_RESOLVED",
+    "candidate_now": "FINISHED 0-3",
+    "history_rows": 1,
+    "still_recovery_candidate": false
+   },
+   {
+    "case_key": "fixture:fotmob:5908670",
+    "candidate": "f3372eef",
+    "mapped_to_candidate": true,
+    "twin_resolution": "DUPLICATE_RESOLVED",
+    "candidate_now": "FINISHED 3-4",
+    "history_rows": 1,
+    "still_recovery_candidate": false
+   },
+   {
+    "case_key": "fixture:fotmob:1000014084",
+    "candidate": "f6e22184",
+    "mapped_to_candidate": true,
+    "twin_resolution": "DUPLICATE_RESOLVED",
+    "candidate_now": "FINISHED 1-1",
+    "history_rows": 1,
+    "still_recovery_candidate": false
+   }
+  ],
+  "not_attempted": {
+   "verified_verified_pairs": 15,
+   "changed_since_worklist": 3,
+   "tier_2_pairs": 68,
+   "tier_3_pairs": 263
+  }
+ },
+ "preservation": {
+  "baseline_at": "2026-11-14T08:00:49Z",
+  "p02": "unchanged",
+  "attributed": {
+   "fixture_identity_resolutions": "17 new DUPLICATE_RESOLVED for twins; 10 superseded rows deactivated",
+   "match_provider_mappings": "17 new manual mappings to candidates (15 FotMob, 2 PitchAPI); 17 twin mappings closed; 1 FotMob crosswalk from live sync",
+   "product_team_match_history": "15 new FotMob rows for resolved candidates; 3 from live sync",
+   "product_match_history_decisions": "15 eligible for resolved candidates; 124 from live sync",
+   "product_fixtures": "9 resolved candidates; 3 from live sync",
+   "product_forecasts": "1 new forecast for an unrelated scheduled fixture from forecast refresh; no existing forecast changed"
+  },
+  "settlement": "no external prediction or forecast attached to the affected fixtures; settlement unchanged",
+  "unexplained_differences": 0
+ }
+}

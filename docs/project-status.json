@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-14T07:45:00Z",
+  "updated_at": "2026-11-14T08:45:00Z",
   "unified_architecture_investigation": {
     "status": "PASS_WITH_WARNINGS",
     "scope": "CURRENT_TASK.md revision 3; architecture investigation/planning only",
@@ -97,7 +97,8 @@
     "AUTHORIZE_STORAGE_LIFECYCLE_ROLLOUT_V1",
     "APPROVE_DATED_REPORT_RETIREMENT_V1",
     "AUTHORIZE_PRE_P03_OPERATING_ROLLOUT_V1",
-    "AUTHORIZE_PRE_P03_ADDITIONAL_RECOVERY_BATCHES_V1"
+    "AUTHORIZE_PRE_P03_ADDITIONAL_RECOVERY_BATCHES_V1",
+    "AUTHORIZE_PRE_P03_TIER1_DUPLICATE_RESOLUTION_V1"
   ],
   "closed_routes": [
     {
@@ -4047,6 +4048,13 @@
         "evidence_ref": "docs/evidence/pre-p03-recovery-batches-and-identity-2026-11-14.json",
         "recovered_results": 0,
         "stop": "LOW_YIELD"
+      },
+      "identity_remediation": {
+        "decision_id": "AUTHORIZE_PRE_P03_TIER1_DUPLICATE_RESOLUTION_V1",
+        "evidence_ref": "docs/evidence/pre-p03-identity-remediation-2026-11-14.json",
+        "tier1_applied": 17,
+        "candidates_resolved": 16,
+        "history_qualified": 15
       }
     }
   },
