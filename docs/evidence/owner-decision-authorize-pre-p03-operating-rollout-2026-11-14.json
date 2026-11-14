@@ -1,0 +1,35 @@
+{
+ "contract": "OwnerDecisionRecordV1",
+ "decision_id": "AUTHORIZE_PRE_P03_OPERATING_ROLLOUT_V1",
+ "recorded_at": "2026-11-14T04:00:00Z",
+ "title": "Roll out pre-P03 result recovery and verify external settlement on the operating database",
+ "status": "APPROVED",
+ "owner": "repository owner / sir-radar",
+ "map": "unified-architecture-redesign",
+ "ticket": "Pre-P03 result recovery",
+ "source": {
+  "execution_instruction": "Owner answer 'Approve full rollout' in this session to the question approving eight listed operating steps at merge 6e4b85c, after the read-only preflight was reported",
+  "handoff": "docs/architecture/unified-redesign-2026-11-10/PRE_P03_PROVIDER_AND_RESULT_RECOVERY_HANDOFF.md",
+  "code_git_sha": "6e4b85c33dc28557b2f9cf254b03ef33e77d4344"
+ },
+ "authorizes": [
+  "a snapshot-consistent logical dump of the operating database and a restore check in an isolated cluster before any operating write",
+  "P02 preservation hashes and per-row hashes of the 21 protected tables before and after",
+  "migration 202611140100_result_recovery on the operating database",
+  "running the API, web and worker from the PR #231 merge commit with MATCHFORGE_RESULT_RECOVERY_INTERVAL=0",
+  "one fixture, one UTC date and one bounded batch of at most 8 dates per provider, with at most 40 of the day's remaining API-Football requests",
+  "two Admin external prediction settlement runs to check idempotency",
+  "MATCHFORGE_RESULT_RECOVERY_INTERVAL=30m, observation of at least four scheduled cycles and a controlled restart test",
+  "recording this decision, the rollout evidence and the resulting status"
+ ],
+ "requires": [
+  "the handoff's stop conditions: unexplained protected-row differences, results without qualified evidence, incorrect or duplicate settlement, uncontrolled provider retries, invalid backup or recovery capability, or an API that cannot read sync history",
+  "no change to any published forecast, artifact, prediction selection or prior history decision"
+ ],
+ "explicitly_not_authorized": [
+  "running the migration's down operation or rolling the API or web back below the PR #231 merge",
+  "deleting databases, rewriting forecasts, bulk storage cleanup or new copies of operating data beyond the one dump and restore check",
+  "a global historical backfill, or forcing settlement of predictions without verified identity and qualified results",
+  "merging pull requests"
+ ]
+}

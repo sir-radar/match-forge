@@ -1,0 +1,120 @@
+{
+ "contract": "PreP03OperatingRolloutEvidenceV1",
+ "decision_id": "AUTHORIZE_PRE_P03_OPERATING_ROLLOUT_V1",
+ "decision_ref": "docs/evidence/owner-decision-authorize-pre-p03-operating-rollout-2026-11-14.json",
+ "recorded_at": "2026-11-14T04:45:00Z",
+ "verdict": "PRE_P03_BLOCKED",
+ "code_ready": "PRE_P03_CODE_READY",
+ "rollout_status": "PARTIALLY_APPLIED_STOPPED",
+ "release": {
+  "git_sha": "6e4b85c33dc28557b2f9cf254b03ef33e77d4344",
+  "pr_230_merge": "bdb75ab33bd4df702491083f73591ba799e7b0c6",
+  "pr_231_merge": "6e4b85c33dc28557b2f9cf254b03ef33e77d4344",
+  "main_ci": "success",
+  "launch_method": "make dev: dev_watch go run ./cmd/api, next dev and per-run Python workers from the repository checkout",
+  "note": "Pulling main at 03:57 UTC restarted the watched API on 6e4b85c before the migration; it served and listed sync runs on schema 202611130600 until the migration was applied."
+ },
+ "backup": {
+  "existing": "Restic snapshot 02376823 (VERIFIED_GOVERNED_SCOPE, 12 November); the NTC drive was not connected, so no new Restic backup was taken",
+  "logical_dump": {
+   "location": "protected local evidence root (.local/pre-p03-rollout/operating-before.dump)",
+   "sha256": "ef1ea98b11227c2129a74646e29e35dab7f0acac04ce273a9b6613f4a98e7d80",
+   "bytes": 2660702671,
+   "started_at": "2026-11-14T04:01:47Z",
+   "finished_at": "2026-11-14T04:09:50Z",
+   "consistency": "pg_dump single snapshot, writers running"
+  },
+  "restore_check": {
+   "cluster_identifier": "7707531760395534379",
+   "operating_cluster_identifier": "7679328148388241450",
+   "database": "pre_p03_rollout_restore",
+   "finished_at": "2026-11-14T04:22:22Z",
+   "schema_version": 202611130600,
+   "p02_preservation_vs_operating": "identical (run_start 2026-11-14T04:01:47Z)"
+  },
+  "full_recovery": false
+ },
+ "migration": {
+  "version": "202611140100_result_recovery",
+  "applied_at": "2026-11-14T04:23:36Z",
+  "duration_seconds": 6.33,
+  "pending_after": 0,
+  "verified": [
+   "product_result_recovery_candidates view, product_result_recovery_state table and due index exist",
+   "sync type check accepts RESULT_RECOVERY and EXTERNAL_PREDICTION_SETTLEMENT and is validated",
+   "GET /v1/admin/sync-runs returns 200 with existing history"
+  ],
+  "result_recovery_interval": "0"
+ },
+ "preservation": {
+  "baseline_at": "2026-11-14T04:23:00Z",
+  "compared_at": "2026-11-14T04:38:42Z",
+  "p02_hashes": "unchanged",
+  "unchanged_tables": [
+   "external_prediction_bindings", "external_prediction_captures",
+   "external_prediction_fixture_evidence", "external_prediction_result_revisions",
+   "external_prediction_results", "external_predictions", "fixture_identity_resolutions",
+   "forecast_artifacts", "match_provider_mappings", "model_artifacts", "product_forecasts",
+   "product_model_artifacts", "product_source_result_conflicts", "runtime_model_registrations",
+   "source_manifest_raw_file_bindings"
+  ],
+  "attributed_changes": {
+   "product_fixtures": "31 recovered results (status, scores, REGULATION_90), 1 score basis UNKNOWN to PENALTY_SHOOTOUT, 175 updated_at only from retained replay",
+   "product_provider_fixture_observations": "516 freshness fields only (last_fetched_at, stale_after, cache_expires_at); 59 new",
+   "product_team_match_history": "31 new, one per recovered REGULATION_90 result",
+   "product_match_history_decisions": "31 new, all eligible",
+   "source_snapshots": "54 new",
+   "product_sync_runs": "45 new"
+  },
+  "unexplained_differences": 0
+ },
+ "admin": {
+  "settlement_action_visible": "only after GET /v1/admin/sync-runs succeeds (3-6 s on operating); hidden while loading or on failure",
+  "fix_pr": "https://github.com/sir-radar/match-forge/pull/232",
+  "recovery_controls": "fixture recheck, selected UTC date, retry unresolved batch and history scope refresh present"
+ },
+ "recovery_runs": [
+  {"run_id": "d7eb0ff9-0ff4-40a1-9bc2-a3d7dea3d419", "scope": "fixture 0c3f21de (FotMob 5165401)", "status": "FAILED", "outcome": "NOT_RETURNED", "cause": "provider moved kickoff from 8 to 7 November; later observations are unlinked and the replay was declined without a recorded reason"},
+  {"run_id": "e3840762-b30b-46ff-9e21-1fddc07811a9", "scope": "fixture f2a9f15e (FotMob 5110024)", "status": "FAILED", "outcome": "IDENTITY_UNRESOLVED", "cause": "FotMob team ids 722269 and 267813 have no trusted team mapping"},
+  {"run_id": "5b65b5e4-bfb4-49c8-b2c9-772ef34ba0bd", "scope": "fixture 38a2bccb", "status": "SUCCEEDED", "outcome": "RECOVERED", "detail": "score basis UNKNOWN to PENALTY_SHOOTOUT from API-Football, FotMob agrees ('Pen'); no history by policy"},
+  {"run_id": "fe286675-4471-44f9-94b2-e91167e1169e", "scope": "UTC date 2026-11-13", "status": "SUCCEEDED", "seconds": 33, "api_football_requests": 1, "recovered": 27, "verified_unchanged": 182, "unresolved": 11, "provenance": "one validated API-Football snapshot, raw file checksum matches, history scores equal canonical"},
+  {"run_id": "cf857e53-d86c-42b6-b83a-7bd200f03b04", "scope": "bounded batch, 8 dates per provider", "status": "FAILED", "seconds": 143, "recovered": 4, "same_day_recovered": 4, "verified_unchanged": 444, "api_football": {"requests": 8, "succeeded": 1, "failed": 7, "failed_dates": ["2024-03-09", "2024-03-10", "2024-03-17", "2024-04-01", "2026-11-10", "2026-11-11", "2026-11-12"]}, "fotmob_requests": 8, "pitchapi_requests": 8}
+ ],
+ "settlement_runs": [
+  {"run_id": "83471e0a-7153-4e97-a958-0ebb1703daa9", "status": "FAILED", "error": "sync-run control requires a separate transaction"},
+  {"run_id": "bc901509-369f-4386-ba36-c9d97dff0330", "status": "FAILED", "error": "sync-run control requires a separate transaction"}
+ ],
+ "settlement_fix_pr": "https://github.com/sir-radar/match-forge/pull/233",
+ "census": {
+  "before": {"at": "2026-11-14T04:23Z", "candidates": 2654, "overdue": 1288, "identity_pending": 925, "no_operational_route": 11, "routed": 1718, "retained_final_evidence": 38, "retained_with_shifted_kickoff": 29},
+  "after": {"at": "2026-11-14T04:40Z", "candidates": 2624, "overdue": 1259, "identity_pending": 925, "no_operational_route": 11, "routed": 1688, "dispositions": {"IDENTITY_UNRESOLVED": 2, "NOT_RETURNED": 5, "NOT_YET_PUBLISHED": 10, "PROVIDER_UNAVAILABLE": 34, "QUALIFICATION_FAILED": 2}},
+  "recovered_results": 32,
+  "corrected_results": 0,
+  "newly_qualified_history": 31,
+  "external_predictions": {"total": 1645, "won": 45, "lost": 7, "pending": 1593, "newly_settled": 0}
+ },
+ "resources": {
+  "api_football_requests_used_by_recovery": 9,
+  "api_football_remaining_after": 74,
+  "batch_wal_bytes_approx": "32 MB",
+  "peak_ungranted_locks_during_batch": 1,
+  "evidence_files_added": 62,
+  "evidence_bytes_added": 6900177,
+  "candidate_view_count_seconds": "0.10-0.24",
+  "coverage_census_seconds": 1.12,
+  "database_size_after_bytes": 16517838527,
+  "host_load_average": "6.5-8.3 (shared with live sync and other local work)"
+ },
+ "stop_conditions": [
+  {"condition": "uncontrolled provider retry", "detail": "API-Football rejects date requests outside a narrow window; each rejection spends quota and is retried after 5 minutes, backing off to at most 1 hour. A 30-minute schedule would re-select the same dates and exhaust the 100-request day. The rejection text is not recorded."},
+  {"condition": "settlement not functional", "detail": "Admin settlement fails before settling anything (PR #233)."}
+ ],
+ "not_done": [
+  "MATCHFORGE_RESULT_RECOVERY_INTERVAL=30m, scheduled cycles and the restart test",
+  "external settlement on operating, idempotency and the zero-forecast case",
+  "deployment of PR #232 and PR #233"
+ ],
+ "isolated_resources_left": [
+  "database pre_p03_rollout_restore and test database football_settle_fence_test in cluster 7707531760395534379"
+ ]
+}
