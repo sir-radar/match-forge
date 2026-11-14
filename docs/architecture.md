@@ -1226,6 +1226,11 @@ claims work, changes counters, calls providers or triggers model actions.
 
 ## Operational control plane
 
+The existing Admin sync runner submits
+[pre-P03 result recovery](architecture/unified-redesign-2026-11-10/design.md#pre-p03-result-recovery)
+independently of live polling. Python applies provider identity, score basis
+and history qualification through the existing ingestion owners.
+
 The existing Go application serves protected `GET /v1/admin/operations/{domain}`
 views for `providers`, `work-orchestrator`, `ingestion`, `identity`, `coverage`,
 `data-quality`, `forecasting`, `models`, `experiments` and `r3-audit`. Database views

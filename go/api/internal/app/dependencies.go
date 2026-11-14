@@ -44,24 +44,19 @@ func requireOperationalProviderSyncSchema(ctx context.Context, pool *pgxpool.Poo
 	return nil
 }
 
+// syncSchemaProbes names the schema object each sync type needs before it can start.
+var syncSchemaProbes = map[SyncType]string{
+	SyncExternalSettlement: "SELECT to_regprocedure('football.enqueue_external_settlement_evidence_change()') IS NOT NULL",
+	SyncManualBackup:       "SELECT EXISTS(SELECT 1 FROM public.goose_db_version WHERE version_id=202611100300 AND is_applied)",
+	SyncResultRecovery:     "SELECT to_regclass('football.product_result_recovery_candidates') IS NOT NULL",
+}
+
 func requireProviderSyncSchema(
 	ctx context.Context, pool *pgxpool.Pool, syncType SyncType,
 ) error {
-	if syncType == SyncExternalSettlement {
+	if probe, ok := syncSchemaProbes[syncType]; ok {
 		var ready bool
-		err := pool.QueryRow(ctx, "SELECT to_regprocedure('football.enqueue_external_settlement_evidence_change()') IS NOT NULL").Scan(&ready)
-		if err != nil {
-			return err
-		}
-		if !ready {
-			return errProductUnavailable
-		}
-		return nil
-	}
-	if syncType == SyncManualBackup {
-		var ready bool
-		err := pool.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM public.goose_db_version WHERE version_id=202611100300 AND is_applied)").Scan(&ready)
-		if err != nil {
+		if err := pool.QueryRow(ctx, probe).Scan(&ready); err != nil {
 			return err
 		}
 		if !ready {

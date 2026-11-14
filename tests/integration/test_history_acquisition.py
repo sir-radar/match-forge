@@ -330,7 +330,7 @@ class EmptyLeagueTransport:
         )
 
 
-def test_bounded_scopes_reuse_closed_history_and_refresh_changing_history(tmp_path: Path) -> None:
+def test_bounded_scopes_refetch_due_scopes_after_unusable_responses(tmp_path: Path) -> None:
     with psycopg.connect(DATABASE_URL) as connection:
         sync = OperationalProviderSync(
             connection, tmp_path, provider_code="pitchapi", minimum_interval_seconds=0
@@ -369,25 +369,19 @@ def test_bounded_scopes_reuse_closed_history_and_refresh_changing_history(tmp_pa
             assert run_scopes(sync, client, budget=2, competition=league) == []
             _advance_shared_scope_retry(connection, league, "2021")
             replay = run_scopes(sync, client, budget=2, competition=league)
-            assert len(replay) == 1 and replay[0]["attempted_requests"] == 0
-            assert transport.calls == 3
+            assert len(replay) == 1 and replay[0]["attempted_requests"] == 1
+            assert transport.calls == 4
             connection.execute(
                 "UPDATE football.product_provider_history_scopes SET next_attempt_at = now()"
                 " WHERE provider_competition_id = %s AND season_label = '2099'",
                 (league,),
-            )
-            connection.execute(
-                "UPDATE football.product_provider_history_discovery"
-                " SET last_attempt_at = now() - interval '25 hours'"
-                " WHERE resource_name = %s",
-                (f"league-{league}-2099",),
             )
             connection.commit()
 
             assert run_scopes(sync, client, budget=2, competition=league) == []
             _advance_shared_scope_retry(connection, league, "2099")
             assert len(run_scopes(sync, client, budget=2, competition=league)) == 1
-            assert transport.calls == 4
+            assert transport.calls == 5
         finally:
             connection.rollback()
             connection.execute(
@@ -476,8 +470,11 @@ def test_history_budget_counts_attempts_and_defers_retry_after() -> None:
                 " WHERE provider_code = 'pitchapi'"
             )
             connection.commit()
-            with pytest.raises(HistoryDeferred, match="RESERVED_FOR_LIVE"):
-                budget.before_request()
+            budget.before_request()
+            assert connection.execute(
+                "SELECT remaining_requests FROM football.provider_request_budgets "
+                "WHERE provider_code = 'pitchapi'"
+            ).fetchone() == (2,)
         finally:
             connection.rollback()
             connection.execute(
@@ -583,11 +580,6 @@ def test_changing_season_records_new_rows_and_preserves_prior_snapshot(tmp_path:
                 """UPDATE football.product_provider_history_scopes SET next_attempt_at = now()
                    WHERE provider_competition_id = %s""",
                 (league,),
-            )
-            connection.execute(
-                """UPDATE football.product_provider_history_discovery
-                   SET last_attempt_at = now() - interval '25 hours' WHERE resource_name = %s""",
-                (resource,),
             )
             connection.commit()
             assert run_scopes(sync, client, budget=2, competition=league) == []
@@ -701,8 +693,12 @@ def test_fotmob_scope_reuses_matching_catalogue_bytes_without_a_request(tmp_path
         _, network = _scope_response(sync, FotmobClient(), "999999", year, refresh=False)
         assert not network
         assert c.execute("SELECT count(*) FROM football.source_resources").fetchone() == count
+        older_season = str(int(year) - 1)
+        enqueue_seasons(sync, "999999", [older_season])
+        c.commit()
+        assert claim_scope(sync, "999999", older_season) == ("999999", older_season)
         with pytest.raises(FotmobAccessError, match="disabled"):
-            _scope_response(sync, FotmobClient(), "999999", str(int(year) - 1), refresh=False)
+            _scope_response(sync, FotmobClient(), "999999", older_season, refresh=False)
 
 
 def test_cached_response_uses_database_clock_without_relaxing_future_rejection(
@@ -777,7 +773,13 @@ def test_explicit_refresh_preserves_attempt_history_and_retry_cooldown(
                 "WHERE provider_code='pitchapi' AND provider_competition_id=%s",
                 (league,),
             ).fetchone()[0]
-            assert after == {**before, "status": "PENDING" if due else status}
+            if status == "SUCCEEDED" and not due:
+                assert after["next_attempt_at"] < before["next_attempt_at"]
+                before["next_attempt_at"] = after["next_attempt_at"]
+            assert after == {
+                **before,
+                "status": "PENDING" if due or status == "SUCCEEDED" else status,
+            }
         finally:
             connection.rollback()
             connection.execute(
@@ -818,8 +820,7 @@ def test_split_native_season_reuses_exact_cached_response(tmp_path: Path, season
                 (season,),
             )
             connection.commit()
-            expected = None if season.startswith("2024/") else ("337", season)
-            assert claim_scope(sync, "337", season) == expected
+            assert claim_scope(sync, "337", season) is None
         finally:
             connection.rollback()
             connection.execute(
@@ -829,3 +830,55 @@ def test_split_native_season_reuses_exact_cached_response(tmp_path: Path, season
                 (season,),
             )
             connection.commit()
+
+
+def test_completed_scope_can_fetch_fresh_evidence_same_day(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    league = "l_SameDy"
+    season = "2024"
+    with psycopg.connect(DATABASE_URL) as connection:
+        sync = OperationalProviderSync(
+            connection, tmp_path, provider_code="pitchapi", minimum_interval_seconds=0
+        )
+        transport = EmptyLeagueTransport()
+        client = PitchApiClient("test", transport=transport)
+        monkeypatch.setattr(sync, "_season_qualification", lambda *_: {"status": "COMPLETED"})
+        try:
+            enqueue_seasons(sync, league, [season])
+            connection.execute(
+                """UPDATE football.product_provider_history_scopes
+                   SET status='SUCCEEDED', next_attempt_at=now()+interval '1 day',
+                       completed_at=now(), attempts=1
+                   WHERE provider_code='pitchapi' AND provider_competition_id=%s""",
+                (league,),
+            )
+            connection.commit()
+            assert run_scopes(sync, client, budget=2, competition=league, season=season) == []
+            assert transport.calls == 0
+            for request_count, score in enumerate((1, 2), start=1):
+                transport.matches = [
+                    {
+                        "id": "m_SameDy",
+                        "league": {"id": league, "name": "Test League"},
+                        "home_team": {"id": "t_Home01", "name": "Home"},
+                        "away_team": {"id": "t_Away01", "name": "Away"},
+                        "time_utc": "2024-06-01T14:00:00+00:00",
+                        "status": "finished",
+                        "score_home": score,
+                        "score_away": 0,
+                    }
+                ]
+                results = run_scopes(
+                    sync, client, budget=2, competition=league, season=season, refresh=True
+                )
+                assert len(results) == 1 and transport.calls == request_count, results
+                assert results[0]["status"] == "COMPLETED"
+            assert connection.execute(
+                """SELECT DISTINCT home_score
+                   FROM football.product_provider_fixture_observations
+                   WHERE provider_code='pitchapi' AND provider_match_id='m_SameDy'
+                   ORDER BY home_score"""
+            ).fetchall() == [(1,), (2,)]
+        finally:
+            _remove_policy_scopes(connection, [league])

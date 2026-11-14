@@ -113,10 +113,7 @@ class ProductHistoryMixin(ProductStorageMixin, ProductResponseMixin):
         return self._finish_history_sync(league_id, season, latest, stored, paths, providers)
 
     def _history_attempts(self, league_id: int, season: int) -> tuple[tuple[str, int, str], ...]:
-        attempts: list[tuple[str, int, str]] = []
-        cap = self.api_football_max_history_season
-        if cap is None or season <= cap:
-            attempts.append((PROVIDER_CODE, season, "API_FOOTBALL_REQUESTED"))
+        attempts = [(PROVIDER_CODE, season, "API_FOOTBALL_REQUESTED")]
         if self.history_fallback is not None and league_id in FOOTBALL_DATA_COMPETITIONS:
             attempts.extend(
                 (
@@ -128,8 +125,6 @@ class ProductHistoryMixin(ProductStorageMixin, ProductResponseMixin):
                     ),
                 )
             )
-        if cap is not None and season > cap:
-            attempts.append((PROVIDER_CODE, cap, "API_FOOTBALL_CAPPED"))
         return tuple(attempts)
 
     def _history_attempt(
@@ -403,8 +398,7 @@ class ProductHistoryMixin(ProductStorageMixin, ProductResponseMixin):
                     self.data_root,
                     self.artifact_path,
                     self.history_fallback,
-                    self.api_football_max_history_season,
-                    self.sync_run_id,
+                    sync_run_id=self.sync_run_id,
                 )
             )
         )

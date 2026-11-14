@@ -137,7 +137,8 @@ export const api = {
   startMvpSync: (body: Record<string, string>) => startSync("mvp", body),
   startOpenFootballSync: (body: Record<string, string>) => startSync("openfootball", body),
   startFootballDataUKSync: (body: Record<string, string>) => startSync("football-data-uk", body),
-  startHistoryBackfill: (body: Record<string, string>) => startSync("history", body),
+  startResultRecovery: (body: Record<string, string>) => startSync("result-recovery", body),
+  startHistoryBackfill: (body: Record<string, string | boolean>) => startSync("history", body),
   startForecastRefresh: (body: Record<string, string>) => startSync("forecast-refresh", body),
   startExternalPredictionSettlement: () => startSync("settle-external-predictions", {}),
   startExternalPredictionsSync: (body: Record<string, string>) => startSync("external-predictions", body),
@@ -150,6 +151,6 @@ export const api = {
   retrySyncRun: (id: string) => request(`/v1/admin/sync-runs/${encodeURIComponent(id)}/retry`, parseSyncRun, { method: "POST" }),
 };
 
-function startSync(action: string, body: Record<string, string>): Promise<SyncRun> {
+function startSync(action: string, body: Record<string, string | boolean>): Promise<SyncRun> {
   return request(`/v1/admin/sync/${action}`, parseSyncRun, { method: "POST", body });
 }

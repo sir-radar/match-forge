@@ -316,6 +316,13 @@ def test_shared_history_worker_preserves_fallback_order_and_early_stop(
 
     fetched_at = datetime(2026, 9, 1, tzinfo=UTC)
 
+    # The main sync registers the competition before queueing its history.
+    with psycopg.connect(history_database) as setup:
+        sync = ProductSync(setup, cast(Any, object()), tmp_path / "setup", tmp_path / "unused")
+        response = ApiResponse("/leagues", fetched_at, b'{"response":[]}', (), None)
+        snapshot = sync._record_response("competitions", response)
+        sync._competition_id("39", snapshot)
+
     old_calls: list[tuple[str, int]] = []
     with (
         psycopg.connect(history_database, autocommit=True) as legacy_connection,
@@ -327,7 +334,6 @@ def test_shared_history_worker_preserves_fallback_order_and_early_stop(
             tmp_path / "legacy",
             tmp_path / "unused",
             cast(Any, _FallbackParityFallback(old_calls, legacy_connection, False, fetched_at)),
-            api_football_max_history_season=2024,
         )
         # Identical eligibility decisions isolate transport/fallback parity.
         monkeypatch.setattr(legacy, "_local_history_result", lambda *_: None)
@@ -341,7 +347,6 @@ def test_shared_history_worker_preserves_fallback_order_and_early_stop(
             tmp_path / "shared",
             tmp_path / "unused",
             cast(Any, _FallbackParityFallback(calls, connection, True, fetched_at)),
-            api_football_max_history_season=2024,
         )
         monkeypatch.setattr(worker, "_local_history_result", lambda *_: None)
         monkeypatch.setattr(worker, "_history_sufficient", lambda *_: stop_after_first)
@@ -356,9 +361,9 @@ def test_shared_history_worker_preserves_fallback_order_and_early_stop(
         assert calls == old_calls
         history_calls = [call for call in calls if call[0].endswith("history")]
         assert history_calls == (
-            [("fallback-history", 2026)]
+            [("api-history", 2026)]
             if stop_after_first
-            else [("fallback-history", 2026), ("fallback-history", 2025), ("api-history", 2024)]
+            else [("api-history", 2026), ("fallback-history", 2026), ("fallback-history", 2025)]
         )
 
 

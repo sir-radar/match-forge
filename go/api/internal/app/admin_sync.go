@@ -21,6 +21,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -45,6 +46,7 @@ const (
 	SyncOpenFootball        SyncType = "OPENFOOTBALL"
 	SyncFootballDataUK      SyncType = "FOOTBALL_DATA_UK"
 	SyncHistoryBackfill     SyncType = "HISTORY_BACKFILL"
+	SyncResultRecovery      SyncType = "RESULT_RECOVERY"
 	SyncForecastRefresh     SyncType = "FORECAST_REFRESH"
 	SyncContextReports      SyncType = "CONTEXT_REPORTS"
 	SyncPublicReports       SyncType = "PUBLIC_REPORTS"
@@ -61,6 +63,7 @@ type SyncRequest struct {
 	Type                    SyncType `json:"sync_type"`
 	StorageScheduleSlot     string   `json:"-"`
 	Date                    string   `json:"date,omitempty"`
+	FixtureID               string   `json:"fixture_id,omitempty"`
 	FromDate                string   `json:"from_date,omitempty"`
 	Season                  string   `json:"season,omitempty"`
 	Initiator               string   `json:"-"`
@@ -69,6 +72,7 @@ type SyncRequest struct {
 	Country                 string   `json:"country,omitempty"`
 	RetryOf                 string   `json:"-"`
 	ScheduledHistory        bool     `json:"-"`
+	RefreshHistory          bool     `json:"refresh,omitempty"`
 	PendingOnly             bool     `json:"-"`
 	ManualRequestID         string   `json:"-"`
 	BackupScope             string   `json:"-"`
@@ -396,11 +400,15 @@ func syncParameters(request SyncRequest) map[string]interface{} {
 	if request.ScheduledHistory {
 		parameters["scheduled_history"] = true
 	}
+	if request.RefreshHistory {
+		parameters["refresh"] = true
+	}
 	if request.PendingOnly {
 		parameters["pending_only"] = true
 	}
 	for key, value := range map[string]string{
 		"from_date": request.FromDate, "season": request.Season,
+		"fixture_id":  request.FixtureID,
 		"competition": request.Competition, "country": request.Country,
 		"retry_of_run_id": request.RetryOf, "provider": request.HistoryProvider,
 		"initiator": request.Initiator,
@@ -586,6 +594,15 @@ func syncCompletion(summary map[string]interface{}, request SyncRequest) (string
 			return "FAILED", &message
 		}
 	}
+	if summary["status"] == "COMPLETED_UNRESOLVED" {
+		// The run worked, but the result an operator asked for was not recovered.
+		// Never report that as success; the summary names the outcome.
+		message := "requested result was not recovered"
+		if outcome, _ := summary["request_outcome"].(string); outcome != "" {
+			message += ": " + outcome
+		}
+		return "FAILED", &message
+	}
 	if summary["status"] != "COMPLETED_WITH_ERRORS" && summary["status"] != "FAILED" {
 		return "SUCCEEDED", nil
 	}
@@ -744,11 +761,13 @@ func syncRequestFromRun(run SyncRun) SyncRequest {
 		request.Date = *run.RequestedDate
 	}
 	request.FromDate = stringParameter(run.Parameters, "from_date")
+	request.FixtureID = stringParameter(run.Parameters, "fixture_id")
 	request.Season = stringParameter(run.Parameters, "season")
 	request.HistoryProvider = stringParameter(run.Parameters, "provider")
 	request.Competition = stringParameter(run.Parameters, "competition")
 	request.Country = stringParameter(run.Parameters, "country")
 	request.ScheduledHistory, _ = run.Parameters["scheduled_history"].(bool)
+	request.RefreshHistory, _ = run.Parameters["refresh"].(bool)
 	request.PendingOnly, _ = run.Parameters["pending_only"].(bool)
 	return request
 }
@@ -1177,6 +1196,7 @@ func providerSyncCommandArgs(request SyncRequest) ([]string, error) {
 		SyncOpenFootball:        "backfill-openfootball",
 		SyncFootballDataUK:      "backfill-football-data-uk",
 		SyncHistoryBackfill:     "backfill-history",
+		SyncResultRecovery:      "recover-results",
 		SyncForecastRefresh:     "refresh-forecasts",
 		SyncContextReports:      "refresh-context-reports",
 		SyncPublicReports:       "refresh-public-reports",
@@ -1199,6 +1219,12 @@ func providerSyncCommandArgs(request SyncRequest) ([]string, error) {
 		if request.ScheduledHistory {
 			args = append(args, "--scheduled")
 		}
+		if request.RefreshHistory {
+			args = append(args, "--refresh")
+		}
+	}
+	if request.Type == SyncResultRecovery && request.FixtureID != "" {
+		args = append(args, "--fixture-id", request.FixtureID)
 	}
 	if request.Type == SyncForecastRefresh && request.PendingOnly {
 		args = append(args, "--pending-only")
@@ -1208,7 +1234,7 @@ func providerSyncCommandArgs(request SyncRequest) ([]string, error) {
 
 func appendSyncDateArgs(args []string, request SyncRequest) []string {
 	dateTypes := map[SyncType]bool{
-		SyncMVP: true, SyncExternalPredictions: true, SyncFotMob: true,
+		SyncMVP: true, SyncExternalPredictions: true, SyncResultRecovery: true, SyncFotMob: true,
 		SyncPitchAPI: true, SyncAllData: true,
 	}
 	if request.Date != "" && dateTypes[request.Type] {
@@ -1295,39 +1321,68 @@ func (application *App) retrySyncRun(response http.ResponseWriter, request *http
 	application.writeJSON(response, http.StatusAccepted, run)
 }
 
+type syncInput struct {
+	Date        string `json:"date"`
+	FixtureID   string `json:"fixture_id"`
+	FromDate    string `json:"from_date"`
+	Season      string `json:"season"`
+	Competition string `json:"competition"`
+	Country     string `json:"country"`
+	Provider    string `json:"provider"`
+	Refresh     bool   `json:"refresh"`
+}
+
+func readSyncInput(request *http.Request) (syncInput, error) {
+	var input syncInput
+	decoder := json.NewDecoder(http.MaxBytesReader(nil, request.Body, 64*1024))
+	decoder.DisallowUnknownFields()
+	if request.ContentLength != 0 {
+		if err := decoder.Decode(&input); err != nil {
+			return syncInput{}, errors.New("invalid JSON request")
+		}
+	}
+	var trailing any
+	if err := decoder.Decode(&trailing); err != io.EOF {
+		return syncInput{}, errors.New("invalid JSON request")
+	}
+	return input, nil
+}
+
+func (input *syncInput) validate(syncType SyncType) error {
+	if input.Refresh && syncType != SyncHistoryBackfill {
+		return errors.New("refresh is only supported for historical backfill")
+	}
+	if input.FixtureID != "" {
+		var fixture pgtype.UUID
+		if syncType != SyncResultRecovery || fixture.Scan(input.FixtureID) != nil || !fixture.Valid {
+			return errors.New("fixture_id must be a UUID and is only supported for result recovery")
+		}
+		input.FixtureID = fixture.String()
+	}
+	if input.Provider != "" && !supportsHistoryProvider(syncType, input.Provider) {
+		return errors.New("provider must be fotmob or pitchapi and is only supported for historical backfill")
+	}
+	return nil
+}
+
+func supportsHistoryProvider(syncType SyncType, provider string) bool {
+	return syncType == SyncHistoryBackfill && (provider == "fotmob" || provider == "pitchapi")
+}
+
 func (application *App) startSync(syncType SyncType) http.HandlerFunc {
 	return func(response http.ResponseWriter, request *http.Request) {
-		var input struct {
-			Date        string `json:"date"`
-			FromDate    string `json:"from_date"`
-			Season      string `json:"season"`
-			Competition string `json:"competition"`
-			Country     string `json:"country"`
-			Provider    string `json:"provider"`
+		input, err := readSyncInput(request)
+		if err == nil {
+			err = input.validate(syncType)
 		}
-		decoder := json.NewDecoder(http.MaxBytesReader(nil, request.Body, 64*1024))
-		decoder.DisallowUnknownFields()
-		if request.ContentLength != 0 {
-			if err := decoder.Decode(&input); err != nil {
-				application.writeJSON(response, http.StatusBadRequest, map[string]string{"error": "invalid JSON request"})
-				return
-			}
-		}
-		var trailing any
-		if err := decoder.Decode(&trailing); err != io.EOF {
-			application.writeJSON(response, http.StatusBadRequest, map[string]string{"error": "invalid JSON request"})
-			return
-		}
-		if input.Provider != "" && (syncType != SyncHistoryBackfill ||
-			(input.Provider != "fotmob" && input.Provider != "pitchapi")) {
-			application.writeJSON(response, http.StatusBadRequest, map[string]string{
-				"error": "provider must be fotmob or pitchapi and is only supported for historical backfill",
-			})
+		if err != nil {
+			application.publicError(response, http.StatusBadRequest, err.Error())
 			return
 		}
 		run, err := application.syncRunner.Start(request.Context(), SyncRequest{
-			Type: syncType, Date: input.Date, FromDate: input.FromDate, Season: input.Season,
-			Competition: input.Competition, Country: input.Country, HistoryProvider: input.Provider,
+			Type: syncType, Date: input.Date, FixtureID: input.FixtureID, FromDate: input.FromDate,
+			Season: input.Season, Competition: input.Competition, Country: input.Country,
+			HistoryProvider: input.Provider, RefreshHistory: input.Refresh,
 		})
 		if err != nil {
 			application.writeSyncError(response, err)

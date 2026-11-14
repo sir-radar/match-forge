@@ -39,6 +39,58 @@ describe("DataSyncAdmin", () => {
     expect(screen.getAllByText("Unavailable")).toHaveLength(2);
   });
 
+  it("submits an exact fixture recheck through the result recovery action", async () => {
+    const fixture = "10000000-0000-4000-8000-000000000001";
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+      if (init?.method === "POST") return json({
+        run_id: "recovery-run", sync_type: "RESULT_RECOVERY", status: "QUEUED",
+        requested_at: "2026-09-30T10:00:00Z", started_at: null, finished_at: null,
+        requested_date: null, parameters: { fixture_id: fixture }, summary: {}, error_message: null, log_path: null,
+      }, 202);
+      return json({ runs: [], coverage });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<DataSyncAdmin initialDate="2026-09-30" />);
+    const button = await screen.findByRole("button", { name: "Recheck fixture" });
+    expect(button).toBeDisabled();
+    fireEvent.change(screen.getByLabelText("Fixture ID"), { target: { value: fixture } });
+    await waitFor(() => expect(button).toBeEnabled());
+    fireEvent.click(button);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("/v1/admin/sync/result-recovery"),
+      expect.objectContaining({ method: "POST", body: JSON.stringify({ fixture_id: fixture }) }),
+    ));
+  });
+
+  it("reports recovered results separately from fetched resources", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => json({
+      runs: [{
+        run_id: "recovery-run", sync_type: "RESULT_RECOVERY", status: "FAILED",
+        requested_at: "2026-09-30T10:00:00Z", started_at: "2026-09-30T10:00:01Z",
+        finished_at: "2026-09-30T10:00:09Z", requested_date: null,
+        parameters: { fixture_id: "10000000-0000-4000-8000-000000000001" },
+        summary: {
+          status: "COMPLETED_UNRESOLVED", request_outcome: "NOT_RETURNED", recovered: 0,
+          corrected: 0, unresolved: 1, coordinated: 0, deferred_until: null,
+          providers: { api_football: { successful_requests: 1, fetched: 312, recovered: 0 } },
+          overdue: 7, runnable: 2, never_checked: 1,
+        },
+        error_message: "requested result was not recovered: NOT_RETURNED", log_path: null,
+      }],
+      coverage,
+    })));
+    render(<DataSyncAdmin initialDate="2026-09-30" />);
+    const panel = (await screen.findByRole("heading", { name: "Result recovery" })).closest("section");
+    expect(panel).not.toBeNull();
+    const metric = (term: string) => Array.from(panel!.querySelectorAll("dt"))
+      .find((item) => item.textContent === term)?.nextElementSibling?.textContent;
+    await waitFor(() => expect(metric("Request outcome")).toBe("NOT_RETURNED"));
+    expect(metric("Results recovered")).toBe("0");
+    expect(metric("Checked, still unresolved")).toBe("1");
+    expect(metric("Provider retry after")).toBe("—");
+    expect(metric("Due now")).toBe("2");
+  });
+
   it("rejects malformed background diagnostics and offers status retry", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => json({
       runs: [], coverage: { ...coverage, provider_history: [{ provider: "pitchapi", pending: -1 }] },

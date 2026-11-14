@@ -215,19 +215,15 @@ class ProductSyncBase:
         data_root: Path,
         artifact_path: Path,
         history_fallback: FootballDataOrgClient | None = None,
-        api_football_max_history_season: int | None = None,
         history_worker_factory: HistoryWorkerFactory | None = None,
         sync_run_id: UUID | None = None,
         context_config: ContextSyncConfig | None = None,
     ) -> None:
-        if api_football_max_history_season is not None and api_football_max_history_season <= 0:
-            raise ValueError("api_football_max_history_season must be positive")
         self.connection = connection
         self.client = client
         self.data_root = data_root
         self.artifact_path = artifact_path
         self.history_fallback = history_fallback
-        self.api_football_max_history_season = api_football_max_history_season
         self.history_worker_factory = history_worker_factory
         self.sync_run_id = sync_run_id
         self.context_config = context_config or ContextSyncConfig.from_environ(os.environ)

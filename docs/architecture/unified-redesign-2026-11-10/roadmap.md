@@ -75,7 +75,8 @@ flowchart TD
   P00[0 Evidence and frozen budgets] --> P01[1 Complete backup and restore]
   P00 --> P02[2 Critical identity and score defects]
   P00 --> P03[3 Backend live sync and fairness]
-  P02 --> P03
+  P02 --> PREP03[Pre-P03 Provider Reliability and Result Recovery]
+  PREP03 --> P03
   P03 --> P04[4 Committed events and freshness]
   P02 --> P05[5 Settlement and live Admin]
   P04 --> P05
@@ -84,7 +85,8 @@ flowchart TD
   P06 --> P07[7 Match research and plain language]
   P04 --> P07
   P02 --> P08[8 Identity and source contracts]
-  P08 --> P09[9 Authentic data recovery]
+  P08 --> P09
+  PREP03 --> P09[9 Authentic data recovery]
   P03 --> P09
   P00 --> P10[10 Storage observability and pressure]
   P01 --> P11[11 Compression and exact dedup]
@@ -203,9 +205,19 @@ Recorded for later tickets, not built in P02:
   ([proposed executable plan](p09-01-historical-completeness-plan.md)); standings, H2H, statistics, live events and lineups
   remain `NOT_AUDITED` until a domain check exists.
 
+## Pre-P03 — Provider reliability and result recovery
+
+Depends on P02 result and identity rules. Owns capability-driven access,
+removal of artificial history barriers, repeatable historical refresh,
+independent missing-result checks, and propagation through existing result,
+team-history and settlement owners. Verify the
+[pre-P03 acceptance conditions](acceptance.md#pre-p03-result-recovery) before
+starting P03. Track adoption separately in the
+[readiness handoff](PRE_P03_PROVIDER_AND_RESULT_RECOVERY_HANDOFF.md).
+
 ## Phase 3 — Backend live synchronization and fairness
 
-Dependencies: P00/P02 for affected correctness; existing live schedules remain
+Dependencies: P00, P02 and the pre-P03 readiness gate. Existing live schedules remain
 running under their prior authority. P01 before operating schedule changes.
 
 | Ticket | Objective and exact owners / contracts | Validation, accepted output and rollback |
@@ -284,13 +296,13 @@ context influencing the champion. Source/rights/science restrictions stay indepe
 
 ## Phase 9 — Missing authentic data recovery
 
-Dependencies: P08/P03 and applicable P02, P01 for risky operating correction.
+Dependencies: P08, P03 and applicable P02 and pre-P03 recovery contracts. P01 applies to risky operating corrections.
 Task-specific new authority required; standing provider research permission is
 not repeatedly re-requested, and does not bypass scientific/health/paid gates.
 
 | Ticket | Objective and exact owners / contracts | Validation, accepted output and rollback |
 | --- | --- | --- |
-| P09-01 | Cohort existing retained source/native observations via `product/history_worker.py`, identity/admission/correction and reconciliation owners. Prioritize exact recoverable score/season/binding predicate over broad refetch; preserve FR reports and current affected IDs | Byte/manifest/known-time verification, same-kickoff/date-only/order exclusion, identity/source/basis negative and idempotent bounded replay tests; before/after qualified result/API/history hash and coverage by exact target union. DoD: proven newly eligible facts only; source-only rows not counted as forecasts gained. Revoke prospectively through approved owner if correction fails |
+| P09-01 | Use pre-P03 recovery for mapped overdue results. Cohort broader historical gaps via `product/history_worker.py`, identity/admission/correction and reconciliation owners. Prioritize exact recoverable score/season/binding predicate over broad refetch; preserve FR reports and current affected IDs | Byte/manifest/known-time verification, same-kickoff/date-only/order exclusion, identity/source/basis negative and idempotent bounded replay tests; before/after qualified result/API/history hash and coverage by exact target union. DoD: proven newly eligible facts only; source-only rows not counted as forecasts gained. Revoke prospectively through approved owner if correction fails |
 | P09-02 | Research then acquire only separately tasked missing provider/resource/team/season scopes through existing adapters/access register. Maintain primary/independent-source analysis and denied/unsupported/partial scopes; no access-control bypass or unapproved spend | Request budget/quota/cooldown, immutable capture, native IDs/time/semantics and independent relationship proof. New evidence has real new known time and cannot replace a missing registered hash. DoD: exact recoverable subset or explicit external blocker; disable source scope, preserve rights-compliant evidence |
 
 Gate: source-backed recovery or explicit missing-proof disposition; architecture

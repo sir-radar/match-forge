@@ -91,6 +91,7 @@ func TestAdminSyncStartRoutesUseFixedTypes(t *testing.T) {
 		{path: "/v1/admin/sync/openfootball", want: SyncOpenFootball},
 		{path: "/v1/admin/sync/football-data-uk", want: SyncFootballDataUK},
 		{path: "/v1/admin/sync/history", want: SyncHistoryBackfill},
+		{path: "/v1/admin/sync/result-recovery", want: SyncResultRecovery},
 		{path: "/v1/admin/sync/forecast-refresh", want: SyncForecastRefresh},
 		{path: "/v1/admin/sync/external-predictions", want: SyncExternalPredictions},
 		{path: "/v1/admin/sync/fotmob", want: SyncFotMob},
@@ -242,6 +243,21 @@ func TestSyncCompletionMarksPartialWorkflowFailed(t *testing.T) {
 	}
 
 	status, message = syncCompletion(map[string]interface{}{"status": "COMPLETED"}, SyncRequest{Type: SyncMVP})
+	if status != "SUCCEEDED" || message != nil {
+		t.Fatalf("completion = %q %v", status, message)
+	}
+}
+
+func TestSyncCompletionDoesNotReportUnrecoveredRequestAsSuccess(t *testing.T) {
+	status, message := syncCompletion(map[string]interface{}{
+		"status": "COMPLETED_UNRESOLVED", "request_outcome": "NOT_RETURNED", "successful_requests": 1,
+	}, SyncRequest{Type: SyncResultRecovery, FixtureID: "10000000-0000-4000-8000-000000000001"})
+	if status != "FAILED" || message == nil || *message != "requested result was not recovered: NOT_RETURNED" {
+		t.Fatalf("completion = %q %v", status, message)
+	}
+	status, message = syncCompletion(map[string]interface{}{
+		"status": "COMPLETED", "request_outcome": "RECOVERED",
+	}, SyncRequest{Type: SyncResultRecovery})
 	if status != "SUCCEEDED" || message != nil {
 		t.Fatalf("completion = %q %v", status, message)
 	}

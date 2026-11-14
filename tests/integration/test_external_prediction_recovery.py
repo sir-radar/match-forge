@@ -1129,3 +1129,65 @@ def test_exact_archive_can_follow_a_reviewed_post_kickoff_fixture_replacement(re
             "SELECT count(*) FROM football.external_reviewed_fixture_mappings WHERE mapping_id=%s",
             (replacement,),
         ).fetchone() == (0,)
+
+
+def test_result_recovery_settles_without_internal_forecast():
+    from football.product.result_recovery import finish_result_recovery
+
+    from tests.integration.test_live_context import _seed_fixture
+    from tests.integration.test_team_identity_correction import isolated_database
+
+    with isolated_database() as url, psycopg.connect(url) as connection:
+        _seed_fixture(connection)
+        # A matched external prediction with a reviewed source date and no
+        # internal MatchForge forecast for the fixture.
+        connection.execute(
+            """INSERT INTO football.external_predictions
+            (prediction_id,revision_sha256,source_code,source_page,prediction_date,
+             original_date_text,collected_at,fixture_id,competition_text,home_team_text,
+             away_team_text,market,selection,match_status)
+            VALUES(%s,%s,'manual_import','synthetic',%s,%s,%s,%s,
+             'Test','Home','Away','RESULT_1X2','HOME_WIN','MATCHED')""",
+            (
+                PREDICTION,
+                "f" * 64,
+                KICKOFF.date(),
+                KICKOFF.date().isoformat(),
+                KICKOFF - timedelta(hours=3),
+                FIXTURE,
+            ),
+        )
+        connection.execute(
+            """INSERT INTO football.external_prediction_date_reviews
+               (prediction_id,source_date,date_status,reason)
+               VALUES(%s,%s,'VERIFIED','synthetic verified source date')""",
+            (PREDICTION, KICKOFF.date()),
+        )
+        connection.execute(
+            """UPDATE football.product_fixtures SET status='FINISHED',home_score=2,away_score=1,
+                      result_score_basis='REGULATION_90',identity_status='VERIFIED'
+               WHERE fixture_id=%s""",
+            (FIXTURE,),
+        )
+        assert connection.execute("SELECT count(*) FROM football.product_forecasts").fetchone() == (
+            0,
+        )
+        connection.commit()
+
+        assert finish_result_recovery(connection)["settled_external_predictions"] == 1
+        assert connection.execute(
+            "SELECT settlement_state FROM football.external_prediction_latest_results"
+        ).fetchall() == [("WON",)]
+        connection.commit()
+        assert finish_result_recovery(connection)["settled_external_predictions"] == 0
+        # A recovered correction re-evaluates the prediction append-only, once.
+        connection.execute(
+            "UPDATE football.product_fixtures SET home_score=1 WHERE fixture_id=%s", (FIXTURE,)
+        )
+        connection.commit()
+        assert finish_result_recovery(connection)["settled_external_predictions"] == 1
+        assert finish_result_recovery(connection)["settled_external_predictions"] == 0
+        assert connection.execute(
+            """SELECT settlement_state FROM football.external_prediction_result_revisions
+               ORDER BY revision_sequence"""
+        ).fetchall() == [("WON",), ("LOST",)]

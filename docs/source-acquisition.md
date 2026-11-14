@@ -56,6 +56,25 @@ Document genuinely new decisions separately. Provider-specific restrictions
 remain recorded as facts, but should not repeatedly halt unrelated research,
 recovery, or provider work.
 
+### Factual results and historical refresh
+
+Use the accessible resource that can answer the request, then apply MatchForge's
+separate identity, score-basis and history rules. A partial scope or missing
+xG, events, lineups or model qualification does not prevent factual result
+acquisition. An experimental normalizer alone supplies no evidence of a
+working acquisition route or suitable fixture identity.
+
+Successful history imports carry no mandatory waiting period. Explicit
+refresh checks the source again even for a completed season. Catalogue caching
+serves discovery. Provider cooldowns, enforced quotas, current work leases
+and retry backoff still apply. Forecast history sufficiency is a bootstrap
+shortcut in MVP sync and is outside the result recovery path.
+
+The [pre-P03 provider audit](evidence/pre-p03-acquisition-audit-2026-11-13.md)
+records the retained registrations and observed access. The
+[readiness handoff](architecture/unified-redesign-2026-11-10/PRE_P03_PROVIDER_AND_RESULT_RECOVERY_HANDOFF.md)
+records where unattended fallback is implemented and where evidence is pending.
+
 ### Development acquisition routes
 
 The existing [development decision](evidence/owner-decision-public-development-data-access-2026-10-31.json)
@@ -138,7 +157,7 @@ Advertised coverage is not proof of retained coverage or this account's access.
 
 | Provider | Existing acquisition owner and resources | Coverage and access limits |
 | --- | --- | --- |
-| API-Football | `ProductSync` / `HistorySyncWorker`; fixtures, results, standings and enabled lineup/injury context; additional capability ports | League/season coverage and credentials are account-specific. Keep `API_FOOTBALL_MAX_HISTORY_SEASON` and persistent daily/minute quotas. [Official rate limits](https://www.api-football.com/news/post/how-ratelimit-works) and [coverage guidance](https://www.api-football.com/news/post/how-to-get-started-with-api-football-the-complete-beginners-guide) do not authorize a larger plan. |
+| API-Football | `ProductSync` / `HistorySyncWorker`; fixtures, results, standings and enabled lineup/injury context; additional capability ports | League/season coverage and credentials are account-specific. Request the native season and honor observed plan denials and persistent daily/minute quotas. [Official rate limits](https://www.api-football.com/news/post/how-ratelimit-works) and [coverage guidance](https://www.api-football.com/news/post/how-to-get-started-with-api-football-the-complete-beginners-guide) do not authorize a larger plan. |
 | football-data.org | Existing explicit-crosswalk history fallback; competition fixtures, results and standings | v4 resources and historical access depend on subscription. The free plan advertises ten calls/minute; history is separately offered in paid plans. Keep the existing client pacing and entitlement failures. [API reference](https://www.football-data.org/documentation/quickstart), [plans](https://www.football-data.org/pricing). |
 | FotMob | `OperationalProviderSync`, `provider_history_scopes` and `FotmobSource`; calendar/season results and match, team and player resources | Seasons come from native catalogues; detail depth varies. [Published terms](https://www.fotmob.com/tos.txt) restrict automated/systematic use. The owner decision is recorded separately; ordinary access failures stop that source without bypasses. |
 | PitchAPI | Existing operational client, season checkpoints and `PitchApiSource`; results, events, shots, statistics, lineups and ratings | [Reference](https://pitchapi.dev/) advertises catalogue history from 2021 and no daily allowance, with a fair-use burst guard and `Retry-After`. Missing analytics remain missing. Current access does not establish historical knowledge or compatible xG-series identity. |
@@ -245,11 +264,10 @@ Ligue 1 2022/23: 686/686 match-shot resources, 17,873 finite in-range shots and
 244 explicit penalties, with no observed missing, malformed, duplicate,
 period, situation, xG or team-membership error. This establishes current
 technical completeness for those two audited snapshots only. It does not
-authorize raw retention or ingestion and does not establish the upstream xG
+establish the upstream xG
 supplier/model/version, cross-season series identity, correction and revision
 history, provider-ID stability through rebuilds, or historical point-in-time
-availability. PitchAPI therefore remains research-only and is not an
-Evaluation V2 provider. See the [readiness assessment](evidence/evaluation-v2-readiness-assessment-2026-09-23.md).
+availability. PitchAPI's xG remains outside Evaluation V2. See the [readiness assessment](evidence/evaluation-v2-readiness-assessment-2026-09-23.md).
 
 Offline contingency preparation adds an evidence-backed PitchAPI xG-series
 gate and provider-neutral synthetic corpus firewall. These are validation-only:

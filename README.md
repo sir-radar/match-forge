@@ -313,6 +313,10 @@ Never weaken or skip a gate to make a change pass. See [docs/testing.md](docs/te
 
 MatchForge is a private, local, non-commercial research project. Provider data is retained for private analysis and must not be published or redistributed. Provider terms, credentials, quotas and entitlements are recorded separately from the project's own authorization and must still be respected. The standing acquisition policy is in [docs/source-acquisition.md](docs/source-acquisition.md).
 
+Admin Data Sync can recheck mapped results and refresh completed history
+scopes. The independent result recovery schedule and UTC selectors are
+documented in the [operator CLI guide](docs/cli.md#operational-sync).
+
 Scheduled refresh runs through `infrastructure/systemd/matchforge-mvp-refresh.timer` (06:00 `Africa/Lagos`) and `scripts/mvp-refresh.sh`. Adjust the user and `/opt/matchforge` path when installing.
 
 ## Documentation

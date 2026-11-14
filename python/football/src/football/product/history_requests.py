@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 from datetime import UTC, datetime, timedelta
 from email.utils import parsedate_to_datetime
 from typing import Any
@@ -18,13 +17,6 @@ class HistoryDeferred(ProviderFetchError):
     def __init__(self, reason: str, until: datetime) -> None:
         super().__init__(reason)
         self.until = until
-
-
-def history_freshness() -> timedelta:
-    seconds = int(os.environ.get("MATCHFORGE_HISTORY_FRESHNESS_SECONDS", "86400"))
-    if seconds <= 0:
-        raise ValueError("historical freshness must be positive")
-    return timedelta(seconds=seconds)
 
 
 class HistoryRequestBudget:
@@ -72,10 +64,6 @@ class HistoryRequestBudget:
             reason, until = "PROVIDER_RETRY_AFTER", state[2]
         elif state[0] or state[1] == 0:
             reason = "PROVIDER_BUDGET_EXHAUSTED"
-        elif self.yield_to_live and state[1] is not None:
-            # These providers advertise no daily allowance. Any recorded finite
-            # remainder is conserved for live work until its allowance is established.
-            reason = "QUOTA_RESERVED_FOR_LIVE"
         elif self.yield_to_live and live[0]:
             reason = "LIVE_SYNC_HAS_PRIORITY"
         if reason:
@@ -139,10 +127,10 @@ def record_history_check(
         """INSERT INTO football.product_provider_history_discovery (
                provider_code, provider_competition_id, resource_name, source_snapshot_id,
                last_attempt_at, next_attempt_at)
-           VALUES (%s, %s, %s, %s, clock_timestamp(), clock_timestamp() + %s)
+           VALUES (%s, %s, %s, %s, clock_timestamp(), clock_timestamp())
            ON CONFLICT (provider_code, resource_name) DO UPDATE
            SET source_snapshot_id = EXCLUDED.source_snapshot_id,
                last_attempt_at = EXCLUDED.last_attempt_at,
                next_attempt_at = EXCLUDED.next_attempt_at, last_error = NULL""",
-        (provider, competition, resource, snapshot, history_freshness()),
+        (provider, competition, resource, snapshot),
     )

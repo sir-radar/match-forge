@@ -97,6 +97,7 @@ func NewWithSyncRunner(
 	mux.HandleFunc("POST /v1/admin/sync/openfootball", application.startSync(SyncOpenFootball))
 	mux.HandleFunc("POST /v1/admin/sync/football-data-uk", application.startSync(SyncFootballDataUK))
 	mux.HandleFunc("POST /v1/admin/sync/history", application.startSync(SyncHistoryBackfill))
+	mux.HandleFunc("POST /v1/admin/sync/result-recovery", application.startSync(SyncResultRecovery))
 	mux.HandleFunc("POST /v1/admin/sync/forecast-refresh", application.startSync(SyncForecastRefresh))
 	mux.HandleFunc("POST /v1/admin/sync/external-predictions", application.startSync(SyncExternalPredictions))
 	mux.HandleFunc("POST /v1/admin/sync/settle-external-predictions", application.startExternalSettlement)
@@ -130,6 +131,9 @@ func (application *App) Run(ctx context.Context) error {
 	}
 	if application.config.HistorySyncEnabled {
 		go application.runHistorySyncSchedule(ctx)
+	}
+	if application.config.ResultRecoveryInterval > 0 {
+		go application.runResultRecoverySchedule(ctx)
 	}
 	if _, ok := application.syncRunner.(pendingForecastRefreshRunner); ok {
 		go application.runForecastRefreshSchedule(ctx)
@@ -214,6 +218,22 @@ func (application *App) runHistorySyncSchedule(ctx context.Context) {
 		})
 		if err != nil && !errors.Is(err, errSyncAlreadyRunning) {
 			application.logger.Warn("scheduled history failed to start", "error", err)
+		}
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		}
+	}
+}
+
+func (application *App) runResultRecoverySchedule(ctx context.Context) {
+	ticker := time.NewTicker(application.config.ResultRecoveryInterval)
+	defer ticker.Stop()
+	for ctx.Err() == nil {
+		_, err := application.syncRunner.Start(ctx, SyncRequest{Type: SyncResultRecovery})
+		if err != nil && !errors.Is(err, errSyncAlreadyRunning) && ctx.Err() == nil {
+			application.logger.Warn("scheduled result recovery failed to start", "error", err)
 		}
 		select {
 		case <-ctx.Done():
