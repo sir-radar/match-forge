@@ -248,6 +248,21 @@ func TestSyncCompletionMarksPartialWorkflowFailed(t *testing.T) {
 	}
 }
 
+func TestSyncCompletionDoesNotReportUnrecoveredRequestAsSuccess(t *testing.T) {
+	status, message := syncCompletion(map[string]interface{}{
+		"status": "COMPLETED_UNRESOLVED", "request_outcome": "NOT_RETURNED", "successful_requests": 1,
+	}, SyncRequest{Type: SyncResultRecovery, FixtureID: "10000000-0000-4000-8000-000000000001"})
+	if status != "FAILED" || message == nil || *message != "requested result was not recovered: NOT_RETURNED" {
+		t.Fatalf("completion = %q %v", status, message)
+	}
+	status, message = syncCompletion(map[string]interface{}{
+		"status": "COMPLETED", "request_outcome": "RECOVERED",
+	}, SyncRequest{Type: SyncResultRecovery})
+	if status != "SUCCEEDED" || message != nil {
+		t.Fatalf("completion = %q %v", status, message)
+	}
+}
+
 func TestRunCommandAcceptsStructuredPartialFailure(t *testing.T) {
 	logFile, err := os.CreateTemp(t.TempDir(), "sync-run-*.log")
 	if err != nil {
